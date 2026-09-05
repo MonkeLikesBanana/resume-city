@@ -1,4 +1,5 @@
 import { Html } from '@react-three/drei'
+import { useNavigate } from 'react-router-dom'
 import type { Attraction } from '../../types/attraction'
 import Building from './Building'
 import useCityStore from '../../store/useCityStore'
@@ -18,7 +19,7 @@ interface HotspotProps {
  * NOT the only way to reach this stop; AccessibleNav (Phase 4) is the
  * guaranteed-reachable path regardless of whether the canvas rendered. */
 export default function Hotspot({ attraction }: HotspotProps) {
-  const setActive = useCityStore((s) => s.setActiveAttractionId)
+  const navigate = useNavigate()
   const active = useCityStore((s) => s.activeAttractionId === attraction.id)
   const markerHeight = (attraction.footprint ?? 6) * 0.9 + 2
   const [x, y, z] = attraction.position
@@ -37,7 +38,7 @@ export default function Hotspot({ attraction }: HotspotProps) {
       <Html position={[x, y + markerHeight, z]} center distanceFactor={26} occlude={false}>
         <button
           type="button"
-          onClick={() => setActive(attraction.id)}
+          onClick={() => navigate(`/${attraction.district}/${attraction.id}`)}
           aria-label={`Fly to ${attraction.name}`}
           className="flex items-center gap-1.5 rounded-full border-2 px-2.5 py-1 text-xs font-medium whitespace-nowrap shadow-md transition-transform hover:scale-105 focus-visible:scale-105 cursor-pointer"
           style={{

@@ -1,4 +1,5 @@
 import { AnimatePresence, motion } from 'framer-motion'
+import { useNavigate } from 'react-router-dom'
 import useCityStore from '../../store/useCityStore'
 import { getAttraction } from '../../content/attractions'
 import { DISTRICTS } from '../../content/districts'
@@ -19,7 +20,7 @@ const FOUNDRY_SKILLS = ['Electronics', 'CAD / Onshape', '3D Printing / Additive 
  * this panel's enter/exit — camera movement is a separate system (§7.3). */
 export default function InfoPanel() {
   const activeId = useCityStore((s) => s.activeAttractionId)
-  const setActive = useCityStore((s) => s.setActiveAttractionId)
+  const navigate = useNavigate()
   const reducedMotion = useReducedMotion()
   const attraction = activeId ? getAttraction(activeId) : undefined
 
@@ -47,7 +48,7 @@ export default function InfoPanel() {
             </div>
             <button
               type="button"
-              onClick={() => setActive(null)}
+              onClick={() => navigate('/')}
               aria-label="Back to the city"
               className="shrink-0 rounded-full border border-[var(--color-ink)]/20 px-3 py-1.5 text-xs font-medium text-[var(--color-ink)] hover:bg-[var(--color-ink)]/5 cursor-pointer"
             >

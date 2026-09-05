@@ -17,6 +17,10 @@ export default function CameraRig() {
   const controlsRef = useRef<CameraControlsImpl>(null)
   const activeAttractionId = useCityStore((s) => s.activeAttractionId)
   const reducedMotion = useReducedMotion()
+  // PRD §3 — "Landing on a deep link skips ... the flight — camera snaps
+  // directly." The very first shot (whatever the URL resolved to on load)
+  // is instant; every shot after that is a normal tween.
+  const hasFlownRef = useRef(false)
 
   useEffect(() => {
     const controls = controlsRef.current
@@ -41,7 +45,9 @@ export default function CameraRig() {
         })()
       : OVERVIEW_SHOT
 
-    flyTo(controls, shot, !reducedMotion)
+    const enableTransition = hasFlownRef.current ? !reducedMotion : false
+    hasFlownRef.current = true
+    flyTo(controls, shot, enableTransition)
   }, [activeAttractionId, reducedMotion])
 
   return (
