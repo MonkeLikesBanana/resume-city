@@ -14,7 +14,12 @@ export default function Breadcrumb() {
   const attraction = activeId ? getAttraction(activeId) : undefined
 
   return (
-    <nav aria-label="Breadcrumb" className="pointer-events-auto fixed top-4 left-4 z-20 flex items-center gap-1.5 text-sm">
+    // max-w + flex-wrap: on a narrow phone screen a full "City › District ›
+    // Attraction" trail can run long enough to collide with the "All stops"
+    // pill (top-right) — wrap to a second line instead of overlapping it.
+    // The district segment (least essential of the three) is also dropped
+    // below `sm` to keep the common case to one short line.
+    <nav aria-label="Breadcrumb" className="pointer-events-auto fixed top-4 left-4 z-20 flex max-w-[calc(100vw-6.5rem)] flex-wrap items-center gap-1.5 text-sm">
       <Link
         to="/"
         className="rounded-full bg-[var(--color-ground)]/90 px-3 py-1.5 font-[Fredoka] font-semibold text-[var(--color-ink)] shadow-sm hover:underline"
@@ -23,8 +28,11 @@ export default function Breadcrumb() {
       </Link>
       {attraction && (
         <>
-          <span className="text-[var(--color-ink)]/40">›</span>
-          <Link to="/" className="rounded-full bg-[var(--color-ground)]/90 px-3 py-1.5 text-[var(--color-ink)]/70 shadow-sm hover:underline">
+          <span className="hidden text-[var(--color-ink)]/40 sm:inline">›</span>
+          <Link
+            to="/"
+            className="hidden rounded-full bg-[var(--color-ground)]/90 px-3 py-1.5 text-[var(--color-ink)]/70 shadow-sm hover:underline sm:inline-block"
+          >
             {DISTRICTS[attraction.district].name}
           </Link>
           <span className="text-[var(--color-ink)]/40">›</span>
