@@ -7,7 +7,7 @@ import { CITY_NAME } from './config'
 // first to confirm the whole pipeline (Vite -> Vercel, incl. binary .glb
 // serving) before any real scene/content is built.
 function PipelineTestModel() {
-  const { scene } = useGLTF('/assets/models/_pipeline-test.glb')
+  const { scene } = useGLTF('/assets/models/robotics-workshop.glb')
   return <primitive object={scene} rotation={[0, Math.PI / 4, 0]} />
 }
 
@@ -17,7 +17,7 @@ export default function App() {
       <div className="absolute top-4 left-4 z-10 font-[Fredoka] text-lg text-[var(--color-ink)]">
         {CITY_NAME} — pipeline check
       </div>
-      <Canvas camera={{ position: [4, 3, 5], fov: 45 }}>
+      <Canvas camera={{ position: [10, 8, 14], fov: 45 }}>
         <ambientLight intensity={0.6} />
         <directionalLight position={[5, 8, 3]} intensity={1.2} />
         <Suspense fallback={null}>
