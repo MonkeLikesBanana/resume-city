@@ -40,11 +40,12 @@ export default function Hotspot({ attraction }: HotspotProps) {
           type="button"
           onClick={() => navigate(`/${attraction.district}/${attraction.id}`)}
           aria-label={`Fly to ${attraction.name}`}
-          className="flex items-center gap-1.5 rounded-full border-2 px-2.5 py-1 text-xs font-medium whitespace-nowrap shadow-md transition-transform hover:scale-105 focus-visible:scale-105 cursor-pointer"
+          className={`flex items-center gap-1.5 rounded-full border-2 px-2.5 py-1 text-xs font-medium whitespace-nowrap shadow-md transition-transform hover:scale-105 focus-visible:scale-105 cursor-pointer ${active ? '' : 'hotspot-marker'}`}
           style={{
             background: active ? ACCENT_HEX[attraction.accentColor] : 'rgba(244,241,234,0.92)',
             borderColor: ACCENT_HEX[attraction.accentColor],
-            color: active ? '#1F2A24' : '#1F2A24',
+            color: '#1F2A24',
+            animationDelay: `${(attraction.id.charCodeAt(0) % 12) * 0.2}s`,
           }}
         >
           <span
