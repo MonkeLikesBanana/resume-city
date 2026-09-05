@@ -24,6 +24,23 @@ export const PALETTE = {
   ink: '#1F2A24',
 } as const
 
+/** Accent color as a UI fill/border (buttons, chip backgrounds, hotspot
+ * markers) — always paired with dark ink text, which passes AA against
+ * either accent at this brightness. */
+export const ACCENT_FILL = {
+  foundry: '#2EC4B6',
+  lakeside: '#C97B4A',
+} as const
+
+/** Accent color as TEXT directly on the cream ground color (e.g. the
+ * district eyebrow label in InfoPanel). The bright ACCENT_FILL hexes above
+ * fail WCAG AA as text on this light a background (~2:1) — these are
+ * darkened versions of the same hues that clear 4.5:1 (§10). */
+export const ACCENT_TEXT = {
+  foundry: '#0E6E63',
+  lakeside: '#8A4B26',
+} as const
+
 /** PRD §7.3 — tuned once for the whole app, not per-shot. */
 export const CAMERA = {
   smoothTime: 0.9,

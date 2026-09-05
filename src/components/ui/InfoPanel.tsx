@@ -4,11 +4,7 @@ import useCityStore from '../../store/useCityStore'
 import { getAttraction } from '../../content/attractions'
 import { DISTRICTS } from '../../content/districts'
 import useReducedMotion from '../../hooks/useReducedMotion'
-
-const ACCENT_HEX: Record<'foundry' | 'lakeside', string> = {
-  foundry: '#2EC4B6',
-  lakeside: '#C97B4A',
-}
+import { ACCENT_FILL, ACCENT_TEXT } from '../../config'
 
 // PRD §5.1 — "Skills are not their own building — they render as a
 // persistent tag strip pinned to the bottom of every Foundry District panel."
@@ -36,11 +32,11 @@ export default function InfoPanel() {
           exit={reducedMotion ? { opacity: 0 } : { opacity: 0, y: 24 }}
           transition={{ duration: reducedMotion ? 0.05 : 0.35, ease: 'easeOut' }}
           className="pointer-events-auto fixed inset-x-0 bottom-0 z-20 max-h-[70vh] overflow-y-auto rounded-t-2xl border-t-4 bg-[var(--color-ground)]/97 p-5 shadow-2xl backdrop-blur sm:inset-x-auto sm:right-4 sm:bottom-4 sm:w-[420px] sm:rounded-2xl sm:border-t-0 sm:border-l-4"
-          style={{ borderColor: ACCENT_HEX[attraction.accentColor] }}
+          style={{ borderColor: ACCENT_FILL[attraction.accentColor] }}
         >
           <div className="flex items-start justify-between gap-3">
             <div>
-              <p className="text-xs font-semibold tracking-wide uppercase" style={{ color: ACCENT_HEX[attraction.accentColor] }}>
+              <p className="text-xs font-semibold tracking-wide uppercase" style={{ color: ACCENT_TEXT[attraction.accentColor] }}>
                 {DISTRICTS[attraction.district].name}
               </p>
               <h2 className="font-[Fredoka] text-xl font-semibold text-[var(--color-ink)]">{attraction.name}</h2>
@@ -64,9 +60,9 @@ export default function InfoPanel() {
                 <li key={entry.role} className="relative">
                   <span
                     className="absolute -left-[21px] top-1.5 h-2.5 w-2.5 rounded-full border-2 border-[var(--color-ground)]"
-                    style={{ background: ACCENT_HEX[attraction.accentColor] }}
+                    style={{ background: ACCENT_FILL[attraction.accentColor] }}
                   />
-                  <p className="text-[11px] font-medium tracking-wide text-[var(--color-ink)]/50 uppercase">{entry.dateRange}</p>
+                  <p className="text-[11px] font-medium tracking-wide text-[var(--color-ink)]/70 uppercase">{entry.dateRange}</p>
                   <p className="text-sm font-semibold text-[var(--color-ink)]">{entry.role}</p>
                   <p className="mt-0.5 text-sm leading-relaxed text-[var(--color-ink)]/85">{entry.description}</p>
                 </li>
@@ -78,7 +74,7 @@ export default function InfoPanel() {
             <ul className="mt-4 space-y-1.5 text-sm text-[var(--color-ink)]/90">
               {attraction.facts.map((fact) => (
                 <li key={fact} className="flex gap-2">
-                  <span aria-hidden="true" style={{ color: ACCENT_HEX[attraction.accentColor] }}>
+                  <span aria-hidden="true" style={{ color: ACCENT_TEXT[attraction.accentColor] }}>
                     ·
                   </span>
                   {fact}
@@ -99,13 +95,13 @@ export default function InfoPanel() {
 
           {attraction.district === 'foundry' && (
             <div className="mt-5 border-t border-[var(--color-ink)]/10 pt-3">
-              <p className="text-[11px] font-medium tracking-wide text-[var(--color-ink)]/50 uppercase">Skills</p>
+              <p className="text-[11px] font-medium tracking-wide text-[var(--color-ink)]/70 uppercase">Skills</p>
               <div className="mt-1.5 flex flex-wrap gap-1.5">
                 {FOUNDRY_SKILLS.map((skill) => (
                   <span
                     key={skill}
-                    className="rounded-full px-2.5 py-1 text-xs font-medium text-white"
-                    style={{ background: ACCENT_HEX.foundry }}
+                    className="rounded-full px-2.5 py-1 text-xs font-medium text-[var(--color-ink)]"
+                    style={{ background: ACCENT_FILL.foundry }}
                   >
                     {skill}
                   </span>

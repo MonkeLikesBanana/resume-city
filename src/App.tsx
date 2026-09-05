@@ -7,6 +7,7 @@ import InfoPanel from './components/ui/InfoPanel'
 import AccessibleNav from './components/ui/AccessibleNav'
 import WelcomeOverlay from './components/ui/WelcomeOverlay'
 import Header from './components/layout/Header'
+import NoWebGLFallback from './components/ui/NoWebGLFallback'
 import useCityStore from './store/useCityStore'
 import { getAttraction } from './content/attractions'
 import { CITY_NAME } from './config'
@@ -57,23 +58,35 @@ function EscapeToOverview() {
 // An unknown :id in the URL just resolves to null in RouteSync above — the
 // city falls back to the overview shot rather than dead-ending on a 404.
 function Experience() {
+  const webglSupported = useCityStore((s) => s.webglSupported)
+  const hasEntered = useCityStore((s) => s.hasEntered)
+
+  if (!webglSupported) return <NoWebGLFallback />
+
   return (
     <div className="relative h-full w-full">
       <RouteSync />
       <EscapeToOverview />
-      {/* isolate: drei's <Html> markers set very high inline z-indices for
-          depth-sorting between themselves; without a stacking context here
-          those values escape this wrapper and paint over siblings below
-          (Welcome overlay, InfoPanel) regardless of this div's own z-index. */}
-      <div className="absolute inset-0 isolate">
-        <CityCanvas>
-          <City />
-        </CityCanvas>
+      {/* inert while the welcome overlay covers the screen: without this, a
+          keyboard user tabs through a dozen visually-hidden hotspot buttons
+          before ever reaching "Enter the City" — inert removes the whole
+          subtree from both the tab order and the accessibility tree until
+          it's actually visible. */}
+      <div inert={!hasEntered}>
+        {/* isolate: drei's <Html> markers set very high inline z-indices for
+            depth-sorting between themselves; without a stacking context here
+            those values escape this wrapper and paint over siblings below
+            (Welcome overlay, InfoPanel) regardless of this div's own z-index. */}
+        <div className="absolute inset-0 isolate">
+          <CityCanvas>
+            <City />
+          </CityCanvas>
+        </div>
+        <Breadcrumb />
+        <AccessibleNav />
+        <Header />
+        <InfoPanel />
       </div>
-      <Breadcrumb />
-      <AccessibleNav />
-      <Header />
-      <InfoPanel />
       <WelcomeOverlay />
     </div>
   )

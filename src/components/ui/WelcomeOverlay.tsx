@@ -60,7 +60,7 @@ export default function WelcomeOverlay() {
           </button>
 
           <div className="mt-4 flex items-center gap-4 text-sm">
-            <button type="button" onClick={startTour} className="text-[var(--color-ink)]/60 underline hover:text-[var(--color-ink)] cursor-pointer">
+            <button type="button" onClick={startTour} className="text-[var(--color-ink)]/70 underline hover:text-[var(--color-ink)] cursor-pointer">
               Take the guided tour
             </button>
             <span className="text-[var(--color-ink)]/30">·</span>

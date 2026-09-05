@@ -3,11 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import type { Attraction } from '../../types/attraction'
 import Building from './Building'
 import useCityStore from '../../store/useCityStore'
-
-const ACCENT_HEX: Record<Attraction['accentColor'], string> = {
-  foundry: '#2EC4B6',
-  lakeside: '#C97B4A',
-}
+import { ACCENT_FILL } from '../../config'
 
 interface HotspotProps {
   attraction: Attraction
@@ -42,15 +38,15 @@ export default function Hotspot({ attraction }: HotspotProps) {
           aria-label={`Fly to ${attraction.name}`}
           className={`flex items-center gap-1.5 rounded-full border-2 px-2.5 py-1 text-xs font-medium whitespace-nowrap shadow-md transition-transform hover:scale-105 focus-visible:scale-105 cursor-pointer ${active ? '' : 'hotspot-marker'}`}
           style={{
-            background: active ? ACCENT_HEX[attraction.accentColor] : 'rgba(244,241,234,0.92)',
-            borderColor: ACCENT_HEX[attraction.accentColor],
+            background: active ? ACCENT_FILL[attraction.accentColor] : 'rgba(244,241,234,0.92)',
+            borderColor: ACCENT_FILL[attraction.accentColor],
             color: '#1F2A24',
             animationDelay: `${(attraction.id.charCodeAt(0) % 12) * 0.2}s`,
           }}
         >
           <span
             className="inline-block h-2 w-2 rounded-full"
-            style={{ background: ACCENT_HEX[attraction.accentColor] }}
+            style={{ background: ACCENT_FILL[attraction.accentColor] }}
           />
           {attraction.name}
         </button>

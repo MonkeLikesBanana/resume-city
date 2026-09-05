@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { isWebGL2Supported } from '../lib/webgl'
 
 interface CityState {
   /** id of the Attraction currently focused (camera flown to + panel open), or null when at the overview shot. */
@@ -30,7 +31,7 @@ const useCityStore = create<CityState>((set) => ({
   tourMode: false,
   setTourMode: (on) => set({ tourMode: on }),
 
-  webglSupported: true,
+  webglSupported: isWebGL2Supported(),
   setWebglSupported: (ok) => set({ webglSupported: ok }),
 }))
 
