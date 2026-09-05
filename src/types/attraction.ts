@@ -26,8 +26,10 @@ export interface Attraction {
   position: Vec3
   rotationY?: number
   scale?: number
-  /** path to .glb under /public/assets/models/ */
-  model: string
+  /** path to .glb under /public/assets/models/. Optional — the Welcome
+   * Plaza is a camera+UI-only hub with no single physical building (PRD §5.0
+   * doesn't map it to one; left as a prop-decorated point in the scene). */
+  model?: string
   /** override computeDefaultShot() — use for flagship stops */
   cameraShot?: CameraShot
   /** for multi-role stops (Robotics Workshop) */

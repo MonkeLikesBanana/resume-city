@@ -3,6 +3,7 @@ import { Canvas } from '@react-three/fiber'
 import { PALETTE, OVERVIEW_SHOT } from '../../config'
 import Sky from './Sky'
 import Ground from './Ground'
+import CameraRig from './CameraRig'
 
 interface CityCanvasProps {
   children?: ReactNode
@@ -41,6 +42,7 @@ export default function CityCanvas({ children, dpr = [1, 2] }: CityCanvasProps) 
       />
 
       <Sky />
+      <CameraRig />
       <Suspense fallback={null}>
         <Ground />
         {children}
