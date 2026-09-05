@@ -33,8 +33,8 @@ export const CAMERA = {
 
 /** PRD §7.3 — the aerial establishing shot the city opens on / returns to. */
 export const OVERVIEW_SHOT: CameraShot = {
-  cameraPosition: [26, 22, 34],
-  cameraTarget: [0, 0, 2],
+  cameraPosition: [30, 26, 42],
+  cameraTarget: [0, 2, 0],
 }
 
 /** PRD §7.3 computeDefaultShot() default footprint when an attraction doesn't specify one. */
