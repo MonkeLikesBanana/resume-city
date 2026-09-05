@@ -1,33 +1,58 @@
 # Vasnova City — Interactive City Resume
 ### Product & Technical Design Document (PRD)
-Status: v1.2 — ready to build · Owner: Aarav Vaswani
+Status: v2.0 — ready to build · Owner: Aarav Vaswani
 
-> **Revision note (v1.2):** city renamed from the placeholder "Aaravville" to
-> **Vasnova City** — `CITY_NAME` in `src/config.ts` (§6, §8) is now finalized, not a
-> placeholder. No other content changed.
+> **Revision note (v2.0):** major revision after seeing the v1 build. Five
+> changes, in the order the user gave them:
+> 1. **Downtown density** — the Foundry District needs many more buildings, most
+>    of them purely decorative (not every building has to map to a resume bullet).
+> 2. **Car, not drone** — the camera now drives along roads at ground level
+>    between stops, and pans/tilts up in place to frame a tall building on
+>    arrival, instead of flying a free 3D arc to an elevated vantage point.
+> 3. **Denser backdrop** — a real forest belt around the city, not a sparse ring
+>    of distant mountain cones, since a ground-level "car" camera sees the
+>    horizon far more than the old aerial view did.
+> 4. **A real entrance** — the Welcome Plaza becomes an actual gateway/town
+>    square, not just "the bridge."
+> 5. **Third person copy** — all first-person resume/interest text rewritten in
+>    third person.
 >
-> **Revision note (v1.1):** v1.0 scoped this as a 2.5D isometric DOM scene. That's
-> been superseded — this is now a **true 3D scene** (React Three Fiber / Three.js).
-> Content map (§5) and the district/theme decisions are unchanged from v1.0; the
-> rendering engine, camera system, and asset pipeline are rewritten below.
+> §3, §4, §5 (copy only), §7, §8, §9, §12, §13, §14, §16 are rewritten below.
+> §1, §2, §6, §10, §11, §15 are carried over with light edits. §5's *facts*
+> (every resume detail, every district/building assignment) are **unchanged** —
+> only the prose voice and the Welcome Plaza's physical design changed, not what
+> it says or where it sits in the layout.
+>
+> **Revision note (v1.2):** city renamed from the placeholder "Aaravville" to
+> **Vasnova City**.
+>
+> **Revision note (v1.1):** v1.0 scoped this as a 2.5D isometric DOM scene;
+> superseded by a **true 3D scene** (React Three Fiber / Three.js).
 
 ---
 
 ## 1. Overview
 
-A single-page website that presents Aarav's resume as a small 3D city. The visitor
-lands on an aerial establishing shot of the whole city, then clicks buildings
-("attractions") to send the camera on a cinematic flight to them and reveal a
-resume-style info panel. The city is split into two districts:
+A single-page website that presents Aarav's resume as a small 3D city, explored
+the way a visitor would actually arrive in a real one: **driving in**. The visitor
+enters through the Welcome Plaza — a proper gateway, not a bridge — and from there
+the camera behaves like a car: it drives along the city's roads to whichever
+building is clicked, at street level, following the turns of the road, and when it
+arrives it pans/tilts up in place to frame the building rather than flying up to
+some elevated drone shot. The city is split into two districts:
 
-- **The Foundry District** — career/achievements (robotics, startup, school, clubs)
-- **Lakeside** — personal (interests, personality)
+- **The Foundry District** — a genuine downtown: career/achievements buildings
+  (robotics, startup, school, clubs) fronting a Main Street, filled out with many
+  more purely decorative buildings so it reads as a real skyline, not six lonely
+  structures on an empty plain.
+- **Lakeside** — career's opposite number: personal interests, quieter and more
+  spread out, matching a residential neighborhood rather than a downtown.
 
-connected by a central **Welcome Plaza** that holds Aarav's intro blurb and contact
-info. This is a **curated, fixed-shot experience**, not an open world — the camera
-never free-roams under user control; every navigation action is "click a thing →
-camera flies there → panel opens." (No orbit/fly controls exposed to the visitor —
-see §7 for why that's a deliberate choice, not a missing feature.)
+This is still a **curated, fixed-path experience**, not an open world — the
+visitor never manually steers; every navigation action is "click a thing → the
+car drives there along the road → it stops and looks up → panel opens." (No
+manual drive/orbit/fly controls exposed to the visitor — see §7 for the full
+mechanic.)
 
 City name, district names, and every color/copy value below are config, not
 hardcoded — see [§6](#6-tech-stack) and [§8](#8-data-model). `CITY_NAME` in
@@ -36,26 +61,30 @@ hardcoded — see [§6](#6-tech-stack) and [§8](#8-data-model). `CITY_NAME` in
 ## 2. Goals & Non-Goals
 
 **Goals**
-- Feels like a small, polished game moment — real depth, real light and shadow,
-  a camera that swoops and settles rather than a flat pan.
-- Every fact from the resume is present verbatim or near-verbatim — nothing lost
-  for the sake of style.
-- A recruiter skimming on a phone in 30 seconds gets as much value as someone who
-  explores every building — including on a device where WebGL fails (§10).
-- Adding a new attraction later (new club, new interest) is a data-file edit plus
-  dropping in a model file, not a re-architecture — this is an explicit, named
-  workflow (§16).
-- Ships as a real, deployable site in one build pass (§13 phases are sequential and
-  each phase leaves the site in a working state).
+- Reads as an actual small city — a downtown with real density, a road network
+  the camera visibly travels, a forest that makes the world feel enclosed rather
+  than a diorama floating on an empty plain.
+- Feels like riding in a car through town, not a drone touring waypoints: ground
+  level, following turns, looking up at things rather than swooping over them.
+- Every fact from the resume is still present verbatim or near-verbatim — none of
+  this changes what the site says, only how it's arranged and how you get there.
+- Every quote/blurb about Aarav reads naturally in third person, as if written by
+  someone introducing him, not by Aarav himself.
+- Adding a new attraction, or a new plain decorative building, later is still a
+  data-file-and-drop-a-model workflow (§16) — the downtown-density system must not
+  turn "add one filler building" into real work.
 
-**Non-Goals (v1)**
-- No free-roam camera (WASD, orbit, drag) — clicking is the only navigation input.
-- No backend/CMS — content lives in a typed TS file in the repo.
-- No procedurally generated city — every building is a hand-placed, hand-picked
-  asset; this is a small diorama, not an infinite city.
-- No WebGPU migration, no custom shader work — stock Three.js/WebGL2 rendering is
-  more than enough here and keeps the build simple (see §6).
-- No sound design in v1 (flagged as a Phase 8 stretch item, §13).
+**Non-Goals (v2)**
+- Still no manual drive/orbit/WASD control — the car drives itself; clicking is
+  the only input (carried over from v1's non-goal).
+- No true multi-street pathfinding graph (§7.5) — the road *looks* like a real
+  grid, but the car follows one fixed, continuous route through it. Revisit only
+  if a future request specifically wants the car to choose different streets.
+- No new asset packs to download — everything in this revision (filler buildings,
+  forest, plaza gate) is built from Kenney packs already downloaded for v1 (most
+  of the Commercial pack's ~30 building variants went unused in v1; this is where
+  they get used).
+- Sound design, custom domain, analytics: still deferred (unchanged from v1 §17).
 
 ## 3. Experience Flow
 
@@ -63,317 +92,335 @@ hardcoded — see [§6](#6-tech-stack) and [§8](#8-data-model). `CITY_NAME` in
 Landing (Welcome Overlay, DOM, sits above the canvas)
   "Vasnova City" title card + "Enter the City" button
         ↓
-Aerial establishing shot (fixed camera position, city fits the viewport,
-very slow idle orbit/drift disabled by default — camera holds still)
-  Two districts + Welcome Plaza visible, each with floating hotspot markers
+Car "arrives" already parked at the Welcome Plaza — the city's entrance/gateway,
+at the bridge crossing between the two districts (§7.6). There is no free aerial
+overview shot in v2 (v1's OVERVIEW_SHOT is retired) — the whole experience is
+lived at street level, matching an actual car's-eye view. The Plaza IS the home
+state: this is where the visitor starts, and where "back to city" returns them.
         ↓
-Click a hotspot ──────────────► Camera flies to that building's defined shot
-        ↓                              (drei CameraControls.setLookAt, ~1.4–2s,
-  Info panel slides in (DOM)            eased — see §7.3)
-  (resume content for that stop)       ↓
-        ↓                        Breadcrumb updates: Vasnova City › District › Building
-  Click "Back to city" ─────────► Camera flies back to the aerial shot
+Click a hotspot (or an AccessibleNav / breadcrumb / tour-control link) ──►
+  PHASE 1 — DRIVE: the camera moves along the road from its current position to
+  the target building's curb point, at car height, following the road's turns
+  (§7.3). This is not a point-to-point flight — it takes the actual path.
         ↓
-  (repeat, any order, any number of times)
+  PHASE 2 — ARRIVE: the camera holds its position at the curb and pans/tilts up
+  in place to frame the building — taller buildings tilt further back. It never
+  re-flies to a higher vantage point to get a better angle; if the building is
+  tall, panning up IS the answer (§7.3).
+        ↓
+  Info panel slides in (DOM), breadcrumb updates: Vasnova City › District › Building
+        ↓
+  Click "Back to city" ─────────► car drives back to the Welcome Plaza
+        ↓
+  (repeat, any order, any number of times — going from any stop to any other
+  stop just drives the intervening stretch of road, the same mechanic either way)
 
-Optional: "Guided Tour" button on the Welcome Plaza — auto-advances through every
-attraction in a sensible order with Next/Prev/Pause controls, reusing the same
-camera system. Build in Phase 7 — cheap once flyTo() exists.
+Guided Tour: drives the same route start to end in the existing tour order
+(Welcome Plaza → Robotics Workshop → NEEMO → Academic Hall → Makers Club → DECA →
+FLL → Café → Arcade → Sports Field → Open Road) with Next/Prev/Pause controls —
+unchanged from v1 except that each leg is now a drive, not a flight.
 ```
 
-Deep links: each attraction gets a route (`/foundry/robotics-workshop`,
-`/lakeside/cafe`, etc. — see §6). Landing on a deep link skips the welcome overlay
-and the flight — camera snaps directly to that building's shot with its panel
-already open. Makes every stop shareable/bookmarkable and gives crawlers real
-per-page URLs (the 3D canvas itself is not crawlable — this is why deep links plus
-the DOM fallback nav in §10 matter more here than they would on a flat site).
+Deep links and reduced-motion behavior are unchanged from v1: landing on
+`/foundry/robotics-workshop` snaps straight there (no animated drive, no flight —
+an instant cut, same rule as before just applied to the new mechanic), and
+`prefers-reduced-motion` skips the drive animation entirely rather than easing it.
 
 ## 4. Visual & Art Direction — "Pacific NW Tech City"
 
-**Palette**
+Palette, typography, and the district-color-coding rationale are **unchanged from
+v1** (teal for Foundry, terracotta for Lakeside, self-hosted Fredoka/Space
+Grotesk). What changes is how much *world* surrounds the visitor, because a
+street-level car camera sees far more of the horizon than the old aerial shot did
+— an empty plain that looked fine from above reads as sparse and unfinished from
+the driver's seat.
 
-| Role | Color | Hex |
-|---|---|---|
-| Sky (top) | soft overcast blue | `#B8D4E3` |
-| Sky (bottom) | pale morning gold | `#F0E6D2` |
-| Evergreen (trees/foliage) | deep pine | `#2D5843` |
-| Moss accent | `#4A7856` |
-| Mountain silhouette (backdrop) | fog slate | `#7C93A3` |
-| Lake / water | `#3E7CA6` |
-| Ground / paths | warm cloud white | `#F4F1EA` |
-| Foundry District accent | electric teal | `#2EC4B6` |
-| Lakeside District accent | warm terracotta | `#C97B4A` |
-| Text / UI ink | near-black | `#1F2A24` |
+### 4.1 Downtown Foundry District (new)
 
-Rationale unchanged from v1.0: cool teal marks the "tech/career" half, warm
-terracotta marks "personal" — visitors learn the color coding within seconds, and
-it doubles as each district's UI accent and, now, its light/fog tint in-scene.
+The Foundry District becomes a real small downtown: one **Main Street** (the road
+the car actually drives, §7.1) plus one or two **cross streets** for a visual grid
+(Kenney Roads' crossroad/intersection/bend tiles — already downloaded, mostly
+unused in v1). The six resume-linked attractions (Robotics Workshop, NEEMO HQ,
+Academic Hall, Makers Club, DECA, FLL Center) keep their prominent Main Street
+lots. Everything else — roughly **18–24 additional buildings** — is purely
+decorative "filler": ordinary downtown structures with no resume content, no
+hotspot marker, and no click handler, filling out the cross streets and the gaps
+between the named buildings so the skyline reads as a real city block, not six
+landmarks in a void.
 
-**Backdrop**: a Cascade-style mountain silhouette, a two-stop sky (via drei's
-`<Sky>` or a simple gradient skybox), and a stylized lake physically separating the
-two districts (Bellevue/Lake Washington nod), crossed by one bridge/path near the
-Welcome Plaza. Use `THREE.Fog` tinted toward the sky-bottom color to soften the
-world's edges and hide any pop-in — a cheap trick that also reads as "misty PNW
-morning."
+Filler buildings are sourced entirely from models **already downloaded** for v1 —
+the extracted City Kit (Commercial) pack has ~30 building variants
+(`building-a` through `building-n`, `building-skyscraper-a/c/d/e`,
+`low-detail-building-a` through `-n`, the `low-detail-building-wide` pair), and v1
+only used six of them. Pull a Draco-compressed variety pack of the unused ones
+(same `gltf-pipeline` step as §4.3) rather than downloading anything new.
 
-**Typography** (DOM overlay only — not in the 3D scene): `Space Grotesk` (or
-`Inter`) for UI/body text, `Fredoka` (or `Baloo 2`) for the city title and district
-headers. Self-host the woff2 files rather than linking Google's CDN.
+### 4.2 Forest backdrop (replaces the sparse tree ring)
 
-**Buildings**: real low-poly 3D models (GLB), not sprites — see §4.1.
+v1's dozen ornamental trees plus a distant ring of mountain cones worked for an
+aerial view where you could see the whole ground plane at once; at car height,
+that same treatment reads as a mostly-empty tan plain with a mountain wallpaper
+far in the distance. v2 adds a genuinely **dense forest belt** — on the order of
+150–300 trees — occupying the band between the buildable city area and the
+distant mountains, using the same three tree models from v1 (no new assets),
+placed with enough density that looking sideways off the road at any point along
+the drive shows forest, not empty ground. This must be **GPU-instanced** (drei's
+`<Instances>`/`<Instance>`, not one `<Clone>` per tree) — see §12, this is a
+performance requirement at this tree count, not a nice-to-have.
 
-### 4.1 Asset Sourcing (all CC0, no attribution required)
+### 4.3 Welcome Plaza — a real entrance (replaces "it's just the bridge")
 
-Primary source: **Kenney.nl** — these ship natively as low-poly 3D models in glTF
-format (confirmed), not pre-rendered sprites, so they drop straight into a
-React Three Fiber scene.
+The Plaza is now the deliberate first and last thing every visit touches: a
+gateway/town-square at the bridge crossing (still geographically the center point
+between the two districts — that doesn't change), dressed as an actual entrance
+rather than left as bare bridge tiles:
 
-| Pack | URL | Use |
-|---|---|---|
-| City Kit (Commercial) | kenney.nl/assets/city-kit-commercial | Foundry District buildings — offices/shopfront shapes for Robotics Workshop, NEEMO HQ, Academic Hall |
-| City Kit (Suburban) | kenney.nl/assets/city-kit-suburban | Lakeside buildings — house/cozy-structure shapes for Café, Arcade, etc. |
-| City Kit (Roads) | kenney.nl/assets/city-kit-roads | Roads, the bridge connecting the two districts, paths |
-| Building Kit | kenney.nl/assets/building-kit | Modular pieces to kitbash a custom hero building (e.g. the Robotics Workshop — give the flagship building the most bespoke silhouette) |
-| Nature/foliage pack (verify at download time) | kenney.nl | Evergreen trees, rocks, foliage — City Kit packs are buildings/roads only, so this is a separate pull; confirm it's glTF-format 3D, not a 2D sprite pack, before using it |
+- A **welcome arch/gate** spanning the road at the plaza — kitbashed from Building
+  Kit columns + a flat roof piece, the same programmatic-kitbash technique used
+  for the Robotics Workshop in v1 (§4.4, `scripts/kitbash-workshop.mjs` is the
+  template to extend/copy for this).
+- Distinct **plaza paving** — a ground-color patch distinguishable from the plain
+  city ground, sized to read as a proper square around the arch.
+- **Welcome signage** (a simple sign prop, or text integrated into the arch),
+  benches/lamps/planters — all props already available from the Roads and
+  Suburban packs (`streetlamp.glb`, `planter.glb`, `fence.glb`).
+- This is also where the Welcome Plaza's info panel content (§5.0, now in third
+  person) is read — the intro and contact info are the first thing a visitor sees
+  after entering.
 
-**3D asset convention** (required for every model, including future custom ones —
-this is what makes §16 a data-file-and-drop-a-file workflow instead of per-building
-guesswork):
-- Format: `.glb` (binary glTF — single file, easiest to drop in `/public`)
-- Origin: model origin at the **base-center** of the footprint (so placing it at
-  `y = 0` sits it correctly on the ground plane with no manual vertical offset)
-- Scale: real-world-ish units, 1 unit = 1 meter, footprint roughly 4–10m per
-  building (match against an already-placed building by eye in the dev scene)
-- Keep polycount low (Kenney's packs already are) — see the budget in §12
-- Run new models through **Draco compression** before adding to the repo
-  (`gltf-pipeline -i model.glb -o model.glb -d`) — cuts file size significantly
-  with no visible quality loss at this art style
+### 4.4 Asset sourcing — no new packs
 
-**Path B — custom-modeled buildings (Onshape → GLB):** since Aarav already models
-in Onshape, a flagship building (the Robotics Workshop is the obvious candidate) can
-be genuinely custom instead of a Kenney kitbash. Onshape doesn't export glTF
-directly, so the path is: export the part/assembly from Onshape as **STL**
-(mesh, simplest) or **STEP** (precise CAD, more Blender cleanup) → import into
-Blender → apply low-poly flat-shaded materials matching the Kenney palette →
-export as `.glb`, following the same convention above (base-centered origin, ~1
-unit = 1m, Draco-compressed). This is flagged as a Phase 8 stretch item (§13, §17),
-not required for v1 — v1 ships fully on Kenney assets.
+Everything above reuses packs already downloaded for v1 (§4.1 of the original
+plan: City Kit Commercial/Suburban/Roads, Building Kit, the nature pack). The only
+new work is **exporting more variants** from packs already on disk (more
+Commercial buildings for filler, more tree instances from the existing 3 tree
+models) and **one more kitbash** (the plaza arch, same technique/tooling as the
+Robotics Workshop). No new Kenney pages to visit, nothing new to license-check.
 
 ## 5. Content Map — Resume → City
 
-All copy below is final, pre-written, ready to paste into `attractions.ts` (§8).
-No placeholder text — every attraction ships with real content on day one.
-**Unchanged from v1.0** — this section is rendering-engine-agnostic.
+**Facts, district assignment, and per-building content are unchanged from v1** —
+every resume detail still lives on exactly the building it lived on before. What
+changes here is the **voice** (first person → third person) and the **physical
+design** of the Welcome Plaza stop (§4.3) and the Foundry District's surroundings
+(§4.1) — not what any panel says.
 
-### 5.0 Welcome Plaza (hub, not inside either district)
+### 5.0 Welcome Plaza — updated copy (third person)
 
-> "I am a driven student interested in robotics, electronics, and business.
-> Throughout the 2 years I've been in high school, I've been part of the Saints
-> Robotics FRC team, mentored FLL teams, taken the most rigorous academic courseload
-> available to me, and competed in business events. My ultimate goal is to have a
-> positive impact on the world through innovation and entrepreneurship."
+> "Aarav is a driven student interested in robotics, electronics, and business.
+> Throughout his two years in high school, he's been part of the Saints Robotics
+> FRC team, mentored FLL teams, taken the most rigorous academic courseload
+> available to him, and competed in business events. His ultimate goal is to have
+> a positive impact on the world through innovation and entrepreneurship."
 
 Contact: Bellevue, Washington · (425) 531-2273 · aarav.vaswani@gmail.com
-Also hosts: "Download Résumé (PDF)" button and the "Guided Tour" entry point.
+(unchanged — a contact block, not a first-person statement, so nothing to convert)
 
-### 5.1 The Foundry District (career)
+### 5.1 The Foundry District — unchanged content, new surroundings
 
-**1. Robotics Workshop** — flagship building, largest structure, Saints Robotics FRC
-team. Rendered as a 3-stop internal timeline (most recent first):
-- *Vice President* — Co-leading and managing an 80+ member team with a $40,000
-  annual budget across mechanical, programming, and outreach sub-teams. Supporting
-  strategic planning and team operations for the current competition season.
-- *Control Systems Officer — Electrical (2025–2026)* — Responsible for the design,
-  wiring, and maintenance of the robot's electrical control systems. Taught and
-  managed 10+ members, working with one co-officer and other sub-teams.
-- *Technician – Competition (2026–Present)* — Quick thinking and decision-making to
-  fix the robot between matches — both mechanical and electrical — while managing
-  team resources in real time.
-- Tags: `Electronics` `Leadership` `Team Management` `Control Systems` `Budget ($40k)`
+All six attractions (Robotics Workshop, NEEMO HQ, Academic Hall, Makers Club,
+DECA, FLL Center) keep the **exact copy, tags, and timeline content from v1** —
+see the v1.2 text if you need to re-check it verbatim; none of those bullets
+contain first-person language to begin with (standard resume-bullet style, no
+"I"), so there's nothing to convert there. What's new is everything *around*
+them: §4.1's downtown density and §7's road system.
 
-**2. NEEMO HQ** — small modern storefront/office.
-- *Co-Founder* — Co-founded a business focused on long-range RFID tracking of parts
-  within robotics workshops. Generated $1,000+ in revenue in the first month. In
-  charge of product technical development.
-- Tags: `Entrepreneurship` `RFID` `Hardware` `Product Development`
+### 5.2 Lakeside — updated copy (third person)
 
-**3. Interlake High School — Academic Hall**
-- IB Diploma Candidate, 2025–Present · GPA 4.0 / 4.0
-- AP Exams: World History (5), Calculus AB (5), Physics C: Mechanics (5), United
-  States History (5)
-- IB Higher Level: Physics, Business Management, Analysis & Approaches
-- Tags: `Academics` `IB Diploma` `4.0 GPA`
+**1. The Café**
+> "He runs on coffee, and he's always down for sushi or Indian food. He enjoys
+> cooking too — even if the results are hit or miss."
 
-**4. Makers Club Workshop (3D Printing)**
-- *Co-Founder & Officer, 2025–Present* — Co-founded a school club building a
-  community around 3D design, 3D printing, and creative projects. Brought in roughly
-  50% of the club's non-officer membership.
-- Tags: `3D Printing` `CAD` `Community Building`
+**2. Arcade / Game Room**
+> "He's been playing video games for as long as he can remember — Minecraft is
+> the all-time favorite."
 
-**5. DECA Business Center**
-- *Competitor, 2025–Present* — Competes in entrepreneurship-focused business
-  events; advanced to the State competition.
-- Tags: `Business` `Entrepreneurship` `Competition`
+**3. Sports Field**
+> "He's into pretty much any sport — not amazing at any one of them, but always
+> up for playing."
 
-**6. FLL Mentorship Center**
-- *Mentor, 2024–2026* — Mentored 15+ younger students across two FIRST LEGO League
-  teams, teaching fundamental engineering skills and practices. One team advanced to
-  States, the other to the Greece Invitational.
-- Tags: `Mentorship` `Volunteering` `Robotics Outreach`
+**4. The Open Road**
+> "He loves driving — any excuse to be behind the wheel." (this one gets to stay
+> almost word for word — it's already about driving, which is a nice coincidence
+> given the whole site now drives)
 
-**Skills** are not their own building — they render as a persistent tag strip
-(Electronics · CAD/Onshape · 3D Printing/Additive Mfg.) pinned to the bottom of
-every Foundry District panel, since they cut across multiple attractions rather
-than belonging to one.
+**5. "More Coming Soon" lot** — unchanged, still an empty construction-prop lot,
+still the live example for §16.
 
-### 5.2 Lakeside (personal)
+### 5.3 Other copy that referenced flying (needs the same voice pass)
 
-**1. The Café** — coffee, sushi, Indian food, enjoys cooking (self-rated: not great
-at it).
-> "Runs on coffee. Always down for sushi or Indian food, and enjoys cooking — even
-> if the results are hit or miss."
-
-**2. Arcade / Game Room** — video games, favorite is Minecraft.
-> "Been playing video games for as long as I can remember — Minecraft is the
-> all-time favorite."
-
-**3. Sports Field** — plays a bit of everything recreationally.
-> "Into pretty much any sport — not amazing at any one of them, but always up for
-> playing."
-
-**4. The Open Road** — driving.
-> "Loves driving — any excuse to be behind the wheel."
-
-**5. "More Coming Soon" lot** — an empty plot with a small under-construction sign
-(a simple placeholder prop, not a full building model). Ships in v1 on purpose: it
-(a) honestly reflects "will add more later" from the source material, and (b) is
-the live worked example for the add-attraction runbook in §16.
+Anywhere the UI copy described the old mechanic needs a word swap, not a content
+change:
+- `WelcomeOverlay.tsx` tagline: *"Aarav Vaswani's résumé, built as a small city —
+  click a building, the camera flies you there."* → **"Aarav Vaswani's résumé,
+  built as a small city you can drive through — click a building, and the car
+  takes you there."**
+- `index.html` `og:description`: *"A résumé built as a small 3D city. Click a
+  building, the camera flies you there."* → same "flies" → "drives" swap.
+- Grep the codebase for "flies"/"flight"/"fly to" in user-facing strings (not
+  code comments or variable names — `flyTo` as an internal function name is fine
+  to rename or leave, that's implementation detail) before calling this phase
+  done.
 
 ## 6. Tech Stack
 
-| Layer | Choice | Why |
-|---|---|---|
-| Build tool | Vite | fast dev server, zero-config TS/React |
-| Framework | React 18 + TypeScript | component model fits "one component per attraction"; strong typing for the content schema |
-| 3D renderer | **React Three Fiber** (`@react-three/fiber`) over Three.js | the standard declarative way to build a Three.js scene in React — one `<Building>` component per attraction, same mental model as the rest of the app |
-| 3D helpers | **`@react-three/drei`** | `useGLTF` (model loading w/ Suspense), `CameraControls` (the fly-to system, §7.3), `Sky`/`Environment` (backdrop+lighting), `Instances` (repeated props like trees), `PerformanceMonitor` (adaptive quality) |
-| Routing | React Router | per-attraction deep links (§3); `/foundry/:slug`, `/lakeside/:slug` |
-| DOM/UI animation | Framer Motion | **UI overlay only** — info panel slide-in/out, welcome overlay fade, breadcrumb transitions. Camera movement is *not* Framer Motion — that's `CameraControls` inside the R3F canvas (§7.3). Two different jobs, two different tools. |
-| Styling | Tailwind CSS | fast to keep the two district palettes consistent via config tokens, used for all DOM overlay UI |
-| State | Zustand | tiny global store for camera target, current attraction, tour mode |
-| Hosting | Vercel | zero-config deploys from the GitHub repo, instant preview URLs per PR |
-| Fonts | Self-hosted woff2 (Space Grotesk, Fredoka) | no external render-blocking request |
+**Unchanged from v1** — no new dependencies. Two additions worth calling out
+explicitly since they're newly *load-bearing* rather than available-but-unused:
 
-Explicitly **not** using: a full game engine (Unity/Godot WebGL export — way more
-than this needs and a much heavier download), WebGPU (still rolling out, WebGL2 via
-Three.js is the safe default in 2026), or free-orbit camera controls (OrbitControls)
-as the primary interaction — `CameraControls`' `setLookAt()` is used specifically
-for scripted cinematic shots, not user-driven orbiting.
+- **`THREE.CurvePath` + `THREE.LineCurve3`** (both already ship with `three`,
+  already a dependency via R3F) — used to build the drivable road path (§7.1).
+  `CurvePath.getPointAt(t)` handles arc-length parametrization across a chain of
+  segments automatically (each child curve is weighted by its own `getLength()`),
+  so a global `t ∈ [0,1]` maps to uniform distance along the *whole* route
+  regardless of individual segment lengths — no hand-rolled distance table needed.
+- **drei's `<Instances>`/`<Instance>`** — listed in v1's tech table but never
+  actually used (v1's dozen trees were individual `<Clone>` calls, fine at that
+  count). Now required for the forest belt (§4.2, §12) — true GPU instancing, one
+  draw call per tree *type* regardless of how many hundred are placed.
 
-## 7. World, Scene & Camera System
+## 7. World, Roads & Camera System
 
-### 7.1 World coordinates & placement
+This section replaces v1 §7 almost entirely — the point-to-point `flyTo()` /
+`computeDefaultShot()` system is gone, replaced by a two-phase drive-then-tilt
+system driven by an actual road path.
 
-Ground plane is the X/Z plane, Y is up, 1 unit ≈ 1 meter (matches the asset
-convention in §4.1). Buildings are placed by world position, not a formula-derived
-grid — in 3D, "does this overlap the neighbor" is something you check visually in
-the dev scene, not something worth over-engineering a grid system for. Keep a
-simple mental layout though: Foundry District buildings cluster on one side of the
-lake, Lakeside buildings on the other, Welcome Plaza at the bridge crossing.
+### 7.1 The road path
+
+A single continuous drivable route, `ROAD_PATH` — an ordered list of world-space
+waypoints — built into a `THREE.CurvePath` of `THREE.LineCurve3` segments (one
+straight segment between each consecutive waypoint pair). **Straight segments, not
+a smooth spline** — this matches the blocky Kenney road-tile aesthetic (the visual
+road is built from straight/bend/intersection tiles, not a curved ribbon), so the
+car's motion should visibly turn at corners the way the tiles do, not glide
+through a smoothed curve.
+
+The waypoint order **follows the existing guided-tour sequence** (§3): Welcome
+Plaza → Robotics Workshop → NEEMO HQ → Academic Hall → Makers Club → DECA → FLL
+Center → *(back across the bridge through the Plaza)* → Café → Arcade → Sports
+Field → Open Road, with enough intermediate waypoints along each leg to trace the
+actual visual road tiles (including corners at cross-street intersections in the
+Foundry downtown grid, §4.1). Reusing the tour order for the drivable path is
+deliberate: it means "take the guided tour" becomes literally "drive the whole
+road start to end," and free exploration (click any building from any other) is
+"drive the sub-stretch of that same road between here and there" — one system,
+not two.
 
 ```ts
-// src/types/attraction.ts (relevant slice)
-position: [number, number, number]; // world x, y, z — y is almost always 0
-rotationY?: number;                  // radians, orient the model to face the camera shot
-scale?: number;                      // per-model correction if a source pack's units differ
+// src/lib/road.ts (sketch)
+function buildRoadCurve(waypoints: Vec3[]): THREE.CurvePath<THREE.Vector3> {
+  const path = new THREE.CurvePath<THREE.Vector3>();
+  for (let i = 0; i < waypoints.length - 1; i++) {
+    path.add(new THREE.LineCurve3(toVector3(waypoints[i]), toVector3(waypoints[i + 1])));
+  }
+  return path;
+}
+// path.getPointAt(t) and path.getTangentAt(t) are then arc-length-correct
+// across the whole route for free — no manual distance bookkeeping.
 ```
 
-### 7.2 Scene setup
+### 7.2 Curb points — where the car parks
 
-- `<Canvas>` (R3F root) with a `PerspectiveCamera` (not orthographic — a real
-  perspective camera is what makes the "swoop down from an aerial shot into a
-  close-up" flight actually read as 3D depth; an orthographic/isometric camera
-  would look flatter and undercut the reason for choosing 3D over the earlier
-  2.5D plan).
-- Lighting: one `directionalLight` ("sun," PNW-morning-angled, casts soft shadows)
-  + `hemisphereLight` for soft ambient fill (sky-color from above, ground-color
-  from below) — cheap, reads as "overcast Pacific NW light" without needing a full
-  HDRI. `<Environment preset="dawn">` (or similar drei preset) can be layered in
-  for nicer material reflections if it doesn't blow the performance budget (§12) —
-  treat as a polish-pass nice-to-have, not a blocker.
-- `THREE.Fog` tinted toward the sky-bottom color (§4), distance-tuned so the world's
-  edges dissolve rather than hard-cut.
-- Repeated props (trees, streetlights, benches) rendered via drei's `<Instances>`
-  to keep draw calls down (§12) rather than one mesh per tree.
+Every attraction's parking spot is a **curb point**: by default, the nearest
+point *on* `ROAD_PATH` to that attraction's `position`, computed once (a cheap
+nearest-point-on-polyline scan at this small scale — a handful of buildings against
+a few dozen line segments). An attraction may set an explicit `curbT` override
+(§8) if the automatic nearest point puts the car somewhere that looks wrong (facing
+the wrong way, or landing at an odd spot for a building set back from the street)
+— same "compute a sensible default, override only when needed" philosophy as v1's
+`computeDefaultShot`.
 
-### 7.3 Camera — the "fly to" system
+`CAR_EYE_HEIGHT = 2` (meters) — one fixed height above the road surface for every
+stop; unlike v1, individual buildings no longer get a custom camera *position*,
+only a custom look *target* (§7.3 phase 2).
 
-Use drei's `<CameraControls>` (wraps `yomotsu/camera-controls`), which has a
-built-in smooth-transition `setLookAt()` — exactly the "scripted cinematic shot"
-primitive this needs, and specifically *not* the free-orbit interaction pattern
-most camera-control libraries default to (orbit/zoom/pan stay disabled for the
-visitor — every camera move in this app is code-triggered, never drag-triggered).
+### 7.3 The two-phase system — drive, then look up
 
 ```ts
-// src/lib/camera.ts (sketch)
-function flyTo(controls: CameraControls, shot: CameraShot) {
-  const [px, py, pz] = shot.cameraPosition;
-  const [tx, ty, tz] = shot.cameraTarget;
-  controls.setLookAt(px, py, pz, tx, ty, tz, true /* enableTransition */);
+// src/lib/camera.ts (sketch — replaces flyTo()/computeDefaultShot())
+
+// PHASE 1 — DRIVE. Bypasses CameraControls entirely: writes camera.position/
+// lookAt directly, every frame, for the duration of the drive.
+//
+// Why not route this through CameraControls.setLookAt() every frame: that API
+// is built for occasional discrete calls with its own damped-velocity easing —
+// driving it every frame fights that internal state and can leave a stale
+// velocity that jerks visibly once a *real* transition (phase 2) starts later.
+// Direct camera writes sidestep this; CameraControls sits inert during phase 1.
+function stepDrive(camera: THREE.PerspectiveCamera, road: THREE.CurvePath<THREE.Vector3>, t: number, direction: 1 | -1) {
+  const p = road.getPointAt(t);
+  camera.position.set(p.x, p.y + CAR_EYE_HEIGHT, p.z);
+  const lookAheadT = clamp(t + 0.02 * direction, 0, 1);
+  const ahead = road.getPointAt(lookAheadT);
+  camera.lookAt(ahead.x, ahead.y + CAR_EYE_HEIGHT, ahead.z);
+}
+
+// PHASE 2 — ARRIVE. Hands off to CameraControls for a damped tilt.
+function arriveAndTilt(controls: CameraControls, camera: THREE.PerspectiveCamera, attraction: Attraction) {
+  // Step 1: SYNC — seed CameraControls' internal state to match wherever
+  // phase 1 actually left the camera, with no transition. Skipping this is
+  // the #1 way to get a visible jerk: CameraControls would otherwise animate
+  // FROM whatever pose it last remembered (e.g. the previous stop), ignoring
+  // where phase 1 really parked the car.
+  controls.setLookAt(
+    camera.position.x, camera.position.y, camera.position.z,
+    /* current look target, from the last stepDrive call */ ...currentTarget,
+    false, // no transition — this call only synchronizes state
+  );
+  // Step 2: TILT — a damped transition that changes ONLY the target's height,
+  // not the camera's position. This is "pan up once you arrive": taller
+  // buildings (bigger `height`) tilt further, from the same formula every
+  // time — no more per-building hand-tuned camera overrides (v1's DECA
+  // special-case is gone; height replaces footprint, see §8).
+  const [bx, by, bz] = attraction.position;
+  controls.setLookAt(
+    camera.position.x, camera.position.y, camera.position.z, // unchanged
+    bx, by + attraction.height * 0.6, bz,
+    true, // enableTransition — this is the visible "look up" pan
+  );
 }
 ```
 
-Tune `controls.smoothTime` (overall settle speed) and `.restThreshold` (when the
-transition is considered "arrived," which is what triggers the info panel to open)
-once for the whole app rather than per-shot — consistency matters more than
-per-building customization here.
+`prefers-reduced-motion`: skip phase 1 entirely (place the camera directly at the
+destination curb point, no animated drive) and pass `false` for phase 2's tilt
+(instant, no pan). Deep links / initial load follow the same "snap, don't
+animate" rule v1 used for its first camera move.
 
-**Where each shot's numbers come from** — don't hand-place every building's camera
-by trial and error. Compute a sensible default, override only when a shot needs
-art direction:
+### 7.4 No more free aerial overview
 
-```ts
-// src/lib/camera.ts
-function computeDefaultShot(position: Vec3, footprint = 6): CameraShot {
-  const [x, , z] = position;
-  const distance = footprint * 2.2;
-  return {
-    cameraPosition: [x + distance * 0.6, distance * 0.55, z + distance * 0.8],
-    cameraTarget: [x, footprint * 0.35, z],
-  };
-}
-```
+v1's `OVERVIEW_SHOT` (an elevated view of the whole city) is **retired**. "Back to
+city" now drives to the Welcome Plaza's curb point — the Plaza *is* the home
+state (§3, §4.3). `AccessibleNav` (always-present, real links, §10) remains the
+guaranteed way to reach any stop directly regardless of where the car currently
+is — it matters even more now that there's no bird's-eye view to visually scan
+and click around in.
 
-Every `Attraction` may set `cameraPosition`/`cameraTarget` explicitly (§8) to
-override this default — use that for the Robotics Workshop and any other
-flagship stop that deserves a hand-art-directed shot; leave it unset everywhere
-else and let the default carry it.
+### 7.5 Scope simplification, stated explicitly
 
-**Overview shot** is one more `CameraShot`, defined once in `config.ts`, framed to
-fit the whole city — `flyTo` back to it is the same function as flying to any
-building.
+The visual road network is a small **grid** (Main Street + cross streets, §4.1)
+for downtown authenticity, but the **drivable** `ROAD_PATH` is one fixed
+continuous route threaded through that grid, not a real pathfinding graph — going
+from stop A to stop B always drives the specific stretch of `ROAD_PATH` between
+their two curb points (potentially passing *by* other stops along the way,
+without stopping — like an actual drive through downtown), never a shortest-path
+search across the visual grid's cross streets. This is a deliberate simplification
+(§2 non-goals) — revisit only if a future request specifically wants the car to
+visibly choose between streets.
 
-**`prefers-reduced-motion`**: if set, call `setLookAt(..., false)` (transition
-disabled — instant cut) instead of `true`. Same principle as the original 2D plan,
-same reason: don't force motion on visitors who've asked their OS not to.
+### 7.6 Hotspots
 
-### 7.4 Hotspots
-
-Attractions are marked with a small floating 3D marker (a simple billboard sprite
-or drei `<Html>` badge anchored to the building's world position) with an idle
-bob/glow, **plus** a real DOM `<button>` in the accessible nav (§10) that triggers
-the exact same `flyTo` — the in-scene marker is a visual affordance, not the only
-way to trigger navigation, since canvas content isn't independently focusable/
-screen-reader-reachable.
+Unchanged from v1 (§7.4 there): a floating `<Html>` marker per attraction, a real
+DOM `<button>`, idle bob animation, `AccessibleNav` as the guaranteed-reachable
+parallel path. The only difference is what clicking one does — drives there
+(§7.3) instead of flying there.
 
 ## 8. Data Model
 
-Single source of truth: `src/content/attractions.ts`. Every other part of the app
-(hotspots, panels, breadcrumb, routes, tour order, accessible nav) is generated
-from this array — adding an entry is the entire content change.
+Single source of truth is still `src/content/attractions.ts`, plus a new
+`src/content/road.ts` and a new lightweight filler-building list. Adding an entry
+to any of these is still the entire content change for that kind of addition.
 
 ```ts
-// src/types/attraction.ts
+// src/types/attraction.ts — CHANGED from v1
 export type District = 'foundry' | 'lakeside' | 'plaza';
 export type Vec3 = [number, number, number];
 
@@ -383,284 +430,246 @@ export interface TimelineEntry {
   description: string;
 }
 
-export interface CameraShot {
-  cameraPosition: Vec3;
-  cameraTarget: Vec3;
-}
-
 export interface Attraction {
-  id: string;              // slug, used in the URL: /foundry/robotics-workshop
+  id: string;
   district: District;
-  name: string;             // "Robotics Workshop"
-  subtitle: string;         // "Saints Robotics — FRC Team"
-  position: Vec3;           // world placement, y is almost always 0
+  name: string;
+  subtitle: string;
+  position: Vec3;
+  height: number;          // NEW — meters, post-scale. Drives the arrival tilt
+                             // (§7.3). Replaces v1's `footprint`.
+  curbT?: number;           // NEW — optional override: 0..1 progress along
+                             // ROAD_PATH where the car parks. Default: nearest
+                             // point on the road to `position` (§7.2).
   rotationY?: number;
   scale?: number;
-  model: string;            // path to .glb under /public/assets/models/
-  cameraShot?: CameraShot;  // override computeDefaultShot() — use for flagship stops
-  timeline?: TimelineEntry[]; // for multi-role stops (Robotics Workshop)
-  description?: string;     // for single-blurb stops (NEEMO, interests)
-  facts?: string[];         // freeform bullets (GPA, AP scores, etc.)
+  model?: string;
+  timeline?: TimelineEntry[];
+  description?: string;
+  facts?: string[];
   tags: string[];
   accentColor: 'foundry' | 'lakeside';
+  // REMOVED from v1: `footprint` (replaced by `height`), `cameraShot` (replaced
+  // by the uniform tilt formula in §7.3 — no more per-building camera overrides)
+}
+
+// NEW — purely decorative, no content, no hotspot, no route entry.
+export interface FillerBuilding {
+  model: string;
+  position: Vec3;
+  rotationY?: number;
+  scale?: number;
 }
 ```
 
-The full content from §5, already in this shape (minus the 3D-specific fields,
-which get filled in during Phase 1/3 as models are placed), belongs in
-`src/content/attractions.ts` verbatim — that file is the deliverable of Phase 3
-(§13), not something to redesign; the copy is final.
+```ts
+// src/content/road.ts — NEW
+export const ROAD_PATH: Vec3[] = [
+  // ordered waypoints tracing the visual road tiles, in tour order (§7.1) —
+  // exact coordinates are implementation-time visual-iteration work, same as
+  // v1's exact camera numbers were; this file's shape is the deliverable here,
+  // not a specific set of numbers.
+];
+```
+
+```ts
+// src/content/filler-buildings.ts — NEW
+export const FILLER_BUILDINGS: FillerBuilding[] = [
+  // ~18–24 entries for the Foundry District downtown (§4.1), each just a model
+  // path + position + optional rotation/scale — no id, no district, no content.
+];
+```
+
+**Migration note for existing `attractions.ts` entries**: every attraction needs
+`footprint` renamed/replaced with a real `height` value (measure or estimate the
+model's post-scale height — the same `scripts/inspect-bbox.mjs`/
+`inspect-compressed.mjs` tools from v1 give this directly), and any `cameraShot`
+override deleted (DECA's v1 hand-tuned override is exactly what §7.3's uniform
+tilt formula replaces — verify DECA specifically once this lands, since it was
+the one case v1 needed a manual override for).
 
 ## 9. Component Architecture
 
+Additions and changes only — everything not listed here is unchanged from v1 §9.
+
 ```
-resume-city/
-  index.html
-  package.json
-  tsconfig.json
-  vite.config.ts
-  tailwind.config.ts
-  PRD.md
-  README.md
-  public/
-    assets/
-      models/                 one .glb per attraction + shared props (trees, road, bridge, lot sign), filenames = attraction id / prop name
-    resume-aarav-vaswani.pdf
-    og-image.png              static screenshot of the overview shot, for link previews
-  src/
-    main.tsx
-    App.tsx                    routes + top-level layout (Canvas + DOM overlay siblings)
-    config.ts                   CITY_NAME, overview CameraShot, timing constants, palette tokens
-    content/
-      attractions.ts            §8 data — SOURCE OF TRUTH
-      districts.ts                district metadata (name, accent, blurb)
-    types/
-      attraction.ts
-    lib/
-      camera.ts                  flyTo(), computeDefaultShot()
-      webgl.ts                    WebGL2 support + context-loss detection (§10)
-    store/
-      useCityStore.ts             zustand: activeAttractionId, tourMode, webglSupported
-    components/
-      scene/
-        CityCanvas.tsx            <Canvas> root, camera, lighting, fog, controls ref
-        Building.tsx               useGLTF loader + placement + hotspot marker for one attraction
-        Ground.tsx                  terrain, lake, bridge
-        Props.tsx                   instanced trees/streetlights/etc.
-      ui/
-        WelcomeOverlay.tsx          title card, "Enter the City" CTA
-        InfoPanel.tsx                slide-in resume content for active attraction (plain DOM, not in-canvas)
-        Breadcrumb.tsx               Vasnova City › District › Building, each level clickable
-        TourControls.tsx             guided tour Play/Next/Prev/Exit (Phase 7)
-        AccessibleNav.tsx            always-in-DOM semantic list of every stop (§10) — also the non-visual trigger for flyTo
-        NoWebGLFallback.tsx          static fallback view (§10)
-        DownloadResumeButton.tsx
-      layout/
-        Header.tsx
-        Footer.tsx
-    hooks/
-      useReducedMotion.ts
-      useIsMobile.ts
-    styles/
-      globals.css
+src/
+  lib/
+    road.ts                 NEW — buildRoadCurve(), nearestPointOnPath()
+    camera.ts                 REWRITTEN — stepDrive() (phase 1), arriveAndTilt() (phase 2); computeDefaultShot()/flyTo() removed
+  content/
+    road.ts                  NEW — ROAD_PATH waypoints (§8)
+    filler-buildings.ts       NEW — FILLER_BUILDINGS list (§8)
+  components/
+    scene/
+      CameraRig.tsx            REWRITTEN — two-phase drive/tilt state machine instead of a single setLookAt call
+      RoadNetwork.tsx          NEW — visual road tiles: Main Street + Foundry cross streets (§4.1, §7.5), separate from the invisible drivable ROAD_PATH
+      FillerBuildings.tsx      NEW — maps FILLER_BUILDINGS to <Building>; no hotspot, no click handler, no InfoPanel wiring
+      Forest.tsx                NEW — drei <Instances> tree belt (§4.2)
+      Plaza.tsx                 NEW — gate/arch kitbash + paving + props at the road's Plaza waypoint (§4.3)
 ```
 
-`CityCanvas.tsx` is the only component that touches `CameraControls` directly;
-everything else reads `activeAttractionId` from the store and calls `flyTo()` —
-keep it that way so there's one place that can get the 3D math wrong.
+`CameraRig.tsx` remains the only component that touches `CameraControls`
+directly (unchanged principle from v1) — it now also owns the phase-1 direct
+camera writes, so it's the only place both camera systems (manual + damped) ever
+touch the same `camera` object, which is exactly why the phase hand-off (§7.3's
+sync-then-transition) has to happen there and nowhere else.
 
 ## 10. Accessibility & SEO
 
-A `<canvas>` has **no semantic content at all** — this matters more here than it
-did in the DOM-based v1.0 plan. Screen readers and crawlers cannot see anything
-inside the 3D scene, full stop. Treat the canvas as pure decoration sitting behind
-real, independent DOM content, not as a progressive enhancement of it.
+**Unchanged from v1** — every point in the original §10 still applies verbatim:
+canvas stays `aria-hidden` (scoped to the actual `<canvas>` element, not a
+wrapping div — see the project memory note on why that distinction matters),
+`AccessibleNav` stays the guaranteed-reachable path, `prefers-reduced-motion`
+still means "skip the animation, snap instead" (now applied to the drive/tilt
+system per §7.3 instead of the old flight). One addition:
 
-- **`AccessibleNav.tsx`**: a real, always-present list (visually available, not
-  just screen-reader-only) of every district and attraction, each a real link/
-  button to that attraction's deep-link route. This is not a fallback bolted on
-  at the end — it's the thing that makes the site actually reachable, so build it
-  in the same phase as the routing (Phase 4, not deferred to a later "a11y pass").
-- **`aria-hidden="true"` on the `<canvas>` element itself** — screen readers should
-  skip it entirely rather than announcing an unlabeled graphic.
-- **Real DOM text, never canvas-drawn/texture-baked text.** All resume copy (§5)
-  lives in normal HTML inside `InfoPanel.tsx`.
-- **Keyboard**: every accessible-nav entry is a `<button>`/`<a>`; `Escape` closes
-  the panel and flies back to the overview shot; visible `:focus-visible` rings in
-  the active district's accent color.
-- **`prefers-reduced-motion`**: honored per §7.3.
-- **No WebGL support / context lost → `NoWebGLFallback.tsx`.** Detect WebGL2
-  support on mount (`webgl.ts`); listen for the `webglcontextlost` event on the
-  canvas. Either case renders a static fallback: the `og-image.png` overview
-  screenshot, the full `AccessibleNav` list, and the PDF download — the resume is
-  never unreachable because a GPU/driver/browser combination didn't cooperate.
-- **Color contrast**: verify all panel text against its background at WCAG AA
-  (4.5:1 body text).
-- **Download path**: `resume-aarav-vaswani.pdf` linked from the header/Welcome
-  Plaza at all times regardless of whether the 3D scene loaded.
-- **SEO/sharing**: per-attraction routes (§3) are real pages content-wise (the
-  `AccessibleNav`/`InfoPanel` DOM content is present in the initial render, not
-  injected only after a 3D flight finishes) — set `<title>`/meta description per
-  route, and the static `og-image.png` for link previews.
+- **Filler buildings (§4.1, §8) must never appear in `AccessibleNav`, must never
+  get a hotspot marker, and must never be focusable.** They're set dressing —
+  treat any filler building that accidentally becomes reachable/announced as a
+  bug, not a feature; the whole point is that they carry no content.
 
 ## 11. Responsive / Mobile
 
-- Breakpoint: `< 768px` = mobile behavior.
-- Cap `devicePixelRatio` at 2 in the `<Canvas>` `dpr` prop — full native pixel
-  ratio on a high-end phone is wasted GPU work at this art scale.
-- Use drei's `<PerformanceMonitor>` to detect sustained low FPS and drop quality
-  tier automatically: disable shadows first, then reduce `dpr` to 1, before ever
-  touching content/layout.
-- Shadow map resolution: capped lower on mobile from the start, not just as a
-  PerformanceMonitor reaction — no point starting high and stepping down every time.
-- `InfoPanel` becomes a full-screen sheet on mobile instead of a side card.
-- Touch targets in `AccessibleNav` and any DOM hotspot buttons: minimum 44×44px
-  hit area.
-- No free pinch/drag camera control on any screen size, mobile or desktop — same
-  reasoning as §2's non-goal: navigation stays click/tap-to-fly everywhere.
+**Unchanged from v1** — the `<768px` breakpoint, dpr cap, `PerformanceMonitor`
+quality ladder, mobile shadow-resolution cap, and full-screen mobile `InfoPanel`
+all carry over as-is. The drive animation (§7.3) should be checked at mobile
+viewport sizes same as everything else, but there's no new mobile-specific
+behavior beyond what §11 already specified.
 
 ## 12. Performance Budget
 
-- Total scene triangle count: < 200k for v1's ~12–15 buildings + instanced props
-  (Kenney's kits are low-poly by design — this should be comfortable).
-- Draw calls: keep low via `<Instances>` for repeated props (§7.2) and by not
-  over-splitting materials on custom/kitbashed models.
-- All `.glb` models Draco-compressed (§4.1) before committing to the repo.
-- Total 3D asset payload (compressed): < 10MB for v1 — higher than a 2D-sprite
-  budget would be, and that's expected; this is the real cost of "true 3D," traded
-  deliberately for the depth/lighting/camera-move payoff.
-- FPS targets: 60fps on a recent desktop/laptop, ≥30fps sustained on a mid-tier
-  phone (enforced adaptively via `<PerformanceMonitor>`, §11).
-- Lighthouse targets (these measure the DOM shell, not the WebGL canvas — still
-  meaningful for load time/SEO/a11y of everything in §10): Accessibility ≥ 95,
-  SEO ≥ 95, both mobile and desktop presets. No fixed Performance-score target
-  given WebGL's cost profile is different from a DOM-only score — judge that one
-  by the FPS targets above instead.
+Numbers updated for the added density; the *policy* (measure, don't guess) is
+unchanged from v1.
+
+- Total scene triangle count: bump target to **< 350k** (was 200k) — ~20+ more
+  filler buildings and a denser road network, still comfortably achievable with
+  low-poly Kenney assets.
+- **Instancing is now load-bearing, not optional**: without `<Instances>` for the
+  forest (§4.2), 150–300 individual draw calls for trees alone would hurt frame
+  rate on mobile. This isn't an optimization to consider later if things feel
+  slow — build the forest instanced from the start.
+- Total 3D asset payload: still comfortably **< 10MB** (v1 landed at 636KB) —
+  filler buildings reuse already-downloaded pack models (~15–20 new small GLBs,
+  estimate +500KB–1MB), forest trees are instanced (no new downloads at all, just
+  more draw-time copies of the 3 existing tree models).
+- FPS targets unchanged: 60fps desktop, ≥30fps mid-tier mobile (still enforced
+  via `PerformanceMonitor`, §11) — re-verify after the density increase, don't
+  assume v1's measurements still hold.
+- Lighthouse targets unchanged: Accessibility ≥ 95, SEO ≥ 95 (v1 achieved 100 on
+  both, mobile and desktop — re-run after this revision, don't assume it holds
+  automatically).
 
 ## 13. Build Phases
 
-Each phase ends with the site in a working, deployable state — this is the
-sequential build order for a single pass.
+Continues v1's phase numbering (v1 shipped through Phase 7). Each phase still
+ends with the site in a working, deployable state.
 
-**Phase 0 — Scaffold**
-`npm create vite@latest` (react-ts template). Install Tailwind, `three`,
-`@react-three/fiber`, `@react-three/drei`, Framer Motion, React Router, Zustand.
-Set up `config.ts`, folder structure from §9, empty `attractions.ts` with the §8
-types. Get a bare `<Canvas>` with a spinning test cube deployed to Vercel first —
-confirms the whole pipeline (including that Vercel serves `.glb`/binary assets
-correctly) before building anything real.
+**Phase 8 — Road system core (highest technical risk — build first, prove it on
+the existing attraction set before touching layout/content)**
+Author `ROAD_PATH` waypoints tracing a first-pass version of the road (doesn't
+need the full downtown grid yet), build `lib/road.ts` (`buildRoadCurve`,
+`nearestPointOnPath`), rewrite `CameraRig.tsx` for the two-phase drive/tilt
+system (§7.3). Validate against the *existing* v1 attraction set and world
+layout first — this isolates the hardest new mechanic from the (also
+substantial) layout changes in the phases below.
 
-**Phase 1 — Static scene**
-Download Kenney packs (§4.1), place ground/lake/bridge (`Ground.tsx`) and 2–3
-sample buildings at hand-picked `position`s, no camera system or interactivity
-yet. Confirm lighting/fog/art direction (§4, §7.2) reads correctly at this
-point — cheapest point to course-correct the visual style, same principle as
-v1.0's Phase 1.
+**Phase 9 — Downtown density**
+Re-layout the Foundry District as Main Street + cross streets (§4.1), export
+Draco-compressed variants of previously-unused Commercial-pack models, add
+`filler-buildings.ts` with ~18–24 entries, build `FillerBuildings.tsx` and
+`RoadNetwork.tsx`. Verify visual density from car-eye height, not from an aerial
+screenshot — the whole point is how it looks from the driver's seat.
 
-**Phase 2 — Camera system**
-Implement `camera.ts` (`flyTo`, `computeDefaultShot`), wire `CameraControls`,
-hotspot buttons, overview shot, "back to city" — placeholder panels only, confirm
-the flight timing/easing/framing feels right before writing real content.
+**Phase 10 — Forest backdrop**
+Build `Forest.tsx` using drei `<Instances>` (§4.2, §12), replacing/supplementing
+v1's sparse tree placements. Verify it reads as "full" at multiple points along
+the drive, especially at the edges of each district.
 
-**Phase 3 — Full content**
-Populate `attractions.ts` with all of §5 verbatim, place every remaining building
-model (Draco-compressed per §4.1), build out `InfoPanel.tsx` to render
-timelines/descriptions/facts/tags per the data model. At the end of this phase
-every real resume fact from the source resume is on the site.
+**Phase 11 — Plaza redesign**
+Kitbash the welcome arch/gate (extend `scripts/kitbash-workshop.mjs`'s approach),
+add plaza paving and props (§4.3). This is also where `ROAD_PATH`'s Plaza
+waypoint gets its final position, once the physical plaza layout is set.
 
-**Phase 4 — Routing & accessible nav**
-Wire React Router, per-attraction routes, `AccessibleNav.tsx`, `aria-hidden` on
-the canvas, `Breadcrumb.tsx`, deep-link-on-load behavior (§3). Build this
-alongside routing, not after — see §10's note on why.
+**Phase 12 — Copy pass**
+Convert every first-person string to third person per §5 — Welcome Plaza intro,
+the four Lakeside blurbs, `WelcomeOverlay.tsx`'s tagline, `og:description`. Grep
+for "flies"/"flight" in user-facing strings and swap to driving language (§5.3).
 
-**Phase 5 — Welcome overlay & polish pass**
-`WelcomeOverlay.tsx`, idle hotspot marker animation, transitions between UI
-states, district color theming on panels, `<Environment>` polish if the budget
-allows (§7.2, §12).
+**Phase 13 — Re-QA & redeploy**
+Full regression per the updated §14, redeploy. Don't assume any v1 QA result
+(Lighthouse scores, FPS, camera framing) still holds after this much layout and
+system change — re-measure everything, the same discipline v1's QA phase used.
 
-**Phase 6 — Robustness pass**
-`NoWebGLFallback.tsx` + context-loss handling (§10), `<PerformanceMonitor>`
-wiring + mobile quality tiers (§11), `prefers-reduced-motion` throughout,
-Lighthouse checks against §12, keyboard-only full run-through, screen reader spot
-check (VoiceOver is built into macOS — run it), real mid-tier-phone FPS check.
+## 14. QA Checklist
 
-**Phase 7 — Guided tour (stretch, cheap once flyTo exists)**
-`TourControls.tsx`, a defined tour order (probably: Welcome Plaza → Robotics
-Workshop → NEEMO → Academic Hall → Makers Club → DECA → FLL → Café → Arcade →
-Sports Field → Open Road), Play/Next/Prev/Exit.
+Everything in v1's §14 still applies; these are additions specific to v2.
 
-**Phase 8 — Future/explicitly deferred**
-Sound design, analytics, custom domain, Onshape → GLB pipeline for a genuinely
-custom flagship building (§4.1 Path B).
-
-## 14. QA Checklist (before calling it done)
-
-- [ ] Every attraction's camera shot centers the building with room for the panel
-- [ ] Every fact from the source resume appears somewhere on the site (diff §5 against the live content)
-- [ ] Keyboard-only pass via `AccessibleNav`: reach and open every attraction, `Escape` returns to overview
-- [ ] `prefers-reduced-motion` on: no camera tweens, instant cuts, still fully usable
-- [ ] VoiceOver pass confirms the canvas is skipped and the nav/panel content is announced correctly
-- [ ] Forced-WebGL-unsupported test (e.g. via browser flag or a temporary throw in `webgl.ts`) shows `NoWebGLFallback` correctly, with working PDF link and nav
-- [ ] Mobile viewport (375px) and desktop (1440px+) both checked; real FPS check on a mid-tier phone, not just simulator
-- [ ] All deep-link URLs load directly (not just via in-app navigation) with the correct panel open
-- [ ] PDF download link works
-- [ ] No console errors/warnings in Chrome, Safari, Firefox
-- [ ] Total compressed asset payload measured against the §12 budget
+- [ ] Driving between every pair of *adjacent-on-the-road* stops looks correct —
+      no clipping through buildings, road props, or the plaza gate
+- [ ] The arrival tilt looks reasonable at both extremes: the shortest building
+      (Café) and the tallest (DECA's skyscraper) — same formula, sanity-check
+      both ends of it
+- [ ] No free aerial shot is reachable anywhere in the UI — confirm `OVERVIEW_SHOT`
+      is actually removed from the code, not just unused
+- [ ] The forest reads as "full"/enclosing from car-eye height at several points
+      along the route, not just from directly overhead in a debug screenshot
+- [ ] Filler buildings never show a hotspot marker, never appear in
+      `AccessibleNav`, never respond to a click or a Tab stop
+- [ ] All visitor-facing copy is third person — grep for stray "I ", "I've",
+      "my ", "me " outside of code comments
+- [ ] Instancing is confirmed in the actual renderer (check draw call count in
+      devtools, not just "it looks dense enough")
+- [ ] Total triangle count and asset payload re-measured against §12's updated
+      budget, not assumed from v1's numbers
 
 ## 15. Deployment
 
-- GitHub repo (public — the code itself is also a portfolio signal), pushed from
-  `~/Developer/resume-city`.
-- Vercel project linked to the repo, auto-deploy on push to `main`, PR preview
-  deploys on branches. Confirm Vercel's default headers don't mis-serve `.glb`
-  files (binary, needs correct `Content-Type`) — check this in Phase 0, not after
-  everything's built.
-- Custom domain: optional, not required for v1.
+**Unchanged from v1** — same repo, same Vercel project, same `vercel.json` SPA
+rewrite (still required for deep links to survive a refresh).
 
-## 16. Runbook — Adding a New Attraction
+## 16. Runbook — Adding to the City
 
-This is the reusable process, not a one-time step. Follow it every time (a new
-club, a new interest, replacing the "More Coming Soon" lot).
+Two different additions now, not one — keep them distinct.
 
-1. **Get a model.** Either:
-   - **Path A (fast):** pick a `.glb` from an already-downloaded Kenney pack
-     (§4.1), or
-   - **Path B (custom):** model it in Onshape, export STL/STEP, bring into Blender,
-     match the Kenney art style, export `.glb` (§4.1 Path B).
-   Either way, run it through Draco compression and confirm it follows the
-   convention (base-centered origin, ~1 unit = 1m). Drop it in
-   `public/assets/models/<new-id>.glb`.
-2. **Pick a world position.** Run the dev server, look at the current layout,
-   choose an unused `[x, 0, z]` in the correct district's cluster with enough
-   clearance from neighbors — check by eye in the running scene, not on paper.
-3. **Add one entry to `src/content/attractions.ts`** matching the `Attraction`
-   type (§8): id, district, name, subtitle, position, model path, tags, and either
-   a `description`, `facts`, or `timeline`. Leave `cameraShot` unset — let
-   `computeDefaultShot()` handle it (§7.3). Nothing else in the codebase needs to
-   change — the scene renders every entry automatically, the hotspot, route,
-   breadcrumb entry, accessible-nav entry, and tour-order slot (if using Phase 7)
-   all derive from this same array.
-4. **Run locally, click it.** Confirm the model sits correctly on the ground and
-   the default camera shot frames it reasonably. If the framing is off, set an
-   explicit `cameraShot` override (§8) — this and `position`/`rotationY`/`scale`
-   are the only fields that ever need hand-tuning.
-5. **If replacing a placeholder** (e.g. the "More Coming Soon" lot), delete that
-   entry from the array in the same commit rather than leaving dead content around.
-6. **Ship it** — push to `main`, Vercel deploys automatically.
+### 16a. Adding a new Attraction (resume-linked, gets a panel)
 
-No other file needs to be touched for a standard addition. If a new attraction needs
-a genuinely new interaction (not just model+copy), that's a scope decision, not
-part of this runbook — flag it before building.
+Same shape as v1's runbook, two field changes:
+1. Get a model (same Path A/Path B as v1 §16).
+2. Pick a world `position`.
+3. Add one entry to `attractions.ts`: id, district, name, subtitle, position,
+   **`height`** (not `footprint` — measure via `inspect-bbox.mjs`/
+   `inspect-compressed.mjs`), model path, tags, and description/facts/timeline.
+   Leave `curbT` unset — let the nearest-point-on-road default handle it (§7.2).
+4. Run locally, click it. If the parking spot or arrival tilt looks wrong, set an
+   explicit `curbT` — this and `position`/`rotationY`/`scale`/`height` are the
+   only fields that ever need hand-tuning.
+5. Ship it.
+
+### 16b. Adding a new Filler building (decorative only, no panel — new in v2)
+
+Even simpler, since there's no content to write:
+1. Pick a `.glb` from an already-downloaded Kenney pack (almost certainly City
+   Kit Commercial for Foundry-district density) or export one that hasn't been
+   used yet.
+2. Pick a `position` along a downtown block (§4.1) — no district field, no id, no
+   curb point, since it's never a destination.
+3. Add one entry to `filler-buildings.ts`: `{ model, position, rotationY?, scale? }`.
+4. Run locally, confirm it doesn't overlap a neighbor or block the road. Ship it.
 
 ## 17. Open Questions / Future Enhancements
 
-- ~~Final call on `CITY_NAME`~~ — resolved in v1.2: `"Vasnova City"`.
-- More Lakeside interests are coming per the source material ("will add more
-  later") — §16 is exactly the process for those when they arrive.
-- Path B (Onshape → Blender → GLB) for a genuinely custom Robotics Workshop model
-  is deferred to Phase 8, not blocking v1 — v1's Robotics Workshop is a Kenney
-  Building-Kit kitbash.
-- `<Environment>` HDRI polish (§7.2) — include only if it doesn't threaten the
-  §12 performance budget on mobile; cut without hesitation if it does.
-- Custom domain — deferred, not blocking.
-- Sound design — deferred to Phase 8.
+- **Whether Lakeside should also get filler-building density** — the user only
+  asked for the Foundry District; Lakeside staying sparser actually reads as
+  correct (residential neighborhood vs. downtown), but flag this if a future
+  request wants symmetry.
+- **Whether §7.5's single-route simplification ever needs real pathfinding** —
+  only revisit if a future request specifically wants the car to visibly choose
+  between streets rather than following one fixed route through the grid.
+- Exact `ROAD_PATH` waypoint coordinates and the downtown block layout are
+  implementation-time visual-iteration work — this document specifies the
+  system and the sequence, not final numbers, the same way v1 left exact camera
+  positions to be tuned against the running scene rather than computed by hand.
+- Carried over from v1, still open: Onshape → Blender → GLB pipeline for a
+  genuinely custom flagship building beyond the Robotics Workshop kitbash; custom
+  domain; sound design.
