@@ -30,6 +30,7 @@
     "@types/react-dom": "^19.2.4",
     "@types/three": "^0.185.4",
     "@vitejs/plugin-react": "^6.1.0",
+    "draco3d": "^1.5.7",
     "gltf-pipeline": "^4.3.1",
     "oxlint": "^1.79.0",
     "tailwindcss": "^4.3.3",

@@ -28,13 +28,19 @@ export default function Breadcrumb() {
       </Link>
       {attraction && (
         <>
-          <span className="hidden text-[var(--color-ink)]/40 sm:inline">›</span>
-          <Link
-            to="/"
-            className="hidden rounded-full bg-[var(--color-ground)]/90 px-3 py-1.5 text-[var(--color-ink)]/70 shadow-sm hover:underline sm:inline-block"
-          >
-            {DISTRICTS[attraction.district].name}
-          </Link>
+          {/* Welcome Plaza's district name and attraction name are the same
+              string ("Welcome Plaza") — showing both would read as a typo. */}
+          {attraction.name !== DISTRICTS[attraction.district].name && (
+            <>
+              <span className="hidden text-[var(--color-ink)]/40 sm:inline">›</span>
+              <Link
+                to="/"
+                className="hidden rounded-full bg-[var(--color-ground)]/90 px-3 py-1.5 text-[var(--color-ink)]/70 shadow-sm hover:underline sm:inline-block"
+              >
+                {DISTRICTS[attraction.district].name}
+              </Link>
+            </>
+          )}
           <span className="text-[var(--color-ink)]/40">›</span>
           <span className="rounded-full bg-[var(--color-ground)]/90 px-3 py-1.5 text-[var(--color-ink)] shadow-sm">{attraction.name}</span>
         </>

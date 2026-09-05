@@ -115,10 +115,18 @@ export const ATTRACTIONS: Attraction[] = [
     district: 'foundry',
     name: 'DECA Business Center',
     subtitle: 'Competitor, 2025–Present',
-    position: [-34, 0, -3],
+    position: [-40, 0, -14],
     scale: 3,
     model: '/assets/models/deca-center.glb',
-    footprint: 4,
+    footprint: 9,
+    // computeDefaultShot's distance formula is footprint-driven and doesn't
+    // account for height — this model is a genuine 13m-tall thin tower on a
+    // ~4m footprint (§7.3 explicitly allows hand art-direction for exactly
+    // this case rather than fighting the generic formula).
+    cameraShot: {
+      cameraPosition: [-24, 14, 6],
+      cameraTarget: [-40, 6, -14],
+    },
     description: 'Competes in entrepreneurship-focused business events; advanced to the State competition.',
     tags: ['Business', 'Entrepreneurship', 'Competition'],
     accentColor: 'foundry',
