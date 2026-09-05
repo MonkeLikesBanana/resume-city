@@ -1,0 +1,60 @@
+@import "tailwindcss";
+
+@font-face {
+  font-family: "Fredoka";
+  font-weight: 500 700;
+  font-style: normal;
+  font-display: swap;
+  src: url("/fonts/fredoka-variable.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Space Grotesk";
+  font-weight: 400 700;
+  font-style: normal;
+  font-display: swap;
+  src: url("/fonts/space-grotesk-variable.woff2") format("woff2");
+}
+
+@theme {
+  /* Pacific NW Tech City palette — PRD §4 */
+  --color-sky-top: #b8d4e3;
+  --color-sky-bottom: #f0e6d2;
+  --color-evergreen: #2d5843;
+  --color-moss: #4a7856;
+  --color-mountain: #7c93a3;
+  --color-lake: #3e7ca6;
+  --color-ground: #f4f1ea;
+  --color-foundry: #2ec4b6;
+  --color-lakeside: #c97b4a;
+  --color-ink: #1f2a24;
+
+  --font-display: "Fredoka", ui-rounded, system-ui, sans-serif;
+  --font-body: "Space Grotesk", Inter, system-ui, sans-serif;
+}
+
+@layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+    margin: 0;
+  }
+
+  body {
+    font-family: var(--font-body);
+    color: var(--color-ink);
+    background: var(--color-ground);
+    overscroll-behavior: none;
+  }
+
+  canvas {
+    display: block;
+    outline: none;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-foundry);
+    outline-offset: 2px;
+  }
+}
