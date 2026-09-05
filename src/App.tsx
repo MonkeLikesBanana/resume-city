@@ -6,6 +6,7 @@ import Breadcrumb from './components/ui/Breadcrumb'
 import InfoPanel from './components/ui/InfoPanel'
 import AccessibleNav from './components/ui/AccessibleNav'
 import WelcomeOverlay from './components/ui/WelcomeOverlay'
+import TourControls from './components/ui/TourControls'
 import Header from './components/layout/Header'
 import NoWebGLFallback from './components/ui/NoWebGLFallback'
 import useCityStore from './store/useCityStore'
@@ -86,6 +87,7 @@ function Experience() {
         <AccessibleNav />
         <Header />
         <InfoPanel />
+        <TourControls />
       </div>
       <WelcomeOverlay />
     </div>
