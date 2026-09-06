@@ -50,7 +50,13 @@ export default function AccessibleNav({ forceOpen = false }: AccessibleNavProps)
   return (
     <details
       ref={detailsRef}
-      className="pointer-events-auto fixed top-4 right-4 z-20 text-sm"
+      // z-[25]: above InfoPanel's z-20 (with a long attraction list and a
+      // tall InfoPanel both on screen, they can geometrically overlap — found
+      // via testing, a nav link near the bottom of a long "All stops" list
+      // was silently swallowed by the InfoPanel sitting at the same z-index
+      // underneath it), but deliberately still below WelcomeOverlay's z-30
+      // so the "Enter the City" gate can't be bypassed by a same-z-index tie.
+      className="pointer-events-auto fixed top-4 right-4 z-[25] text-sm"
       // Close the dropdown once a stop is picked — otherwise it sits open,
       // covering the scene, for the whole drive to the new stop.
       onClick={(e) => {
