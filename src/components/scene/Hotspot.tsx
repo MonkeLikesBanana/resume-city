@@ -77,7 +77,7 @@ export default function Hotspot({ attraction }: HotspotProps) {
           <button
             type="button"
             onClick={() => navigate(`/${attraction.district}/${attraction.id}`)}
-            aria-label={`Fly to ${attraction.name}`}
+            aria-label={`Drive to ${attraction.name}`}
             className={`flex items-center gap-1.5 rounded-full border-2 px-2.5 py-1 text-xs font-medium whitespace-nowrap shadow-md transition-transform hover:scale-105 focus-visible:scale-105 cursor-pointer ${active ? '' : 'hotspot-marker'}`}
             style={{
               background: active ? ACCENT_FILL[attraction.accentColor] : 'rgba(244,241,234,0.92)',

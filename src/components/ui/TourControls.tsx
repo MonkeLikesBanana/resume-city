@@ -7,9 +7,9 @@ import useReducedMotion from '../../hooks/useReducedMotion'
 const AUTO_ADVANCE_MS = 7000
 
 /** PRD §3/§13 Phase 7 — "auto-advances through every attraction ... with
- * Next/Prev/Pause controls." Reuses the exact same navigate()-driven flyTo
- * path every other click uses (§7.3) — this is just a timer deciding when
- * to call navigate() next. */
+ * Next/Prev/Pause controls." Reuses the exact same navigate()-driven
+ * drive+tilt path every other click uses (PRD v2 §7.3) — this is just a
+ * timer deciding when to call navigate() next. */
 export default function TourControls() {
   const tourMode = useCityStore((s) => s.tourMode)
   const setTourMode = useCityStore((s) => s.setTourMode)
