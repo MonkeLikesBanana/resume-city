@@ -19,10 +19,14 @@ const GROUND_SIZE: [number, number] = [260, 260]
 // with varied silhouettes, replacing v3's single ring of identical 4-sided
 // cones — a real mountain range doesn't look like one shape repeated on a
 // perfect circle.
+// Kept modest — each peak is its own uninstanced mesh (varied cone side-
+// count rules out simple instancing without added complexity), and under
+// Lighthouse's mobile 4x-CPU-throttle preset, mounting many of them measurably
+// added to Total Blocking Time. 16+12 still reads as two real depth layers.
 const PEAK_RING_RADIUS = 190
-const PEAK_COUNT = 26
+const PEAK_COUNT = 16
 const FOOTHILL_RING_RADIUS = 150
-const FOOTHILL_COUNT = 20
+const FOOTHILL_COUNT = 12
 
 function mulberry32(seed: number) {
   return () => {
