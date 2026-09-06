@@ -1,4 +1,5 @@
 import type { Attraction } from '../types/attraction'
+import { nearestTOnRoad } from '../lib/road'
 
 // PRD v2 §5/§8 — Content Map. Single source of truth: every hotspot, panel,
 // breadcrumb entry, route, and accessible-nav entry is derived from this
@@ -18,8 +19,14 @@ export const ATTRACTIONS: Attraction[] = [
     district: 'plaza',
     name: 'Welcome Plaza',
     subtitle: 'Aarav Vaswani',
-    position: [0, 0, 0],
-    height: 5,
+    position: [-9, 0, 0], // the gate's actual placement in Plaza.tsx — the tilt aims here
+    // Park at the bridge center instead, deliberately NOT at the gate itself:
+    // the gate spans the road, so a curb point AT its location would drive the
+    // car straight through/under it, leaving nothing distinct to tilt up at.
+    // Parking 9m short of it lets the arrival tilt turn to face a real,
+    // separate structure instead of straddling it.
+    curbT: nearestTOnRoad([0, 0, 0]),
+    height: 6.5, // the welcome arch (PRD v2 §4.3): 2 columns + beam + cap
     description:
       "Aarav is a driven student interested in robotics, electronics, and business. Throughout his two years in high school, he's been part of the Saints Robotics FRC team, mentored FLL teams, taken the most rigorous academic courseload available to him, and competed in business events. His ultimate goal is to have a positive impact on the world through innovation and entrepreneurship.",
     facts: ['Bellevue, Washington', '(425) 531-2273', 'aarav.vaswani@gmail.com'],

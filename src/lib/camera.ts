@@ -64,9 +64,23 @@ export function arriveAndTilt(
   // side) has almost no horizontal offset from the camera's curb point —
   // looking straight at its X/Z degenerates into looking straight up. Fall
   // back to the forward-along-the-road direction the drive already
-  // established, just raised to the tilt height, instead.
+  // established — but extended to a proper viewing distance, not the tiny
+  // ~2-3 unit look-ahead point stepDrive uses for steering. That point is
+  // fine for choosing a heading; using its distance for a tilt target makes
+  // even a modest height rise look near-vertical (a real bug this fixes).
   const horizontalOffsetSq = (ax - px) ** 2 + (az - pz) ** 2
-  const [tx, tz] = horizontalOffsetSq > 1 ? [ax, az] : [currentLookTarget.x, currentLookTarget.z]
+  let tx: number
+  let tz: number
+  if (horizontalOffsetSq > 1) {
+    ;[tx, tz] = [ax, az]
+  } else {
+    const dirX = currentLookTarget.x - px
+    const dirZ = currentLookTarget.z - pz
+    const dirLen = Math.hypot(dirX, dirZ) || 1
+    const viewDistance = 10
+    tx = px + (dirX / dirLen) * viewDistance
+    tz = pz + (dirZ / dirLen) * viewDistance
+  }
 
   controls.setLookAt(px, py, pz, tx, tiltTargetY, tz, !reducedMotion)
 }
