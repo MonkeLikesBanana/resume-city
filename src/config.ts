@@ -20,6 +20,15 @@ export const PALETTE = {
   foundry: '#2EC4B6',
   lakeside: '#C97B4A',
   ink: '#1F2A24',
+  /** Sidewalk/plaza paving — shared by RoadNetwork.tsx and PlazaSquare.tsx
+   * so both read as the same city pavement material. Deliberately darker
+   * than an earlier lighter grey (#c7c2b8): that one read fine at the
+   * Plaza's own oblique framing but washed out to nearly the same color as
+   * the base `ground` tone at a grazing viewing angle (a car parked at the
+   * curb looking almost horizontally at a short building sees mostly this
+   * near-ground plane) — found via a diagnostic bright-color swap, not
+   * assumed from a screenshot that happened to look fine. */
+  pavement: '#a8a29a',
 } as const
 
 /** Accent color as a UI fill/border (buttons, chip backgrounds, hotspot

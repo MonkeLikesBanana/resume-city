@@ -1,5 +1,6 @@
 import Building from './Building'
 import StreetLamp from './StreetLamp'
+import { PALETTE } from '../../config'
 
 /** PRD v3 §4.3 — the Welcome Plaza is now an open paved square occupying the
  * "outside" corner of the junction (+X,-Z — the quadrant neither arm claims),
@@ -16,11 +17,12 @@ export default function PlazaSquare() {
   return (
     <group>
       {/* Distinct paving so the square reads as a real plaza, not more plain
-          ground — a stone-grey, not PALETTE.ground (that's the exact same
-          color as the base ground plane and would be invisible) */}
+          ground — PALETTE.pavement, the same stone tone RoadNetwork.tsx's
+          sidewalks use, not PALETTE.ground (that's the exact same color as
+          the base ground plane and would be invisible). */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[SQUARE_CENTER[0], 0.01, SQUARE_CENTER[1]]} receiveShadow>
         <planeGeometry args={SQUARE_SIZE} />
-        <meshStandardMaterial color="#c7c2b8" roughness={0.95} />
+        <meshStandardMaterial color={PALETTE.pavement} roughness={0.95} />
       </mesh>
 
       {/* Foundry gateway — the existing arch, spanning Main Street (unchanged

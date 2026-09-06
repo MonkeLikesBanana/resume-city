@@ -3,9 +3,9 @@ import Building from './Building'
 import StreetLamp from './StreetLamp'
 import { SUBURB_HOUSES } from '../../content/suburb-houses'
 import { ATTRACTIONS } from '../../content/attractions'
+import { PALETTE } from '../../config'
 
 const TILE = 3 // road tiles are 1x1 native, scale 3 -> 3x3m
-const SIDEWALK_COLOR = '#c7c2b8' // matches PlazaSquare's paving tone
 
 // PRD v3 §4.1/§4.4/§7.1, extended by PRD v4 §4.2/§4.3 — the VISUAL road
 // network: Main Street + Lakeside street (road-side tiles), the junction
@@ -102,7 +102,7 @@ function sidewalks() {
   return strips.map((s, i) => (
     <mesh key={`sidewalk-${i}`} rotation={[-Math.PI / 2, 0, 0]} position={s.position} receiveShadow>
       <planeGeometry args={s.size} />
-      <meshStandardMaterial color={SIDEWALK_COLOR} roughness={0.95} />
+      <meshStandardMaterial color={PALETTE.pavement} roughness={0.95} />
     </mesh>
   ))
 }
