@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import type { Vec3, Arm, RoadPosition } from '../types/attraction'
+import type { Vec3, Arm, RoadPosition, Attraction } from '../types/attraction'
 import { ARMS } from '../content/road'
 
 /** A minimal arc-length-parametrized curve: getPointAt(u) for u in [0,1] maps
@@ -57,6 +57,12 @@ function clamp(v: number, min: number, max: number) {
   return Math.min(max, Math.max(min, v))
 }
 
+/** PRD v4 §8 — shared by src/lib/tourCurve.ts and CameraRig.tsx so both
+ * resolve an attraction's parking spot identically. */
+export function curbFor(attraction: Attraction): RoadPosition {
+  return attraction.curb ?? nearestPositionOnArm(attraction.district, attraction.position)
+}
+
 function makeSubCurve(arm: Arm, fromT: number, toT: number): TripCurve {
   const curve = ARM_CURVES[arm]
   const length = Math.abs(toT - fromT) * ARM_LENGTHS[arm]
@@ -75,7 +81,7 @@ function makeCornerCurve(points: THREE.Vector3[]): TripCurve {
   }
 }
 
-function joinTripCurves(pieces: TripCurve[]): TripCurve {
+export function joinTripCurves(pieces: TripCurve[]): TripCurve {
   const valid = pieces.filter((p) => p.getLength() > 1e-6)
   const totalLength = valid.reduce((sum, p) => sum + p.getLength(), 0)
   if (valid.length === 0) {

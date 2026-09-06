@@ -1,27 +1,19 @@
 import { AnimatePresence, motion } from 'framer-motion'
-import { useNavigate } from 'react-router-dom'
 import useCityStore from '../../store/useCityStore'
 import useReducedMotion from '../../hooks/useReducedMotion'
 import DownloadResumeButton from './DownloadResumeButton'
 import { CITY_NAME } from '../../config'
-import { TOUR_ORDER } from '../../content/tour'
 
 /** PRD §3/§13 Phase 5 — the landing gate. Deep links bypass this entirely
  * (App.tsx sets hasEntered=true on mount if the URL already names a stop);
- * visiting "/" fresh shows it once per session. */
+ * visiting "/" fresh shows it once per session. PRD v4 §3: there's no
+ * separate "guided tour" to opt into anymore — the Welcome Plaza is already
+ * selected and Next/Prev are always available, so "Enter the City" is the
+ * only entry point needed now. */
 export default function WelcomeOverlay() {
   const hasEntered = useCityStore((s) => s.hasEntered)
   const setHasEntered = useCityStore((s) => s.setHasEntered)
-  const setTourMode = useCityStore((s) => s.setTourMode)
   const reducedMotion = useReducedMotion()
-  const navigate = useNavigate()
-
-  const startTour = () => {
-    setHasEntered(true)
-    setTourMode(true)
-    const first = TOUR_ORDER[0]
-    navigate(`/${first.district}/${first.id}`)
-  }
 
   return (
     <AnimatePresence>
@@ -60,10 +52,6 @@ export default function WelcomeOverlay() {
           </button>
 
           <div className="mt-4 flex items-center gap-4 text-sm">
-            <button type="button" onClick={startTour} className="text-[var(--color-ink)]/70 underline hover:text-[var(--color-ink)] cursor-pointer">
-              Take the guided tour
-            </button>
-            <span className="text-[var(--color-ink)]/30">·</span>
             <DownloadResumeButton />
           </div>
         </motion.div>

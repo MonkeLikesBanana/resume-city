@@ -1,15 +1,11 @@
 import * as THREE from 'three'
-import { CAR_EYE_HEIGHT, ARRIVAL_TILT_FRACTION, DRIVE_SPEED } from '../config'
+import { CAR_EYE_HEIGHT, ARRIVAL_TILT_FRACTION } from '../config'
 import type { Attraction } from '../types/attraction'
 import type { TripCurve } from './roadGraph'
 
-const ARRIVAL_BLEND_FRACTION = 0.15 // last 15% of the trip blends the look toward the destination's tilt target
+const ARRIVAL_BLEND_FRACTION = 0.15 // last 15% of a trip blends the look toward the destination's tilt target
 const LOOKAHEAD_DELTA = 0.02
 const ROTATION_SMOOTHING_RATE = 10 // 1/seconds — exponential slerp damping constant
-
-export function driveDuration(tripLength: number): number {
-  return Math.max(0.35, tripLength / DRIVE_SPEED)
-}
 
 function clamp(v: number, min: number, max: number) {
   return Math.min(max, Math.max(min, v))
@@ -32,39 +28,60 @@ function tiltTargetFor(destination: Attraction, out: THREE.Vector3): THREE.Vecto
   return out.set(dx, dy + destination.height * ARRIVAL_TILT_FRACTION, dz)
 }
 
-/** PRD v3 §7.3 — ONE continuous per-frame controller for the whole trip, no
- * hand-off between two systems. Position follows the trip's curve (already
- * smoothed through any junction corner, src/lib/roadGraph.ts); the look
- * target blends smoothly from "ahead along the road" to "the destination,
- * tilted up by its height" over the final stretch, instead of switching hard
- * once the car technically stops; and rotation is damped via quaternion
- * slerp instead of a hard lookAt snap every frame, which is what actually
- * fixes "jerky" on ordinary straight stretches (the corner-smoothing in
- * roadGraph.ts fixes the OTHER source of jerkiness, the junction turn
- * itself — the two are independent and both needed). */
+function applyLookAt(camera: THREE.PerspectiveCamera, target: THREE.Vector3, delta: number) {
+  _lookMatrix.lookAt(camera.position, target, _up)
+  _desiredQuat.setFromRotationMatrix(_lookMatrix)
+  const damping = 1 - Math.exp(-ROTATION_SMOOTHING_RATE * delta)
+  camera.quaternion.slerp(_desiredQuat, damping)
+}
+
+/** PRD v4 §7.1/§7.3 — driven along the ONE shared TOUR_CURVE now, not a
+ * fresh per-trip curve — `curveU` is this frame's global position on that
+ * curve, `direction` is which way `curveU` is currently moving (+1/-1,
+ * needed for the look-ahead point now that "ahead" isn't always "toward
+ * increasing u" — Prev moves curveU *down*), and `localProgress` is 0..1
+ * within just this specific trip (for the arrival-tilt blend below — a
+ * global curveU would almost never approach 1, since TOUR_CURVE spans the
+ * whole city, not one trip). Position/look-ahead/rotation-damping mechanics
+ * are otherwise unchanged from v3. */
 export function driveFrame(
   camera: THREE.PerspectiveCamera,
   tripCurve: TripCurve,
-  progress: number, // 0..1, already eased by the caller
+  curveU: number,
+  direction: 1 | -1,
+  localProgress: number,
   destination: Attraction,
   delta: number,
 ) {
-  const p = tripCurve.getPointAt(progress)
+  const p = tripCurve.getPointAt(curveU)
   camera.position.set(p.x, p.y + CAR_EYE_HEIGHT, p.z)
 
-  const aheadU = clamp(progress + LOOKAHEAD_DELTA, 0, 1)
+  const aheadU = clamp(curveU + LOOKAHEAD_DELTA * direction, 0, 1)
   const ahead = tripCurve.getPointAt(aheadU)
   _aheadTarget.set(ahead.x, ahead.y + CAR_EYE_HEIGHT, ahead.z)
 
   tiltTargetFor(destination, _tiltTarget)
-  const arrivalBlend = smoothstep(1 - ARRIVAL_BLEND_FRACTION, 1, progress)
+  const arrivalBlend = smoothstep(1 - ARRIVAL_BLEND_FRACTION, 1, localProgress)
   _lookTarget.copy(_aheadTarget).lerp(_tiltTarget, arrivalBlend)
 
-  _lookMatrix.lookAt(camera.position, _lookTarget, _up)
-  _desiredQuat.setFromRotationMatrix(_lookMatrix)
+  applyLookAt(camera, _lookTarget, delta)
+}
 
-  const damping = 1 - Math.exp(-ROTATION_SMOOTHING_RATE * delta)
-  camera.quaternion.slerp(_desiredQuat, damping)
+/** PRD v4 §7.5 — explore-yourself scrub: position + look-ahead + damped
+ * rotation, same as driveFrame, but never blends toward an arrival tilt —
+ * there's no single destination while gliding freely, and tilting up at
+ * every stop passed mid-scrub would be chaotic. Only used while a scrub key
+ * is actively held or decelerating; releasing hands off to a normal
+ * driveFrame()-driven "settle" trip (CameraRig). */
+export function scrubFrame(camera: THREE.PerspectiveCamera, tripCurve: TripCurve, curveU: number, direction: 1 | -1, delta: number) {
+  const p = tripCurve.getPointAt(curveU)
+  camera.position.set(p.x, p.y + CAR_EYE_HEIGHT, p.z)
+
+  const aheadU = clamp(curveU + LOOKAHEAD_DELTA * direction, 0, 1)
+  const ahead = tripCurve.getPointAt(aheadU)
+  _aheadTarget.set(ahead.x, ahead.y + CAR_EYE_HEIGHT, ahead.z)
+
+  applyLookAt(camera, _aheadTarget, delta)
 }
 
 /** Instant placement — no animation at all. Used for the very first frame

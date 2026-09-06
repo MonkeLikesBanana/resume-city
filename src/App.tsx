@@ -6,19 +6,22 @@ import Breadcrumb from './components/ui/Breadcrumb'
 import InfoPanel from './components/ui/InfoPanel'
 import AccessibleNav from './components/ui/AccessibleNav'
 import WelcomeOverlay from './components/ui/WelcomeOverlay'
-import TourControls from './components/ui/TourControls'
+import TourBar from './components/ui/TourBar'
 import Header from './components/layout/Header'
 import NoWebGLFallback from './components/ui/NoWebGLFallback'
 import useCityStore from './store/useCityStore'
 import { getAttraction } from './content/attractions'
-import { CITY_NAME } from './config'
+import { CITY_NAME, HOME_ATTRACTION_ID } from './config'
 
 /** PRD §3/§10 — the URL is the source of truth for "which attraction is
- * active"; this is the only place that writes activeAttractionId. Landing
- * directly on a deep link (or navigating browser back/forward) reaches the
- * right stop with no extra click. Also bypasses the welcome overlay on the
- * very first render if the URL already names a stop (§3: "deep links skip
- * the welcome overlay"). */
+ * active"; this is the only place that writes activeAttractionId on a real
+ * navigation (the explore-yourself scrub, PRD v4 §7.5, sets it directly and
+ * transiently while gliding — that's the one exception). Landing directly on
+ * a deep link (or navigating browser back/forward) reaches the right stop
+ * with no extra click. Also bypasses the welcome overlay on the very first
+ * render if the URL already names a stop (§3: "deep links skip the welcome
+ * overlay"). PRD v4 §3/§8: bare "/" now resolves to the Welcome Plaza's own
+ * id, not null — it's selected from the start, not a neutral home state. */
 function RouteSync() {
   const { id } = useParams<{ district: string; id: string }>()
   const setActive = useCityStore((s) => s.setActiveAttractionId)
@@ -26,13 +29,17 @@ function RouteSync() {
   const isFirstRun = useRef(true)
 
   useEffect(() => {
-    const attraction = id ? getAttraction(id) : undefined
-    setActive(attraction?.id ?? null)
+    const attraction = getAttraction(id ?? HOME_ATTRACTION_ID)
+    setActive(attraction?.id ?? HOME_ATTRACTION_ID)
     document.title = attraction ? `${attraction.name} — ${CITY_NAME}` : `${CITY_NAME} — Aarav Vaswani`
 
     if (isFirstRun.current) {
       isFirstRun.current = false
-      if (attraction) setHasEntered(true)
+      // Skip the welcome overlay only for a REAL deep link — `attraction` is
+      // truthy even on bare "/" now (it resolves to the Welcome Plaza, §3),
+      // so the gate has to check that the URL actually named a stop, not
+      // just that an attraction was found.
+      if (id && attraction) setHasEntered(true)
     }
   }, [id, setActive, setHasEntered])
 
@@ -58,9 +65,8 @@ function EscapeToOverview() {
   return null
 }
 
-// An unknown :id in the URL just resolves to null in RouteSync above — the
-// city falls back to the Welcome Plaza (home state) rather than dead-ending
-// on a 404.
+// An unknown :id in the URL just resolves to the Welcome Plaza in RouteSync
+// above — the city falls back there rather than dead-ending on a 404.
 function Experience() {
   const webglSupported = useCityStore((s) => s.webglSupported)
   const hasEntered = useCityStore((s) => s.hasEntered)
@@ -90,7 +96,7 @@ function Experience() {
         <AccessibleNav />
         <Header />
         <InfoPanel />
-        <TourControls />
+        <TourBar />
       </div>
       <WelcomeOverlay />
     </div>

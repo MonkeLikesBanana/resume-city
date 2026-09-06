@@ -59,25 +59,3 @@
   }
 }
 
-/* PRD §7.4/§13 Phase 5 — idle bob to signal "this is clickable" on hotspot
- * markers. Disabled under prefers-reduced-motion (§7.3/§11 principle applied
- * to every animation in the app, not just the camera). */
-@keyframes hotspot-bob {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-4px);
-  }
-}
-
-.hotspot-marker {
-  animation: hotspot-bob 2.4s ease-in-out infinite;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .hotspot-marker {
-    animation: none;
-  }
-}

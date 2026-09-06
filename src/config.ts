@@ -55,10 +55,16 @@ export const CAR_EYE_HEIGHT = 2
  * that's the whole point of retiring v1's hand-tuned camera overrides. */
 export const ARRIVAL_TILT_FRACTION = 0.6
 
-/** Meters/second the camera travels along the road during phase 1 (PRD v2
- * §7.3) — used to derive drive duration from distance so a short hop (e.g.
- * across the bridge) doesn't take as long as the full Main Street traverse. */
-export const DRIVE_SPEED = 26
+/** PRD v4 §7.2 — a real accelerate/cruise/decelerate velocity profile
+ * (src/lib/motion.ts), replacing v3's flat DRIVE_SPEED constant fed through
+ * one easeInOutCubic. MAX_SPEED is deliberately much slower than v3's
+ * effective ~26 units/sec — at that speed most trips completed in well
+ * under a second, too fast to read as anything but a snap no matter how
+ * smooth the underlying easing math was. ACCEL also governs the
+ * explore-yourself scrub's ramp up/down (§7.5) — the same "feels like one
+ * car" constant in both places. */
+export const MAX_SPEED = 10 // units/sec
+export const ACCEL = 6 // units/sec²
 
 /** PRD v2 §7.4 — the Plaza is the home state (v1's free aerial OVERVIEW_SHOT
  * is retired). This is the id CameraRig drives to for "/" and "back to city". */
