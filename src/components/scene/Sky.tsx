@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
+import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
-import { PALETTE } from '../../config'
+import { computeDayNight } from '../../lib/dayNight'
 
 const VERTEX = /* glsl */ `
   varying vec3 vWorldPosition;
@@ -25,18 +26,28 @@ const FRAGMENT = /* glsl */ `
 
 /** PRD §4/§7.2 — two-stop sky gradient as a simple sky-dome shader (a large
  * BackSide sphere), instead of pulling in drei's <Sky> physical-sky model —
- * this scene wants a flat two-color Pacific-NW-morning gradient, not a real
- * sun/atmosphere simulation. */
+ * this scene wants a flat two-color gradient, not a real sun/atmosphere
+ * simulation. PRD v4 §7.4 — the two colors are now driven by the day/night
+ * cycle every frame; this is the one component that actually paints the
+ * visible sky (scene.background is a fallback behind the dome, essentially
+ * never seen), so it owns its own color animation directly rather than
+ * receiving it through a ref from elsewhere. */
 export default function Sky() {
   const uniforms = useMemo(
     () => ({
-      topColor: { value: new THREE.Color(PALETTE.skyTop) },
-      bottomColor: { value: new THREE.Color(PALETTE.skyBottom) },
+      topColor: { value: new THREE.Color() },
+      bottomColor: { value: new THREE.Color() },
       offset: { value: 20 },
       exponent: { value: 0.6 },
     }),
     [],
   )
+
+  useFrame(({ clock }) => {
+    const frame = computeDayNight(clock.getElapsedTime())
+    uniforms.topColor.value.copy(frame.skyTop)
+    uniforms.bottomColor.value.copy(frame.skyBottom)
+  })
 
   return (
     <mesh>

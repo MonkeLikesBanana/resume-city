@@ -69,3 +69,6 @@ export const ACCEL = 6 // units/sec²
 /** PRD v2 §7.4 — the Plaza is the home state (v1's free aerial OVERVIEW_SHOT
  * is retired). This is the id CameraRig drives to for "/" and "back to city". */
 export const HOME_ATTRACTION_ID = 'welcome-plaza'
+
+/** PRD v4 §7.4 — a full day/night loop, continuous, repeating. */
+export const DAY_NIGHT_CYCLE_SECONDS = 90

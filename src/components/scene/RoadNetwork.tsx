@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import Building from './Building'
+import StreetLamp from './StreetLamp'
 import { SUBURB_HOUSES } from '../../content/suburb-houses'
 import { ATTRACTIONS } from '../../content/attractions'
 
@@ -73,7 +74,17 @@ function streetlamps() {
   for (let z = LAKESIDE_SPAN[0] + 8; z < 82; z += LAMP_INTERVAL, side *= -1) {
     lamps.push({ position: [side * 3, 0, z], rotationY: side > 0 ? -Math.PI / 2 : Math.PI / 2 })
   }
-  return lamps.map((l, i) => <Building key={`lamp-${i}`} model="/assets/models/light-square.glb" position={l.position} scale={5} rotationY={l.rotationY} />)
+  return lamps.map((l, i) => (
+    <StreetLamp
+      key={`lamp-${i}`}
+      model="/assets/models/light-square.glb"
+      position={l.position}
+      scale={5}
+      rotationY={l.rotationY}
+      lampHeight={2.8}
+      flickerSeed={(i * 0.37) % 1}
+    />
+  ))
 }
 
 /** PRD v4 §4.2 — paved sidewalk strips between the road and each filler

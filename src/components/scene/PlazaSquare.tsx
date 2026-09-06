@@ -1,4 +1,5 @@
 import Building from './Building'
+import StreetLamp from './StreetLamp'
 
 /** PRD v3 §4.3 — the Welcome Plaza is now an open paved square occupying the
  * "outside" corner of the junction (+X,-Z — the quadrant neither arm claims),
@@ -27,10 +28,10 @@ export default function PlazaSquare() {
       <Building model="/assets/models/plaza-gate.glb" position={[GATE_X, 0, 0]} scale={1} />
       <Building model="/assets/models/planter.glb" position={[GATE_X + 0.8, 0, -2.8]} scale={2.5} />
       <Building model="/assets/models/planter.glb" position={[GATE_X - 0.8, 0, 2.8]} scale={2.5} rotationY={Math.PI} />
-      <Building model="/assets/models/streetlamp.glb" position={[GATE_X - 2, 0, -3]} scale={2.5} />
-      <Building model="/assets/models/streetlamp.glb" position={[GATE_X - 2, 0, 3]} scale={2.5} rotationY={Math.PI} />
-      <Building model="/assets/models/streetlamp.glb" position={[-1.5, 0, -3]} scale={2.5} />
-      <Building model="/assets/models/streetlamp.glb" position={[-1.5, 0, 3]} scale={2.5} rotationY={Math.PI} />
+      <StreetLamp model="/assets/models/streetlamp.glb" position={[GATE_X - 2, 0, -3]} scale={2.5} lampHeight={1.6} flickerSeed={0.1} />
+      <StreetLamp model="/assets/models/streetlamp.glb" position={[GATE_X - 2, 0, 3]} scale={2.5} rotationY={Math.PI} lampHeight={1.6} flickerSeed={0.4} />
+      <StreetLamp model="/assets/models/streetlamp.glb" position={[-1.5, 0, -3]} scale={2.5} lampHeight={1.6} flickerSeed={0.7} />
+      <StreetLamp model="/assets/models/streetlamp.glb" position={[-1.5, 0, 3]} scale={2.5} rotationY={Math.PI} lampHeight={1.6} flickerSeed={0.9} />
 
       {/* Lakeside transition — flanking trees/planters, no monument (§4.3) */}
       <Building model="/assets/models/planter.glb" position={[-2.8, 0, 7]} scale={2.5} rotationY={Math.PI / 2} />
@@ -51,8 +52,8 @@ export default function PlazaSquare() {
         <meshStandardMaterial color="#9d9689" roughness={0.9} />
       </mesh>
 
-      <Building model="/assets/models/light-square-double.glb" position={[32, 0, -32]} scale={5} rotationY={Math.PI * 1.25} />
-      <Building model="/assets/models/light-square-double.glb" position={[32, 0, 2]} scale={5} rotationY={-Math.PI * 0.25} />
+      <StreetLamp model="/assets/models/light-square-double.glb" position={[32, 0, -32]} scale={5} rotationY={Math.PI * 1.25} lampHeight={2.8} flickerSeed={0.3} />
+      <StreetLamp model="/assets/models/light-square-double.glb" position={[32, 0, 2]} scale={5} rotationY={-Math.PI * 0.25} lampHeight={2.8} flickerSeed={0.6} />
 
       <Building model="/assets/models/detail-parasol-a.glb" position={[24, 0, -24]} scale={5} />
       <Building model="/assets/models/detail-parasol-b.glb" position={[27, 0, -21]} scale={5} rotationY={1.1} />
