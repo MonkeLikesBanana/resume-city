@@ -4,9 +4,11 @@ import Building from './Building'
 
 const LAKE_HALF_WIDTH = 6 // x: -6..6, PRD §4 "stylized lake physically separating the two districts"
 const LAKE_LENGTH = 100
-const GROUND_SIZE: [number, number] = [160, 110]
+// PRD v2 §4.1 — Main Street now runs from x=-76 (Foundry gateway) to x=66
+// (Lakeside gateway); ground/mountains widened to match plus a forest buffer.
+const GROUND_SIZE: [number, number] = [240, 160]
 
-const MOUNTAIN_RING_RADIUS = 85
+const MOUNTAIN_RING_RADIUS = 150
 const MOUNTAIN_COUNT = 18
 
 /** Simple low-poly mountain silhouette: a ring of 4-sided pyramids far

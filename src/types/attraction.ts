@@ -11,11 +11,6 @@ export interface TimelineEntry {
   description: string
 }
 
-export interface CameraShot {
-  cameraPosition: Vec3
-  cameraTarget: Vec3
-}
-
 export interface Attraction {
   /** slug, used in the URL: /foundry/robotics-workshop */
   id: string
@@ -24,14 +19,18 @@ export interface Attraction {
   subtitle: string
   /** world placement, y is almost always 0 */
   position: Vec3
+  /** meters, post-scale. Drives the arrival tilt angle (PRD v2 §7.3) —
+   * replaces v1's footprint-based camera-distance formula. */
+  height: number
+  /** optional override: 0..1 progress along ROAD_PATH where the car parks.
+   * Default: nearest point on the road to `position` (PRD v2 §7.2). Only set
+   * this if the automatic nearest-point pick looks wrong. */
+  curbT?: number
   rotationY?: number
   scale?: number
   /** path to .glb under /public/assets/models/. Optional — the Welcome
-   * Plaza is a camera+UI-only hub with no single physical building (PRD §5.0
-   * doesn't map it to one; left as a prop-decorated point in the scene). */
+   * Plaza is a camera+UI-only hub with no single physical building. */
   model?: string
-  /** override computeDefaultShot() — use for flagship stops */
-  cameraShot?: CameraShot
   /** for multi-role stops (Robotics Workshop) */
   timeline?: TimelineEntry[]
   /** for single-blurb stops (NEEMO, interests) */
@@ -40,6 +39,13 @@ export interface Attraction {
   facts?: string[]
   tags: string[]
   accentColor: 'foundry' | 'lakeside'
-  /** footprint in meters, used by computeDefaultShot() — PRD §7.3 */
-  footprint?: number
+}
+
+/** PRD v2 §4.1/§8 — purely decorative downtown filler: no content, no
+ * hotspot, no route entry, never appears in AccessibleNav. */
+export interface FillerBuilding {
+  model: string
+  position: Vec3
+  rotationY?: number
+  scale?: number
 }

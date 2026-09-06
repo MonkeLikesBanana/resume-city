@@ -1,5 +1,3 @@
-import type { CameraShot } from './types/attraction'
-
 export const CITY_NAME = 'Vasnova City'
 
 export const DISTRICT_NAMES = {
@@ -41,18 +39,28 @@ export const ACCENT_TEXT = {
   lakeside: '#8A4B26',
 } as const
 
-/** PRD §7.3 — tuned once for the whole app, not per-shot. */
+/** PRD v2 §7.3 — tuned once for the whole app, not per-shot. Only used for
+ * phase 2 (the damped "arrive and tilt" transition) — phase 1 (driving) writes
+ * the camera directly and doesn't go through CameraControls' easing at all. */
 export const CAMERA = {
-  smoothTime: 0.9,
+  smoothTime: 0.7,
   restThreshold: 0.01,
-  draggingSmoothTime: 0.25,
 }
 
-/** PRD §7.3 — the aerial establishing shot the city opens on / returns to. */
-export const OVERVIEW_SHOT: CameraShot = {
-  cameraPosition: [58, 46, 72],
-  cameraTarget: [-1, 2, 3],
-}
+/** PRD v2 §7.2 — fixed camera height above the road surface, every stop, while
+ * driving and while parked. Replaces v1's per-building camera positioning. */
+export const CAR_EYE_HEIGHT = 2
 
-/** PRD §7.3 computeDefaultShot() default footprint when an attraction doesn't specify one. */
-export const DEFAULT_FOOTPRINT = 6
+/** PRD v2 §7.3 — how far up a building's height the arrival tilt looks (0.6 =
+ * roughly two-thirds up the facade). One constant, not a per-building value —
+ * that's the whole point of retiring v1's hand-tuned camera overrides. */
+export const ARRIVAL_TILT_FRACTION = 0.6
+
+/** Meters/second the camera travels along the road during phase 1 (PRD v2
+ * §7.3) — used to derive drive duration from distance so a short hop (e.g.
+ * across the bridge) doesn't take as long as the full Main Street traverse. */
+export const DRIVE_SPEED = 26
+
+/** PRD v2 §7.4 — the Plaza is the home state (v1's free aerial OVERVIEW_SHOT
+ * is retired). This is the id CameraRig drives to for "/" and "back to city". */
+export const HOME_ATTRACTION_ID = 'welcome-plaza'

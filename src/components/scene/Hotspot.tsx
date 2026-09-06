@@ -17,7 +17,7 @@ interface HotspotProps {
 export default function Hotspot({ attraction }: HotspotProps) {
   const navigate = useNavigate()
   const active = useCityStore((s) => s.activeAttractionId === attraction.id)
-  const markerHeight = (attraction.footprint ?? 6) * 0.9 + 2
+  const markerHeight = attraction.height + 1.5
   const [x, y, z] = attraction.position
 
   return (

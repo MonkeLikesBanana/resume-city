@@ -1,7 +1,7 @@
 import { Suspense, useState, type ReactNode } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { PerformanceMonitor } from '@react-three/drei'
-import { PALETTE, OVERVIEW_SHOT } from '../../config'
+import { PALETTE, CAR_EYE_HEIGHT } from '../../config'
 import useIsMobile from '../../hooks/useIsMobile'
 import Sky from './Sky'
 import Ground from './Ground'
@@ -30,9 +30,12 @@ export default function CityCanvas({ children }: CityCanvasProps) {
       shadows={shadowsEnabled}
       dpr={dpr}
       camera={{
-        position: OVERVIEW_SHOT.cameraPosition,
-        fov: 42,
-        near: 0.5,
+        // Placeholder pose only — CameraRig snaps this to the Plaza curb on
+        // mount (PRD v2 §7.4), before the visitor ever sees a frame render
+        // from here. Car height, facing down Main Street.
+        position: [0, CAR_EYE_HEIGHT, 20],
+        fov: 55,
+        near: 0.3,
         far: 500,
       }}
     >
@@ -43,7 +46,7 @@ export default function CityCanvas({ children }: CityCanvasProps) {
         }}
       />
       <color attach="background" args={[PALETTE.skyBottom]} />
-      <fog attach="fog" args={[PALETTE.skyBottom, 70, 260]} />
+      <fog attach="fog" args={[PALETTE.skyBottom, 40, 220]} />
 
       <hemisphereLight args={['#fff6e8', PALETTE.evergreen, 0.55]} />
       <directionalLight
@@ -51,11 +54,11 @@ export default function CityCanvas({ children }: CityCanvasProps) {
         intensity={1.7}
         castShadow={shadowsEnabled}
         shadow-mapSize={isMobile ? [512, 512] : [1024, 1024]}
-        shadow-camera-left={-60}
-        shadow-camera-right={60}
-        shadow-camera-top={60}
-        shadow-camera-bottom={-60}
-        shadow-camera-far={150}
+        shadow-camera-left={-95}
+        shadow-camera-right={85}
+        shadow-camera-top={40}
+        shadow-camera-bottom={-40}
+        shadow-camera-far={180}
       />
 
       <Sky />

@@ -1,15 +1,17 @@
 import type { Attraction } from '../types/attraction'
 
-// PRD §5 — Content Map. Single source of truth: every hotspot, panel,
-// breadcrumb entry, route, and accessible-nav entry (§8, §9) is derived from
-// this array. Copy is final, taken verbatim from the source resume — see
-// PRD.md §5 for the annotated version. Positions/scale/cameraShot are the
-// only implementation-detail fields not dictated by the PRD; see §16 for the
-// runbook these follow.
+// PRD v2 §5/§8 — Content Map. Single source of truth: every hotspot, panel,
+// breadcrumb entry, route, and accessible-nav entry is derived from this
+// array. Positions follow the downtown Main Street layout in
+// src/content/road.ts — buildings sit off the road centerline (±9 in Z); the
+// road itself runs along Z=0, so each building's curb point (nearest point on
+// the road) is simply its own X coordinate at Z=0. `height` (meters,
+// post-scale) drives the arrival tilt (PRD v2 §7.3) — no more per-building
+// camera overrides.
 
 export const ATTRACTIONS: Attraction[] = [
   // ---------------------------------------------------------------------
-  // Welcome Plaza — hub, not inside either district (§5.0)
+  // Welcome Plaza — the city's entrance, at the road's center (§4.3)
   // ---------------------------------------------------------------------
   {
     id: 'welcome-plaza',
@@ -17,29 +19,28 @@ export const ATTRACTIONS: Attraction[] = [
     name: 'Welcome Plaza',
     subtitle: 'Aarav Vaswani',
     position: [0, 0, 0],
-    cameraShot: {
-      cameraPosition: [0, 9, 20],
-      cameraTarget: [0, 2, 0],
-    },
+    height: 5,
     description:
-      "I am a driven student interested in robotics, electronics, and business. Throughout the 2 years I've been in high school, I've been part of the Saints Robotics FRC team, mentored FLL teams, taken the most rigorous academic courseload available to me, and competed in business events. My ultimate goal is to have a positive impact on the world through innovation and entrepreneurship.",
+      "Aarav is a driven student interested in robotics, electronics, and business. Throughout his two years in high school, he's been part of the Saints Robotics FRC team, mentored FLL teams, taken the most rigorous academic courseload available to him, and competed in business events. His ultimate goal is to have a positive impact on the world through innovation and entrepreneurship.",
     facts: ['Bellevue, Washington', '(425) 531-2273', 'aarav.vaswani@gmail.com'],
     tags: [],
     accentColor: 'foundry',
   },
 
   // ---------------------------------------------------------------------
-  // The Foundry District — career (§5.1)
+  // The Foundry District — downtown, career (§5.1) — Main Street runs west
+  // from the Plaza; buildings alternate sides
   // ---------------------------------------------------------------------
   {
     id: 'robotics-workshop',
     district: 'foundry',
     name: 'Robotics Workshop',
     subtitle: 'Saints Robotics — FRC Team',
-    position: [-16, 0, -4],
+    position: [-16, 0, -9],
     scale: 2.1,
+    rotationY: 0,
     model: '/assets/models/robotics-workshop.glb',
-    footprint: 10,
+    height: 11,
     timeline: [
       {
         role: 'Vice President',
@@ -68,11 +69,11 @@ export const ATTRACTIONS: Attraction[] = [
     district: 'foundry',
     name: 'NEEMO HQ',
     subtitle: 'Co-Founder',
-    position: [-27, 0, -11],
+    position: [-26, 0, 9],
     scale: 3,
-    rotationY: Math.PI * 0.75,
+    rotationY: Math.PI,
     model: '/assets/models/neemo-hq.glb',
-    footprint: 4,
+    height: 3.9,
     description:
       'Co-founded a business focused on long-range RFID tracking of parts within robotics workshops. Generated $1,000+ in revenue in the first month. In charge of product technical development.',
     tags: ['Entrepreneurship', 'RFID', 'Hardware', 'Product Development'],
@@ -83,10 +84,11 @@ export const ATTRACTIONS: Attraction[] = [
     district: 'foundry',
     name: 'Interlake High School — Academic Hall',
     subtitle: 'IB Diploma Candidate, 2025–Present',
-    position: [-27, 0, 6],
+    position: [-36, 0, -9],
     scale: 3.4,
+    rotationY: 0,
     model: '/assets/models/academic-hall.glb',
-    footprint: 5,
+    height: 3.7,
     facts: [
       'GPA 4.0 / 4.0',
       'AP Exams: World History (5), Calculus AB (5), Physics C: Mechanics (5), United States History (5)',
@@ -100,11 +102,11 @@ export const ATTRACTIONS: Attraction[] = [
     district: 'foundry',
     name: 'Makers Club Workshop (3D Printing)',
     subtitle: 'Co-Founder & Officer, 2025–Present',
-    position: [-16, 0, 15],
+    position: [-46, 0, 9],
     scale: 3,
-    rotationY: -Math.PI * 0.6,
+    rotationY: Math.PI,
     model: '/assets/models/makers-club.glb',
-    footprint: 4,
+    height: 2.7,
     description:
       "Co-founded a school club building a community around 3D design, 3D printing, and creative projects. Brought in roughly 50% of the club's non-officer membership.",
     tags: ['3D Printing', 'CAD', 'Community Building'],
@@ -115,18 +117,11 @@ export const ATTRACTIONS: Attraction[] = [
     district: 'foundry',
     name: 'DECA Business Center',
     subtitle: 'Competitor, 2025–Present',
-    position: [-40, 0, -14],
+    position: [-58, 0, -9],
     scale: 3,
+    rotationY: 0,
     model: '/assets/models/deca-center.glb',
-    footprint: 9,
-    // computeDefaultShot's distance formula is footprint-driven and doesn't
-    // account for height — this model is a genuine 13m-tall thin tower on a
-    // ~4m footprint (§7.3 explicitly allows hand art-direction for exactly
-    // this case rather than fighting the generic formula).
-    cameraShot: {
-      cameraPosition: [-24, 14, 6],
-      cameraTarget: [-40, 6, -14],
-    },
+    height: 13.4,
     description: 'Competes in entrepreneurship-focused business events; advanced to the State competition.',
     tags: ['Business', 'Entrepreneurship', 'Competition'],
     accentColor: 'foundry',
@@ -136,11 +131,11 @@ export const ATTRACTIONS: Attraction[] = [
     district: 'foundry',
     name: 'FLL Mentorship Center',
     subtitle: 'Mentor, 2024–2026',
-    position: [-34, 0, 13],
+    position: [-66, 0, 9],
     scale: 3,
-    rotationY: -Math.PI * 0.4,
+    rotationY: Math.PI,
     model: '/assets/models/fll-center.glb',
-    footprint: 4,
+    height: 3.9,
     description:
       'Mentored 15+ younger students across two FIRST LEGO League teams, teaching fundamental engineering skills and practices. One team advanced to States, the other to the Greece Invitational.',
     tags: ['Mentorship', 'Volunteering', 'Robotics Outreach'],
@@ -148,20 +143,19 @@ export const ATTRACTIONS: Attraction[] = [
   },
 
   // ---------------------------------------------------------------------
-  // Lakeside — personal (§5.2)
+  // Lakeside — personal (§5.2) — Main Street continues east of the Plaza
   // ---------------------------------------------------------------------
   {
     id: 'cafe',
     district: 'lakeside',
     name: 'The Café',
     subtitle: 'Coffee, sushi, Indian food — and cooking (self-rated: not great at it)',
-    position: [16, 0, -8],
+    position: [16, 0, -9],
     scale: 3,
-    rotationY: Math.PI,
+    rotationY: 0,
     model: '/assets/models/cafe.glb',
-    footprint: 4,
-    description:
-      'Runs on coffee. Always down for sushi or Indian food, and enjoys cooking — even if the results are hit or miss.',
+    height: 2.5,
+    description: "He runs on coffee, and he's always down for sushi or Indian food. He enjoys cooking too — even if the results are hit or miss.",
     tags: [],
     accentColor: 'lakeside',
   },
@@ -170,12 +164,12 @@ export const ATTRACTIONS: Attraction[] = [
     district: 'lakeside',
     name: 'Arcade / Game Room',
     subtitle: 'Video games — favorite is Minecraft',
-    position: [27, 0, -3],
+    position: [26, 0, 9],
     scale: 3,
-    rotationY: Math.PI * 1.2,
+    rotationY: Math.PI,
     model: '/assets/models/arcade.glb',
-    footprint: 4,
-    description: 'Been playing video games for as long as I can remember — Minecraft is the all-time favorite.',
+    height: 3.4,
+    description: "He's been playing video games for as long as he can remember — Minecraft is the all-time favorite.",
     tags: [],
     accentColor: 'lakeside',
   },
@@ -184,12 +178,12 @@ export const ATTRACTIONS: Attraction[] = [
     district: 'lakeside',
     name: 'Sports Field',
     subtitle: 'Plays a bit of everything, recreationally',
-    position: [27, 0, 11],
+    position: [38, 0, -9],
     scale: 3,
-    rotationY: -Math.PI * 0.8,
+    rotationY: 0,
     model: '/assets/models/sports-field.glb',
-    footprint: 4,
-    description: 'Into pretty much any sport — not amazing at any one of them, but always up for playing.',
+    height: 3.1,
+    description: "He's into pretty much any sport — not amazing at any one of them, but always up for playing.",
     tags: [],
     accentColor: 'lakeside',
   },
@@ -198,12 +192,12 @@ export const ATTRACTIONS: Attraction[] = [
     district: 'lakeside',
     name: 'The Open Road',
     subtitle: 'Driving',
-    position: [16, 0, 17],
+    position: [48, 0, 9],
     scale: 3,
-    rotationY: Math.PI * 0.9,
+    rotationY: Math.PI,
     model: '/assets/models/open-road.glb',
-    footprint: 4,
-    description: 'Loves driving — any excuse to be behind the wheel.',
+    height: 3.7,
+    description: 'He loves driving — any excuse to be behind the wheel.',
     tags: [],
     accentColor: 'lakeside',
   },
@@ -212,11 +206,10 @@ export const ATTRACTIONS: Attraction[] = [
     district: 'lakeside',
     name: 'More Coming Soon',
     subtitle: 'An empty lot',
-    position: [33, 0, 4],
+    position: [58, 0, -9],
     scale: 2.5,
-    footprint: 3,
-    description:
-      "This lot's still under construction — more interests are on the way. See PRD §16 for exactly how a new stop gets built here.",
+    height: 2,
+    description: "This lot's still under construction — more interests are on the way. See PRD §16 for exactly how a new stop gets built here.",
     tags: [],
     accentColor: 'lakeside',
   },

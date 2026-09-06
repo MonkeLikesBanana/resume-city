@@ -1,3 +1,4 @@
+import { useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { ATTRACTIONS } from '../../content/attractions'
 import { DISTRICTS } from '../../content/districts'
@@ -42,10 +43,20 @@ interface AccessibleNavProps {
  * on a screen reader (or a browser where WebGL fails, §6) this list *is*
  * the site. Built alongside routing per §13 Phase 4, not deferred. */
 export default function AccessibleNav({ forceOpen = false }: AccessibleNavProps) {
+  const detailsRef = useRef<HTMLDetailsElement>(null)
+
   if (forceOpen) return <StopsList />
 
   return (
-    <details className="pointer-events-auto fixed top-4 right-4 z-20 text-sm">
+    <details
+      ref={detailsRef}
+      className="pointer-events-auto fixed top-4 right-4 z-20 text-sm"
+      // Close the dropdown once a stop is picked — otherwise it sits open,
+      // covering the scene, for the whole drive to the new stop.
+      onClick={(e) => {
+        if ((e.target as HTMLElement).closest('a')) detailsRef.current!.open = false
+      }}
+    >
       <summary className="cursor-pointer list-none rounded-full bg-[var(--color-ground)]/90 px-3 py-1.5 font-medium text-[var(--color-ink)] shadow-sm select-none">
         All stops
       </summary>
