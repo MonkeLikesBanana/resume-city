@@ -1,9 +1,13 @@
 import { useMemo } from 'react'
 import { PALETTE } from '../../config'
 import Building from './Building'
+import Forest from './Forest'
 
 const LAKE_HALF_WIDTH = 6 // x: -6..6, PRD §4 "stylized lake physically separating the two districts"
-const LAKE_LENGTH = 100
+// Kept short enough (z: -25..25) to clear the forest bands (§4.2, |z| >= 28) —
+// the lake separates the two districts near Main Street, it doesn't need to
+// run the length of the whole forest.
+const LAKE_LENGTH = 50
 // PRD v2 §4.1 — Main Street now runs from x=-76 (Foundry gateway) to x=66
 // (Lakeside gateway); ground/mountains widened to match plus a forest buffer.
 const GROUND_SIZE: [number, number] = [240, 160]
@@ -76,6 +80,7 @@ export default function Ground() {
       </mesh>
 
       <Bridge />
+      <Forest />
       <Mountains />
     </group>
   )
