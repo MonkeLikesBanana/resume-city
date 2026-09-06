@@ -37,6 +37,32 @@ export default function PlazaSquare() {
       <Building model="/assets/models/planter.glb" position={[2.8, 0, 9]} scale={2.5} rotationY={-Math.PI / 2} />
       <Building model="/assets/models/tree-large.glb" position={[-4, 0, 10]} scale={3} />
       <Building model="/assets/models/tree-small.glb" position={[4.5, 0, 13]} scale={3} />
+
+      {/* PRD v4 §4.1 — more decoration: a paved medallion in the square
+          floor, a second streetlamp style at the outer corners, café-seating
+          parasol clusters, and more planters/trees so the square doesn't
+          read as a mostly-bare rectangle with a gate in it. */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[SQUARE_CENTER[0], 0.015, SQUARE_CENTER[1]]}>
+        <ringGeometry args={[6, 6.6, 48]} />
+        <meshStandardMaterial color="#9d9689" roughness={0.9} />
+      </mesh>
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[SQUARE_CENTER[0], 0.015, SQUARE_CENTER[1]]}>
+        <ringGeometry args={[3.2, 3.6, 40]} />
+        <meshStandardMaterial color="#9d9689" roughness={0.9} />
+      </mesh>
+
+      <Building model="/assets/models/light-square-double.glb" position={[32, 0, -32]} scale={5} rotationY={Math.PI * 1.25} />
+      <Building model="/assets/models/light-square-double.glb" position={[32, 0, 2]} scale={5} rotationY={-Math.PI * 0.25} />
+
+      <Building model="/assets/models/detail-parasol-a.glb" position={[24, 0, -24]} scale={5} />
+      <Building model="/assets/models/detail-parasol-b.glb" position={[27, 0, -21]} scale={5} rotationY={1.1} />
+      <Building model="/assets/models/detail-parasol-a.glb" position={[9, 0, -25]} scale={5} rotationY={2.4} />
+
+      <Building model="/assets/models/planter.glb" position={[34, 0, -34]} scale={2.5} />
+      <Building model="/assets/models/planter.glb" position={[34, 0, -2]} scale={2.5} />
+      <Building model="/assets/models/planter.glb" position={[2, 0, -34]} scale={2.5} />
+      <Building model="/assets/models/tree-large.glb" position={[30, 0, -6]} scale={3.4} rotationY={0.6} />
+      <Building model="/assets/models/tree-small.glb" position={[6, 0, -30]} scale={3.2} rotationY={1.8} />
     </group>
   )
 }
