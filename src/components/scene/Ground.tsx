@@ -1,4 +1,6 @@
 import { useMemo } from 'react'
+import { Instances, Instance } from '@react-three/drei'
+import * as THREE from 'three'
 import { PALETTE } from '../../config'
 import Forest from './Forest'
 import PlazaSquare from './PlazaSquare'
@@ -18,15 +20,18 @@ const GROUND_SIZE: [number, number] = [260, 260]
 // PRD v4 §4.4/§7.4 — two depth layers (distant peaks + closer foothills)
 // with varied silhouettes, replacing v3's single ring of identical 4-sided
 // cones — a real mountain range doesn't look like one shape repeated on a
-// perfect circle.
-// Kept modest — each peak is its own uninstanced mesh (varied cone side-
-// count rules out simple instancing without added complexity), and under
-// Lighthouse's mobile 4x-CPU-throttle preset, mounting many of them measurably
-// added to Total Blocking Time. 16+12 still reads as two real depth layers.
+// perfect circle. Properly instanced by bucketing peaks into a handful of
+// side-count groups (one drei <Instances> draw call per bucket, §12) rather
+// than the first pass's fix of just cutting the peak count in half to claw
+// back Lighthouse's mobile Total Blocking Time — that was treating the
+// symptom (too many individually-meshed objects) instead of the actual
+// cause (not instanced at all). Fixing the root cause instead means the
+// count can go back up, not just recover to where it started.
 const PEAK_RING_RADIUS = 190
-const PEAK_COUNT = 16
+const PEAK_COUNT = 34
 const FOOTHILL_RING_RADIUS = 150
-const FOOTHILL_COUNT = 12
+const FOOTHILL_COUNT = 26
+const SIDE_BUCKETS = [4, 5, 6, 7] as const
 
 function mulberry32(seed: number) {
   return () => {
@@ -42,13 +47,13 @@ function mulberry32(seed: number) {
 // layered just above the base ground plane. This is the single biggest
 // reason the suburb didn't yet read as a suburb from a still frame — same
 // cream/tan ground as downtown everywhere, regardless of building density.
-// Kept narrower in X than the suburb's outermost filler row (±23) — near
-// the junction, Foundry's own nearest buildings start at x≈-20, and the two
-// districts' near-junction footprints sit close enough together that a
-// wider patch would paint grass under a downtown building. Covers real
-// attractions (±9) and the inner filler row (±16) cleanly; the outermost
-// row's far edge is the accepted trade-off.
-const GRASS_SIZE: [number, number] = [34, 94]
+// Widened to the suburb's full outer-row extent (±23) after checking actual
+// building footprints, not just lot-center coordinates: Foundry's nearest
+// lot (x=-20, z=16) is only ~3m wide at its placement scale, so its
+// footprint (~-21.5 to -18.5) doesn't reach the suburb's own outer edge —
+// an earlier, more conservative pass narrowed this to ±17 assuming lot
+// centers alone were close enough to collide, which overstated the risk.
+const GRASS_SIZE: [number, number] = [48, 94]
 const GRASS_CENTER: [number, number] = [0, 49]
 
 interface Peak {
@@ -78,26 +83,59 @@ function ringOfPeaks(count: number, baseRadius: number, radiusJitter: number, he
   return arr
 }
 
-/** PRD v4 §4.4/§7.4 — a real range: distant peaks + closer foothills, varied
- * cone side-count and jittered spacing (seeded, so still reproducible)
- * instead of one ring of identical 4-sided pyramids evenly spaced. */
+/** PRD v4 §4.4/§7.4/§12 — a real range: distant peaks + closer foothills,
+ * varied cone side-count and jittered spacing (seeded, so still
+ * reproducible) instead of one ring of identical 4-sided pyramids evenly
+ * spaced — and properly instanced despite the varied side-count, by
+ * bucketing peaks into SIDE_BUCKETS groups and giving each bucket its own
+ * canonical-size geometry (one drei <Instances> draw call per bucket, four
+ * total, regardless of how many dozen peaks exist) — the same reasoning
+ * Forest.tsx already applies to trees, extended to handle a per-instance
+ * geometry variation (side count) that a single shared geometry can't. */
 function Mountains() {
-  const { peaks, foothills } = useMemo(() => {
+  const allPeaks = useMemo(() => {
     const rand = mulberry32(20260921)
-    return {
-      peaks: ringOfPeaks(PEAK_COUNT, PEAK_RING_RADIUS, 30, [50, 110], rand),
-      foothills: ringOfPeaks(FOOTHILL_COUNT, FOOTHILL_RING_RADIUS, 16, [30, 58], rand),
-    }
+    return [
+      ...ringOfPeaks(PEAK_COUNT, PEAK_RING_RADIUS, 30, [50, 110], rand),
+      ...ringOfPeaks(FOOTHILL_COUNT, FOOTHILL_RING_RADIUS, 16, [30, 58], rand),
+    ]
   }, [])
+
+  const bucketed = useMemo(() => {
+    const groups = new Map<number, Peak[]>()
+    for (const sides of SIDE_BUCKETS) groups.set(sides, [])
+    for (const p of allPeaks) groups.get(p.sides)!.push(p)
+    return groups
+  }, [allPeaks])
+
+  const material = useMemo(() => {
+    const m = new THREE.MeshStandardMaterial({ color: PALETTE.mountain })
+    m.fog = true
+    return m
+  }, [])
+
+  // One canonical unit cone (radius 1, height 1) geometry per side-count
+  // bucket, created once — not inline in the JSX below, which would hand
+  // <Instances> a fresh geometry reference (and force a rebuild) every render.
+  const geometries = useMemo(() => new Map(SIDE_BUCKETS.map((sides) => [sides, new THREE.ConeGeometry(1, 1, sides)])), [])
 
   return (
     <group>
-      {[...peaks, ...foothills].map((p, i) => (
-        <mesh key={i} position={p.position} rotation={[0, p.rotationY, 0]}>
-          <coneGeometry args={[p.width / 2, p.height, p.sides]} />
-          <meshStandardMaterial color={PALETTE.mountain} fog />
-        </mesh>
-      ))}
+      {SIDE_BUCKETS.map((sides) => {
+        const peaks = bucketed.get(sides)!
+        if (peaks.length === 0) return null
+        // Each Instance's own scale reproduces that peak's real
+        // width/height (ConeGeometry is centered at its own origin, so this
+        // composes correctly with the same position.y = height/2 - 4
+        // formula the uninstanced version used).
+        return (
+          <Instances key={sides} geometry={geometries.get(sides)} material={material}>
+            {peaks.map((p, i) => (
+              <Instance key={i} position={p.position} rotation={[0, p.rotationY, 0]} scale={[p.width / 2, p.height, p.width / 2]} />
+            ))}
+          </Instances>
+        )
+      })}
     </group>
   )
 }
