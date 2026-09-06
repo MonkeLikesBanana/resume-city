@@ -6,7 +6,7 @@ import { CITY_NAME } from '../../config'
  * GPU/driver/browser combination didn't cooperate." Rendered instead of the
  * 3D scene when WebGL2 isn't supported, or after the canvas reports a
  * webglcontextlost it can't recover from. Static og-image + the same real
- * nav links + PDF — no reduced feature set beyond "no camera flights." */
+ * nav links + PDF — no reduced feature set beyond "no camera drives." */
 export default function NoWebGLFallback() {
   return (
     <div className="flex h-full w-full flex-col items-center overflow-y-auto bg-[var(--color-ground)] px-6 py-10 text-center">

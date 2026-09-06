@@ -48,7 +48,7 @@ export default function WelcomeOverlay() {
 
           <h1 className="font-[Fredoka] text-5xl font-semibold text-[var(--color-ink)] sm:text-6xl">{CITY_NAME}</h1>
           <p className="mt-3 max-w-md text-[var(--color-ink)]/70">
-            Aarav Vaswani's résumé, built as a small city — click a building, the camera flies you there.
+            Aarav Vaswani's résumé, built as a small city — click a building, the camera drives you there.
           </p>
 
           <button

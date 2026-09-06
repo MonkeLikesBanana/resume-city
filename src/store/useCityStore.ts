@@ -2,7 +2,7 @@ import { create } from 'zustand'
 import { isWebGL2Supported } from '../lib/webgl'
 
 interface CityState {
-  /** id of the Attraction currently focused (camera flown to + panel open), or null when at the overview shot. */
+  /** id of the Attraction currently focused (camera driven to + panel open), or null when at the Welcome Plaza home state. */
   activeAttractionId: string | null
   setActiveAttractionId: (id: string | null) => void
 

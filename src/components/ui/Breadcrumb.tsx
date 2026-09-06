@@ -5,10 +5,10 @@ import { DISTRICTS } from '../../content/districts'
 import { CITY_NAME } from '../../config'
 
 /** PRD §3/§9 — "Vasnova City › District › Building", each level clickable.
- * The district level has no distinct camera shot of its own (§7.3 only
- * defines per-attraction shots plus one overview shot), so it — like the
- * city level — links back to the overview rather than a shot that doesn't
- * exist. */
+ * The district level has no distinct camera shot of its own (PRD v2 §7.4:
+ * per-attraction shots plus the Welcome Plaza as home state, no district-level
+ * shot), so it — like the city level — links back to the Plaza rather than a
+ * shot that doesn't exist. */
 export default function Breadcrumb() {
   const activeId = useCityStore((s) => s.activeAttractionId)
   const attraction = activeId ? getAttraction(activeId) : undefined

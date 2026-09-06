@@ -39,7 +39,9 @@ function RouteSync() {
   return null
 }
 
-/** PRD §10 — "Escape closes the panel and flies back to overview." */
+/** PRD §10 — "Escape closes the panel and drives back to the Welcome Plaza"
+ * (PRD v2 §7: the Plaza is the city's home state — there's no more free-roam
+ * overview shot to fall back to). */
 function EscapeToOverview() {
   const navigate = useNavigate()
   const activeId = useCityStore((s) => s.activeAttractionId)
@@ -57,7 +59,8 @@ function EscapeToOverview() {
 }
 
 // An unknown :id in the URL just resolves to null in RouteSync above — the
-// city falls back to the overview shot rather than dead-ending on a 404.
+// city falls back to the Welcome Plaza (home state) rather than dead-ending
+// on a 404.
 function Experience() {
   const webglSupported = useCityStore((s) => s.webglSupported)
   const hasEntered = useCityStore((s) => s.hasEntered)

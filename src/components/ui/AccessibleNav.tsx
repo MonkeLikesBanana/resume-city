@@ -24,7 +24,7 @@ function StopsList() {
         </div>
       ))}
       <Link to="/" className="mt-1 block rounded-lg px-2 py-1.5 font-medium text-[var(--color-ink)] hover:bg-[var(--color-ink)]/5">
-        ← Back to overview
+        ← Back to Welcome Plaza
       </Link>
     </nav>
   )
