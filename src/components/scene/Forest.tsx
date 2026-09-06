@@ -4,16 +4,27 @@ import * as THREE from 'three'
 
 const TREE_MODELS = ['/assets/models/tree-pine-a.glb', '/assets/models/tree-pine-b.glb', '/assets/models/tree-pine-tall.glb']
 
-// PRD v2 §4.2/§12 — "forest across the sides of the area" so the world reads
-// as full from car-eye height, not just from directly overhead. Two dense
-// bands flanking the whole Main Street corridor, north and south, well
-// beyond the downtown block depth (filler buildings reach z=±23) and inside
-// the distant mountain ring (radius 150). Must be GPU-instanced (drei
-// <Instances>) — this is 150-300 trees, not the dozen v1 had.
-const BAND_X: [number, number] = [-88, 78]
-const NORTH_BAND_Z: [number, number] = [28, 72]
-const SOUTH_BAND_Z: [number, number] = [-72, -28]
-const TREES_PER_BAND = 90
+// PRD v3 §4.2 — the world is now an L-shape (Foundry west, Lakeside south)
+// plus the Plaza's open square, not a symmetric east-west corridor, so the
+// forest is five rectangular regions wrapping the outside of that shape
+// (west of Foundry, south of Foundry, east of the Plaza/Lakeside, a wedge
+// north of Foundry/west of Lakeside, and one beyond the Lakeside
+// cul-de-sac) rather than two simple bands either side of one road. Each
+// region is clear of every building/park/court region by construction — see
+// the margins noted per region below. Must be GPU-instanced (drei
+// <Instances>) — comparable total tree count to v2 (~300), just reshaped.
+interface Rect {
+  x: [number, number]
+  z: [number, number]
+  count: number
+}
+const REGIONS: Rect[] = [
+  { x: [-175, -92], z: [-90, 100], count: 70 }, // west of Foundry's far end
+  { x: [-92, 50], z: [-90, -40], count: 70 }, // south of Foundry (filler reaches z=-31)
+  { x: [50, 120], z: [-90, 100], count: 70 }, // east of the Plaza square (reaches x=36) and Lakeside (reaches x=23)
+  { x: [-92, -40], z: [35, 100], count: 50 }, // wedge: north of Foundry, west of the Lakeside corridor/court
+  { x: [-40, 50], z: [98, 140], count: 50 }, // beyond the Lakeside cul-de-sac (z=93)
+]
 
 interface Placement {
   position: [number, number, number]
@@ -31,11 +42,11 @@ function mulberry32(seed: number) {
   }
 }
 
-function scatterBand(zRange: [number, number], rand: () => number): Placement[] {
+function scatterRegion(region: Rect, rand: () => number): Placement[] {
   const placements: Placement[] = []
-  for (let i = 0; i < TREES_PER_BAND; i++) {
-    const x = BAND_X[0] + rand() * (BAND_X[1] - BAND_X[0])
-    const z = zRange[0] + rand() * (zRange[1] - zRange[0])
+  for (let i = 0; i < region.count; i++) {
+    const x = region.x[0] + rand() * (region.x[1] - region.x[0])
+    const z = region.z[0] + rand() * (region.z[1] - region.z[0])
     placements.push({
       position: [x, 0, z],
       rotationY: rand() * Math.PI * 2,
@@ -68,7 +79,7 @@ function TreeInstances({ model, placements }: { model: string; placements: Place
 export default function Forest() {
   const placementsByModel = useMemo(() => {
     const rand = mulberry32(20260906)
-    const all = [...scatterBand(NORTH_BAND_Z, rand), ...scatterBand(SOUTH_BAND_Z, rand)]
+    const all = REGIONS.flatMap((region) => scatterRegion(region, rand))
     const byModel: Placement[][] = [[], [], []]
     all.forEach((p, i) => byModel[i % TREE_MODELS.length].push(p))
     return byModel

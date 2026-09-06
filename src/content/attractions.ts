@@ -1,5 +1,5 @@
 import type { Attraction } from '../types/attraction'
-import { nearestTOnRoad } from '../lib/road'
+import { nearestPositionOnArm } from '../lib/roadGraph'
 
 // PRD v2 §5/§8 — Content Map. Single source of truth: every hotspot, panel,
 // breadcrumb entry, route, and accessible-nav entry is derived from this
@@ -19,13 +19,12 @@ export const ATTRACTIONS: Attraction[] = [
     district: 'plaza',
     name: 'Welcome Plaza',
     subtitle: 'Aarav Vaswani',
-    position: [-9, 0, 0], // the gate's actual placement in Plaza.tsx — the tilt aims here
-    // Park at the bridge center instead, deliberately NOT at the gate itself:
-    // the gate spans the road, so a curb point AT its location would drive the
-    // car straight through/under it, leaving nothing distinct to tilt up at.
-    // Parking 9m short of it lets the arrival tilt turn to face a real,
-    // separate structure instead of straddling it.
-    curbT: nearestTOnRoad([0, 0, 0]),
+    position: [-6, 0, 4], // near the junction/gate corner — the tilt aims here
+    // MUST be explicit: the Plaza's parked position is the far end of its own
+    // short spur arm (PRD v3 §7.1), not "nearest point on my own arm to my
+    // position" (which would incorrectly resolve to near the junction itself,
+    // not out at the open-square vantage point).
+    curb: { arm: 'plaza', t: 1 },
     height: 6.5, // the welcome arch (PRD v2 §4.3): 2 columns + beam + cap
     description:
       "Aarav is a driven student interested in robotics, electronics, and business. Throughout his two years in high school, he's been part of the Saints Robotics FRC team, mentored FLL teams, taken the most rigorous academic courseload available to him, and competed in business events. His ultimate goal is to have a positive impact on the world through innovation and entrepreneurship.",
@@ -48,6 +47,12 @@ export const ATTRACTIONS: Attraction[] = [
     rotationY: 0,
     model: '/assets/models/robotics-workshop.glb',
     height: 11,
+    // Explicit override: this kitbash's merged geometry isn't centered on its
+    // placement origin — its front wall sits at z≈-4.8, much closer to the
+    // road than the -9 position suggests, so the automatic nearest-point curb
+    // parked the camera almost flush against it. Parking 5m further down the
+    // road gives an angled 3/4 view instead of a flat wall filling the frame.
+    curb: nearestPositionOnArm('foundry', [-21, 0, 0]),
     timeline: [
       {
         role: 'Vice President',
@@ -150,16 +155,19 @@ export const ATTRACTIONS: Attraction[] = [
   },
 
   // ---------------------------------------------------------------------
-  // Lakeside — personal (§5.2) — Main Street continues east of the Plaza
+  // Lakeside — personal (§5.2) — a residential street running south from
+  // the Plaza, perpendicular to Main Street (PRD v3 §4.4/§7.1). Houses
+  // alternate sides of the street (±9 in X); EAST/WEST rotate each house to
+  // face the street it fronts, same convention as the Foundry filler rows.
   // ---------------------------------------------------------------------
   {
     id: 'cafe',
     district: 'lakeside',
     name: 'The Café',
     subtitle: 'Coffee, sushi, Indian food — and cooking (self-rated: not great at it)',
-    position: [16, 0, -9],
+    position: [-9, 0, 16],
     scale: 3,
-    rotationY: 0,
+    rotationY: -Math.PI / 2, // west-side lot, faces east toward the street
     model: '/assets/models/cafe.glb',
     height: 2.5,
     description: "He runs on coffee, and he's always down for sushi or Indian food. He enjoys cooking too — even if the results are hit or miss.",
@@ -171,9 +179,9 @@ export const ATTRACTIONS: Attraction[] = [
     district: 'lakeside',
     name: 'Arcade / Game Room',
     subtitle: 'Video games — favorite is Minecraft',
-    position: [26, 0, 9],
+    position: [9, 0, 26],
     scale: 3,
-    rotationY: Math.PI,
+    rotationY: Math.PI / 2, // east-side lot, faces west toward the street
     model: '/assets/models/arcade.glb',
     height: 3.4,
     description: "He's been playing video games for as long as he can remember — Minecraft is the all-time favorite.",
@@ -185,9 +193,9 @@ export const ATTRACTIONS: Attraction[] = [
     district: 'lakeside',
     name: 'Sports Field',
     subtitle: 'Plays a bit of everything, recreationally',
-    position: [38, 0, -9],
+    position: [-9, 0, 38],
     scale: 3,
-    rotationY: 0,
+    rotationY: -Math.PI / 2,
     model: '/assets/models/sports-field.glb',
     height: 3.1,
     description: "He's into pretty much any sport — not amazing at any one of them, but always up for playing.",
@@ -199,9 +207,9 @@ export const ATTRACTIONS: Attraction[] = [
     district: 'lakeside',
     name: 'The Open Road',
     subtitle: 'Driving',
-    position: [48, 0, 9],
+    position: [9, 0, 48],
     scale: 3,
-    rotationY: Math.PI,
+    rotationY: Math.PI / 2,
     model: '/assets/models/open-road.glb',
     height: 3.7,
     description: 'He loves driving — any excuse to be behind the wheel.',
@@ -213,7 +221,7 @@ export const ATTRACTIONS: Attraction[] = [
     district: 'lakeside',
     name: 'More Coming Soon',
     subtitle: 'An empty lot',
-    position: [58, 0, -9],
+    position: [-9, 0, 58],
     scale: 2.5,
     height: 2,
     description: "This lot's still under construction — more interests are on the way. See PRD §16 for exactly how a new stop gets built here.",

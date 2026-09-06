@@ -1,7 +1,7 @@
 import { Suspense, useState, type ReactNode } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { PerformanceMonitor } from '@react-three/drei'
-import { PALETTE, CAR_EYE_HEIGHT } from '../../config'
+import { PALETTE, CAR_EYE_HEIGHT, DEFAULT_FOV } from '../../config'
 import useIsMobile from '../../hooks/useIsMobile'
 import Sky from './Sky'
 import Ground from './Ground'
@@ -31,10 +31,10 @@ export default function CityCanvas({ children }: CityCanvasProps) {
       dpr={dpr}
       camera={{
         // Placeholder pose only — CameraRig snaps this to the Plaza curb on
-        // mount (PRD v2 §7.4), before the visitor ever sees a frame render
-        // from here. Car height, facing down Main Street.
+        // mount (PRD v3 §7.4), before the visitor ever sees a frame render
+        // from here.
         position: [0, CAR_EYE_HEIGHT, 20],
-        fov: 55,
+        fov: DEFAULT_FOV,
         near: 0.3,
         far: 500,
       }}
@@ -55,10 +55,10 @@ export default function CityCanvas({ children }: CityCanvasProps) {
         castShadow={shadowsEnabled}
         shadow-mapSize={isMobile ? [512, 512] : [1024, 1024]}
         shadow-camera-left={-95}
-        shadow-camera-right={85}
-        shadow-camera-top={40}
+        shadow-camera-right={95}
+        shadow-camera-top={100}
         shadow-camera-bottom={-40}
-        shadow-camera-far={180}
+        shadow-camera-far={220}
       />
 
       <Sky />

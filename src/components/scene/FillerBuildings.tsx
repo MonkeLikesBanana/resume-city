@@ -1,16 +1,9 @@
-import { FILLER_BUILDINGS } from '../../content/filler-buildings'
-import Building from './Building'
+import { FOUNDRY_BLOCKS } from '../../content/foundry-blocks'
+import InstancedBuildings from './InstancedBuildings'
 
-/** PRD v2 §4.1/§9/§10 — purely decorative downtown density. Deliberately has
- * NO hotspot marker, NO click handler, and is NOT wired into AccessibleNav —
- * a filler building that somehow became reachable/announced would be a bug,
- * not a feature (PRD §10). */
+/** PRD v3 §4.1/§9/§10 — purely decorative downtown density. No hotspot
+ * marker, no click handler, not wired into AccessibleNav (§10) — a filler
+ * building that somehow became reachable/announced would be a bug. */
 export default function FillerBuildings() {
-  return (
-    <group>
-      {FILLER_BUILDINGS.map((f, i) => (
-        <Building key={i} model={f.model} position={f.position} rotationY={f.rotationY} scale={f.scale} />
-      ))}
-    </group>
-  )
+  return <InstancedBuildings buildings={FOUNDRY_BLOCKS} />
 }

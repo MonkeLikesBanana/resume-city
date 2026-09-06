@@ -39,13 +39,12 @@ export const ACCENT_TEXT = {
   lakeside: '#8A4B26',
 } as const
 
-/** PRD v2 §7.3 — tuned once for the whole app, not per-shot. Only used for
- * phase 2 (the damped "arrive and tilt" transition) — phase 1 (driving) writes
- * the camera directly and doesn't go through CameraControls' easing at all. */
-export const CAMERA = {
-  smoothTime: 0.7,
-  restThreshold: 0.01,
-}
+/** PRD v3 §7.7 — every attraction uses DEFAULT_FOV; the Welcome Plaza alone
+ * uses the wider HOME_FOV, since it's the one shot that needs to hold both
+ * 90°-apart districts in frame at once. CameraRig lerps between the two over
+ * the course of a trip (§7.3), the same eased progress that drives position. */
+export const DEFAULT_FOV = 55
+export const HOME_FOV = 75
 
 /** PRD v2 §7.2 — fixed camera height above the road surface, every stop, while
  * driving and while parked. Replaces v1's per-building camera positioning. */

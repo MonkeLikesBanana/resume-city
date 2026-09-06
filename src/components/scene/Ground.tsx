@@ -1,24 +1,24 @@
 import { useMemo } from 'react'
 import { PALETTE } from '../../config'
-import Building from './Building'
 import Forest from './Forest'
-import Plaza from './Plaza'
+import PlazaSquare from './PlazaSquare'
+import Suburb from './Suburb'
+import Park from './Park'
+import BasketballCourt from './BasketballCourt'
 
-const LAKE_HALF_WIDTH = 6 // x: -6..6, PRD §4 "stylized lake physically separating the two districts"
-// Kept short enough (z: -25..25) to clear the forest bands (§4.2, |z| >= 28) —
-// the lake separates the two districts near Main Street, it doesn't need to
-// run the length of the whole forest.
-const LAKE_LENGTH = 50
-// PRD v2 §4.1 — Main Street now runs from x=-76 (Foundry gateway) to x=66
-// (Lakeside gateway); ground/mountains widened to match plus a forest buffer.
-const GROUND_SIZE: [number, number] = [240, 160]
-
-const MOUNTAIN_RING_RADIUS = 150
-const MOUNTAIN_COUNT = 18
+// PRD v3 §4.1/§4.3/§4.4/§7.1 — the world is now an L-shape (Foundry west,
+// Lakeside south) plus the Plaza's open square in the +X,-Z quadrant, not a
+// single symmetric east-west corridor. A single large square ground plane
+// centered on the junction comfortably covers all three arms plus the
+// square; v2's separate lake+bridge is retired (§4.3) — Lakeside gets its
+// own small pond instead (Park.tsx), since the two districts no longer share
+// a water crossing between them.
+const GROUND_SIZE: [number, number] = [260, 260]
+const MOUNTAIN_RING_RADIUS = 175
+const MOUNTAIN_COUNT = 22
 
 /** Simple low-poly mountain silhouette: a ring of 4-sided pyramids far
- * beyond the playable area. PRD §4 "Cascade-style mountain silhouette" —
- * generated procedurally rather than modeled, kept in-fog for atmosphere. */
+ * beyond the playable area. Generated procedurally, kept in-fog for atmosphere. */
 function Mountains() {
   const peaks = useMemo(() => {
     const arr = []
@@ -48,25 +48,6 @@ function Mountains() {
   )
 }
 
-/** PRD §7.3 "the bridge crossing near the Welcome Plaza" — a short chain of
- * road-bridge tiles across the lake gap, with pillars for support. */
-function Bridge() {
-  const scale = 3
-  const tileSpan = 1 * scale // road-bridge.glb is a 1x1 raw tile
-  const tileCount = Math.ceil((LAKE_HALF_WIDTH * 2) / tileSpan)
-  const start = -((tileCount - 1) * tileSpan) / 2
-
-  return (
-    <group>
-      {Array.from({ length: tileCount }, (_, i) => (
-        <Building key={i} model="/assets/models/bridge-deck.glb" position={[start + i * tileSpan, 0, 0]} scale={scale} />
-      ))}
-      <Building model="/assets/models/bridge-pillar.glb" position={[-3, -1.2, 0]} scale={scale} />
-      <Building model="/assets/models/bridge-pillar.glb" position={[3, -1.2, 0]} scale={scale} />
-    </group>
-  )
-}
-
 export default function Ground() {
   return (
     <group>
@@ -75,13 +56,10 @@ export default function Ground() {
         <meshStandardMaterial color={PALETTE.ground} />
       </mesh>
 
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]}>
-        <planeGeometry args={[LAKE_HALF_WIDTH * 2, LAKE_LENGTH]} />
-        <meshStandardMaterial color={PALETTE.lake} transparent opacity={0.88} roughness={0.3} metalness={0.1} />
-      </mesh>
-
-      <Bridge />
-      <Plaza />
+      <PlazaSquare />
+      <Suburb />
+      <Park />
+      <BasketballCourt />
       <Forest />
       <Mountains />
     </group>

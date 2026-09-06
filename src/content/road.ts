@@ -1,29 +1,30 @@
-import type { Vec3 } from '../types/attraction'
+import type { Vec3, Arm } from '../types/attraction'
 
-// PRD v2 §7.1/§8 — the single continuous drivable route, in tour order.
-// Straight segments (not a smooth spline) to match the blocky Kenney road-tile
-// aesthetic — the car visibly turns at corners the way the tiles do.
-//
-// Layout: one straight Main Street along Z=0, Foundry District west of the
-// Plaza (negative X), Lakeside District east (positive X). Buildings sit off
-// the centerline (±9 in Z); their curb point is the nearest point ON this
-// line, which — since the road itself never leaves Z=0 — is just the matching
-// X coordinate. See src/content/attractions.ts for exact building positions.
-export const ROAD_PATH: Vec3[] = [
-  [-76, 0, 0], // Foundry gateway (west end)
-  [-66, 0, 0], // fll-center curb
-  [-58, 0, 0], // deca-center curb
-  [-46, 0, 0], // makers-club curb
-  [-36, 0, 0], // academic-hall curb
-  [-26, 0, 0], // neemo-hq curb
-  [-16, 0, 0], // robotics-workshop curb
-  [-8, 0, 0], // west bank of the bridge
-  [0, 0, 0], // Welcome Plaza — the road's center, the gate spans here
-  [8, 0, 0], // east bank of the bridge
-  [16, 0, 0], // cafe curb
-  [26, 0, 0], // arcade curb
-  [38, 0, 0], // sports-field curb
-  [48, 0, 0], // open-road curb
-  [58, 0, 0], // coming-soon curb
-  [66, 0, 0], // Lakeside gateway (east end)
+// PRD v3 §7.1 — three arms meeting at a junction at the world origin:
+// Foundry runs west (-X), Lakeside runs south (+Z), and a short Plaza spur
+// runs out into the open corner square (+X,-Z) where the car parks at home.
+// Modeling the Plaza as its own short arm (rather than a special case) means
+// every trip in the app — including "drive home" — is just an ordinary
+// same-arm or cross-arm trip through buildTripCurve()'s one mechanism
+// (src/lib/roadGraph.ts), no separate code path needed for "home."
+
+export const FOUNDRY_ARM: Vec3[] = [
+  [0, 0, 0], [-8, 0, 0], [-16, 0, 0], [-26, 0, 0], [-36, 0, 0],
+  [-46, 0, 0], [-58, 0, 0], [-66, 0, 0], [-76, 0, 0], [-90, 0, 0],
 ]
+
+export const LAKESIDE_ARM: Vec3[] = [
+  [0, 0, 0], [0, 0, 8], [0, 0, 16], [0, 0, 26], [0, 0, 36],
+  [0, 0, 46], [0, 0, 58], [0, 0, 66], [0, 0, 76], [0, 0, 90],
+]
+
+// The home-parked vantage point, at the far end of the spur — see PRD §7.7.
+export const PLAZA_ARM: Vec3[] = [
+  [0, 0, 0], [11, 0, -11], [22, 0, -22],
+]
+
+export const ARMS: Record<Arm, Vec3[]> = {
+  foundry: FOUNDRY_ARM,
+  lakeside: LAKESIDE_ARM,
+  plaza: PLAZA_ARM,
+}
