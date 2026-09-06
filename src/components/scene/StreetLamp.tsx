@@ -18,7 +18,9 @@ interface StreetLampProps {
   flickerSeed?: number
 }
 
-const LIT_INTENSITY = 3.5
+const LIT_INTENSITY = 9
+const LIGHT_RANGE = 26
+const LIGHT_DECAY = 1.5 // real inverse-square (2) reads as near-pinpoint at low-poly city scale — softer decay lets one lamp actually carry the sidewalk around it
 const FLICKER_CHANCE_PER_SECOND = 0.15
 const FLICKER_DEPTH = 0.55 // how far intensity dips during a flicker, 0..1
 
@@ -63,7 +65,7 @@ export default function StreetLamp({ model, position, rotationY = 0, scale = 1, 
   return (
     <group position={position} rotation={[0, rotationY, 0]}>
       <Building model={model} position={[0, 0, 0]} rotationY={0} scale={scale} />
-      <pointLight ref={lightRef} position={[0, lampHeight, 0]} color="#ffcf8a" intensity={0} distance={14} decay={2} castShadow={false} />
+      <pointLight ref={lightRef} position={[0, lampHeight, 0]} color="#ffcf8a" intensity={0} distance={LIGHT_RANGE} decay={LIGHT_DECAY} castShadow={false} />
     </group>
   )
 }

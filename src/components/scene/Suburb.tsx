@@ -45,9 +45,6 @@ function YardGreenery() {
   )
 }
 
-/** PRD v3 §4.4/§9 — purely decorative Lakeside density, mirroring
- * FillerBuildings.tsx exactly (§10's "never a hotspot, never in
- * AccessibleNav" rule applies identically here). */
 export default function Suburb() {
   return (
     <group>

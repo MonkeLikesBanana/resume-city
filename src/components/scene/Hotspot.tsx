@@ -25,7 +25,7 @@ export default function Hotspot({ attraction }: HotspotProps) {
   return (
     <group>
       {attraction.model ? (
-        <Building model={attraction.model} position={attraction.position} rotationY={attraction.rotationY} scale={attraction.scale} />
+        <Building model={attraction.model} position={attraction.position} rotationY={attraction.rotationY} scale={attraction.scale} glowAtNight />
       ) : (
         <>
           <Building model="/assets/models/construction-barrier.glb" position={[x - 1, y, z]} scale={2.5} />
