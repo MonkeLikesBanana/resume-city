@@ -30,11 +30,16 @@ interface Rect {
   z: [number, number]
   count: number
 }
+// PRD v4 polish round 5 — the south and wedge regions' near boundaries
+// (closest to downtown) were pushed further out from ±40/35 to ±54/54:
+// foundry-blocks.ts and suburb-houses.ts both grew two more depth rows,
+// reaching z/x=±47/±37 respectively (§3 "fill out the map"), so the old
+// boundaries would now have new filler buildings poking into the forest.
 const REGIONS: Rect[] = [
   { x: [-175, -92], z: [-90, 100], count: 70 }, // west of Foundry's far end
-  { x: [-92, 50], z: [-90, -40], count: 70 }, // south of Foundry (filler reaches z=-31)
-  { x: [50, 120], z: [-90, 100], count: 70 }, // east of the Plaza square (reaches x=36) and Lakeside (reaches x=23)
-  { x: [-92, -40], z: [35, 100], count: 50 }, // wedge: north of Foundry, west of the Lakeside corridor/court
+  { x: [-92, 50], z: [-90, -54], count: 70 }, // south of Foundry (filler now reaches z=-47)
+  { x: [50, 120], z: [-90, 100], count: 70 }, // east of the Plaza square (reaches x=36) and Lakeside (reaches x=37)
+  { x: [-92, -46], z: [54, 100], count: 50 }, // wedge: north of Foundry (reaches z=47), west of the Lakeside corridor/court (reaches x=-37)
   { x: [-40, 50], z: [98, 140], count: 50 }, // beyond the Lakeside cul-de-sac (z=93)
 ]
 

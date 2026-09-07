@@ -39,8 +39,17 @@ const BACK_MODELS = [
 // origin geometrically, even though they're on perpendicular roads).
 const ALONG: [number, number] = [-16, -84]
 
+// PRD v4 polish round 5 §3 — two more depth rows beyond the original back
+// row (±31), pushing downtown's footprint from a half-depth of ~31 to ~47
+// so the built-up area reaches much closer to the mountains rather than
+// leaving a wide band of bare/forested ground between downtown and the
+// range. Same generator, same per-row density (lotSpacing/jitter) as the
+// existing rows — this is "the same city, further out," not a denser one.
+// Forest.tsx's regions were pushed outward to match (see its own comment).
 export const FOUNDRY_BLOCKS: FillerBuilding[] = [
   ...generateBlock({ along: ALONG, streetAxis: 'x', rowOffsets: [16, -16], lotSpacing: 8, models: FRONT_MODELS, seed: 20260906 }),
   ...generateBlock({ along: ALONG, streetAxis: 'x', rowOffsets: [23, -23], lotSpacing: 9, models: TOWER_MODELS, seed: 20260907 }),
   ...generateBlock({ along: ALONG, streetAxis: 'x', rowOffsets: [31, -31], lotSpacing: 8, models: BACK_MODELS, seed: 20260908, jitter: 1.8 }),
+  ...generateBlock({ along: ALONG, streetAxis: 'x', rowOffsets: [39, -39], lotSpacing: 8.5, models: BACK_MODELS, seed: 20260909, jitter: 1.8 }),
+  ...generateBlock({ along: ALONG, streetAxis: 'x', rowOffsets: [47, -47], lotSpacing: 9.5, models: [...BACK_MODELS, ...FRONT_MODELS], seed: 20260910, jitter: 2 }),
 ]

@@ -53,8 +53,26 @@ function mulberry32(seed: number) {
 // footprint (~-21.5 to -18.5) doesn't reach the suburb's own outer edge —
 // an earlier, more conservative pass narrowed this to ±17 assuming lot
 // centers alone were close enough to collide, which overstated the risk.
-const GRASS_SIZE: [number, number] = [48, 94]
+// PRD v4 polish round 5 §4 — widened from [48,94]: suburb-houses.ts grew two
+// more depth rows (to ±37, up from ±23), so the grass patch's old ±24
+// half-width left the two new outer rows sitting on the base cream ground
+// color instead of grass (exactly the "many suburbs still don't have
+// grass" report — those houses were simply outside the patch, not a
+// missing-material bug).
+const GRASS_SIZE: [number, number] = [96, 94]
 const GRASS_CENTER: [number, number] = [0, 49]
+
+// PRD v4 polish round 5 §4 — the same "some ground has no proper surface"
+// problem, downtown side: Foundry's filler buildings sat directly on the
+// base cream ground plane (PALETTE.ground) with no paved surface of their
+// own, the same gap the grass patch fixes for the suburb. One rectangle
+// covering the full downtown footprint (foundry-blocks.ts now reaches
+// z=±47, §3) reads as a continuous paved city block — real downtowns are
+// pavement between buildings, not bare ground — and shares PALETTE.pavement
+// with the sidewalks/plaza it sits flush next to, rather than introducing a
+// third ground tone.
+const DOWNTOWN_GROUND_SIZE: [number, number] = [86, 112]
+const DOWNTOWN_GROUND_CENTER: [number, number] = [-48, 0]
 
 interface Peak {
   position: [number, number, number]
@@ -151,6 +169,11 @@ export default function Ground() {
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[GRASS_CENTER[0], -0.03, GRASS_CENTER[1]]} receiveShadow>
         <planeGeometry args={GRASS_SIZE} />
         <meshStandardMaterial color={PALETTE.moss} roughness={1} />
+      </mesh>
+
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[DOWNTOWN_GROUND_CENTER[0], -0.03, DOWNTOWN_GROUND_CENTER[1]]} receiveShadow>
+        <planeGeometry args={DOWNTOWN_GROUND_SIZE} />
+        <meshStandardMaterial color={PALETTE.pavement} roughness={0.95} />
       </mesh>
 
       <PlazaSquare />

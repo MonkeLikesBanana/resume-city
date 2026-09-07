@@ -17,7 +17,36 @@ const HOUSE_MODELS = [
 
 const ALONG: [number, number] = [6, 85]
 
+// PRD v3/v4 — Park.tsx (center [32,45], footprint roughly x:[24,42] z:[35,55])
+// and BasketballCourt.tsx (center [-32,65], a 16x9 court, footprint roughly
+// x:[-40,-24] z:[56.5,73.5]) both sit at exactly the depth (|x|~32) the new
+// rows below reach. The two original rows (±16, ±23) never reached that far
+// out, so this collision risk didn't exist before round 5 — checked by
+// comparing the new rows' actual lot coordinates against each landmark's
+// footprint, not assumed clear.
+const EXCLUSION_ZONES: Array<{ x: [number, number]; z: [number, number] }> = [
+  { x: [22, 44], z: [33, 57] }, // Park, with margin
+  { x: [-44, -22], z: [54.5, 75.5] }, // BasketballCourt, with margin
+]
+function clearsLandmarks(position: [number, number, number]): boolean {
+  const [x, , z] = position
+  return !EXCLUSION_ZONES.some((zone) => x >= zone.x[0] && x <= zone.x[1] && z >= zone.z[0] && z <= zone.z[1])
+}
+
+// PRD v4 polish round 5 §3 — two more rows beyond the original outer row
+// (±23), same reasoning as foundry-blocks.ts: same generator, same per-row
+// density, just pushing the suburb's footprint further out (to ~±37) so it
+// reads as a real neighborhood extending toward the mountains rather than
+// two thin rows of houses with open ground behind them. Forest.tsx's
+// regions were pushed outward to match. The two new rows are filtered
+// against EXCLUSION_ZONES above — see its comment.
 export const SUBURB_HOUSES: FillerBuilding[] = [
   ...generateBlock({ along: ALONG, streetAxis: 'z', rowOffsets: [16, -16], lotSpacing: 12, models: HOUSE_MODELS, seed: 20260917, jitter: 1.5 }),
   ...generateBlock({ along: ALONG, streetAxis: 'z', rowOffsets: [23, -23], lotSpacing: 14, models: HOUSE_MODELS, seed: 20260918, jitter: 1.8 }),
+  ...generateBlock({ along: ALONG, streetAxis: 'z', rowOffsets: [30, -30], lotSpacing: 14, models: HOUSE_MODELS, seed: 20260919, jitter: 1.8 }).filter((b) =>
+    clearsLandmarks(b.position),
+  ),
+  ...generateBlock({ along: ALONG, streetAxis: 'z', rowOffsets: [37, -37], lotSpacing: 16, models: HOUSE_MODELS, seed: 20260920, jitter: 2 }).filter((b) =>
+    clearsLandmarks(b.position),
+  ),
 ]

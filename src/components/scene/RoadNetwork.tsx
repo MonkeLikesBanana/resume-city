@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { Instances, Instance } from '@react-three/drei'
+import { Instances, Instance, useGLTF } from '@react-three/drei'
 import * as THREE from 'three'
 import Building from './Building'
 import StreetLamp from './StreetLamp'
@@ -9,77 +9,124 @@ import { PALETTE } from '../../config'
 
 const TILE = 3 // road tiles are 1x1 native, scale 3 -> 3x3m
 
-// PRD v3 §4.1/§4.4/§7.1, extended by PRD v4 §4.2/§4.3 — the VISUAL road
-// network: Main Street + Lakeside street (a plain asphalt plane plus a
-// hand-added dashed centerline — see roadSurfaces()/centerlineDashes()
-// below for why those are separate geometry rather than a kit road tile),
-// the junction bend, driveways at every house, plus (new in v4) sidewalk
-// paving strips
-// between the road and each filler row, more streetlamps at regular
-// intervals, street signs at cross-street intersections, dumpsters tucked
-// behind the back filler row, and awning/parasol clusters on a few
-// storefronts — filling the ground that was previously bare between the
-// road and the buildings (PRD v4 §2's "no empty space" goal). The car only
-// ever *drives* the graph in src/lib/roadGraph.ts (§7.5's scope
-// simplification, unchanged) — all of this is set dressing.
+// PRD v3 §4.1/§4.4/§7.1, extended by PRD v4/v5 §4.2/§4.3 — the VISUAL road
+// network: Main Street, the Lakeside street, both cross streets, the
+// junction, and the Lakeside dead-end are all plain asphalt plane geometry
+// plus a hand-added dashed centerline (see roadSurfaces()/
+// CenterlineDashes below for why those are separate geometry rather than
+// kit road tiles), driveways at every house, sidewalk paving strips
+// between the road and each filler row, streetlamps at regular intervals,
+// street signs at cross-street intersections, dumpsters tucked behind the
+// back filler row, and awning/parasol clusters on a few storefronts —
+// filling the ground that was previously bare between the road and the
+// buildings (PRD v4 §2's "no empty space" goal). The car only ever
+// *drives* the graph in src/lib/roadGraph.ts (§7.5's scope simplification,
+// unchanged) — all of this is set dressing.
 const FOUNDRY_SPAN: [number, number] = [-90, -1.5]
 const LAKESIDE_SPAN: [number, number] = [1.5, 88.5]
 const CROSS_STREETS_X = [-26, -46]
 const CROSS_STREET_Z_SPAN: [number, number] = [-31, 31]
-const JUNCTION_ROTATION = 0
 const POLE_INTERVAL = 24
 const LAMP_INTERVAL = 16
 
-function tilePositions(span: [number, number], axis: 'x' | 'z', fixed: number): Array<[number, number, number]> {
-  const [from, to] = span
-  const count = Math.round((to - from) / TILE)
-  const positions: Array<[number, number, number]> = []
-  for (let i = 0; i < count; i++) {
-    const t = from + TILE / 2 + i * TILE
-    positions.push(axis === 'x' ? [t, 0, fixed] : [fixed, 0, t])
-  }
-  return positions
+const ROAD_WIDTH = 6
+const CROSS_STREET_WIDTH = 5
+
+interface StreetSpan {
+  span: [number, number]
+  axis: 'x' | 'z'
+  width: number
+  fixed: number
 }
 
-const ROAD_WIDTH = 6
-
-/** PRD v4 polish round 4 — the actual travel-lane surface of Main Street and
- * the Lakeside street: one continuous flat plane per street, not many tiled
- * road-side.glb/road-straight.glb copies. See centerlineDashes() below for
- * why the kit tiles were dropped for this — same reasoning, same fix. Meets
- * road-bend-sidewalk.glb (the junction) flush at each span's inner edge, the
- * same boundary the old tiled version used. */
+/** PRD v4 polish round 4/5 — the entire road SURFACE (Main Street, the
+ * Lakeside street, both cross streets, the junction corner, and the
+ * Lakeside dead-end) is plain asphalt-colored geometry now, not kit tiles.
+ * Round 4 fixed Main/Lakeside this way after finding road-side.glb and
+ * road-straight.glb share one texture that tiles into a busy band, not
+ * clean asphalt. Round 5 finishes the job: road-bend-sidewalk.glb,
+ * road-end-round.glb, and the cross streets' road-straight.glb/
+ * road-crossroad.glb tiles had the exact same texture problem and now
+ * visibly clashed with the clean Main/Lakeside surfaces next to them.
+ *
+ * Cross streets don't need a separate intersection tile where they meet
+ * Main Street: two flat planes of the identical asphalt color simply
+ * overlapping there is indistinguishable from one continuous surface — no
+ * seam, no special geometry required, unlike the kit tile system this
+ * replaces which needed a dedicated road-crossroad.glb piece to look
+ * right. Same reasoning for the junction corner between Main Street and
+ * the Lakeside street: one small square plane closes the L-shaped gap
+ * between where each street's own plane ends, overlapping each by half a
+ * lane width. */
 function roadSurfaces() {
-  const spans: Array<{ span: [number, number]; axis: 'x' | 'z' }> = [
-    { span: FOUNDRY_SPAN, axis: 'x' },
-    { span: LAKESIDE_SPAN, axis: 'z' },
+  const streets: StreetSpan[] = [
+    { span: FOUNDRY_SPAN, axis: 'x', width: ROAD_WIDTH, fixed: 0 },
+    { span: LAKESIDE_SPAN, axis: 'z', width: ROAD_WIDTH, fixed: 0 },
+    ...CROSS_STREETS_X.map((x) => ({ span: CROSS_STREET_Z_SPAN, axis: 'z' as const, width: CROSS_STREET_WIDTH, fixed: x })),
   ]
-  return spans.map(({ span, axis }, i) => {
-    const center = (span[0] + span[1]) / 2
-    const length = span[1] - span[0]
-    const position: [number, number, number] = axis === 'x' ? [center, 0.01, 0] : [0, 0.01, center]
-    const size: [number, number] = axis === 'x' ? [length, ROAD_WIDTH] : [ROAD_WIDTH, length]
-    return (
-      <mesh key={`road-surface-${i}`} rotation={[-Math.PI / 2, 0, 0]} position={position} receiveShadow>
-        <planeGeometry args={size} />
+  return (
+    <>
+      {streets.map((s, i) => {
+        const center = (s.span[0] + s.span[1]) / 2
+        const length = s.span[1] - s.span[0]
+        const position: [number, number, number] = s.axis === 'x' ? [center, 0.01, s.fixed] : [s.fixed, 0.01, center]
+        const size: [number, number] = s.axis === 'x' ? [length, s.width] : [s.width, length]
+        return (
+          <mesh key={`street-${i}`} rotation={[-Math.PI / 2, 0, 0]} position={position} receiveShadow>
+            <planeGeometry args={size} />
+            <meshStandardMaterial color={PALETTE.asphalt} roughness={0.85} />
+          </mesh>
+        )
+      })}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.01, 0]} receiveShadow>
+        <planeGeometry args={[ROAD_WIDTH, ROAD_WIDTH]} />
         <meshStandardMaterial color={PALETTE.asphalt} roughness={0.85} />
       </mesh>
-    )
-  })
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.01, LAKESIDE_SPAN[1]]} receiveShadow>
+        <circleGeometry args={[ROAD_WIDTH / 2, 24]} />
+        <meshStandardMaterial color={PALETTE.asphalt} roughness={0.85} />
+      </mesh>
+    </>
+  )
 }
 
 /** A driveway connecting one Lakeside house to the street: perpendicular to
  * the street (which runs along Z), centered between the road edge and the
- * house's own lot. */
-function driveways() {
-  const houses = [...ATTRACTIONS.filter((a) => a.district === 'lakeside' && a.model), ...SUBURB_HOUSES.map((h) => ({ position: h.position }))]
-  return houses.map((h, i) => {
-    const [hx, , hz] = h.position
-    const dx = hx > 0 ? 2.5 : -2.5 // halfway between the road edge and a ±9 lot
-    return (
-      <Building key={`driveway-${i}`} model="/assets/models/road-driveway-single.glb" position={[dx, 0, hz]} scale={TILE} rotationY={Math.PI / 2} />
-    )
-  })
+ * house's own lot.
+ *
+ * PRD v4 polish round 5 — one <Instances> block (a single shared model)
+ * instead of a <Building> per house. Same issue and fix as Suburb.tsx's
+ * yard greenery: this scales 1:1 with house count, and round 5's suburb
+ * expansion turned "one driveway per house" into enough individually-
+ * meshed objects to measurably hurt Lighthouse Total Blocking Time even
+ * though the houses themselves were already instanced. */
+function Driveways() {
+  const { scene } = useGLTF('/assets/models/road-driveway-single.glb')
+  const mesh = useMemo<THREE.Mesh | null>(() => {
+    let found: THREE.Mesh | null = null
+    scene.traverse((child) => {
+      if (!found && (child as THREE.Mesh).isMesh) found = child as THREE.Mesh
+    })
+    return found
+  }, [scene])
+
+  const positions = useMemo(() => {
+    const houses = [...ATTRACTIONS.filter((a) => a.district === 'lakeside' && a.model), ...SUBURB_HOUSES.map((h) => ({ position: h.position }))]
+    return houses.map((h) => {
+      const [hx, , hz] = h.position
+      const dx = hx > 0 ? 2.5 : -2.5 // halfway between the road edge and a ±9 lot
+      return [dx, 0, hz] as [number, number, number]
+    })
+  }, [])
+
+  if (!mesh) return null
+  return (
+    <Instances geometry={mesh.geometry} material={mesh.material} castShadow receiveShadow>
+      {positions.map((p, i) => (
+        <Instance key={i} position={p} scale={TILE} rotation={[0, Math.PI / 2, 0]} />
+      ))}
+    </Instances>
+  )
 }
 
 function utilityPoles() {
@@ -217,35 +264,24 @@ function crossStreetSigns() {
 }
 
 export default function RoadNetwork() {
-  const crossStreetTiles = useMemo(
-    () => CROSS_STREETS_X.flatMap((x) => tilePositions(CROSS_STREET_Z_SPAN, 'z', x).filter((p) => Math.abs(p[2]) > TILE / 2)),
-    [],
-  )
-
   return (
     <group>
       {roadSurfaces()}
-      <Building model="/assets/models/road-bend-sidewalk.glb" position={[0, 0, 0]} scale={TILE} rotationY={JUNCTION_ROTATION} />
-      <Building model="/assets/models/road-end-round.glb" position={[0, 0, 93]} scale={TILE} rotationY={Math.PI} />
-
-      {crossStreetTiles.map((p, i) => (
-        <Building key={`cross-${i}`} model="/assets/models/road-straight.glb" position={p} scale={TILE} />
-      ))}
-      {CROSS_STREETS_X.map((x) => (
-        <Building key={`intersection-${x}`} model="/assets/models/road-crossroad.glb" position={[x, 0, 0]} scale={TILE} />
-      ))}
 
       <Building model="/assets/models/traffic-light.glb" position={[-6, 0, -3]} scale={4} rotationY={Math.PI / 2} />
       <Building model="/assets/models/road-sign-street.glb" position={[6, 0, -3]} scale={4} rotationY={-Math.PI / 2} />
 
       <CenterlineDashes span={[FOUNDRY_SPAN[0] + 2, -4]} axis="x" fixed={0} />
       <CenterlineDashes span={[4, LAKESIDE_SPAN[1] - 2]} axis="z" fixed={0} />
+      {CROSS_STREETS_X.map((x) => (
+        <CenterlineDashes key={`cross-dash-${x}`} span={[CROSS_STREET_Z_SPAN[0] + 2, CROSS_STREET_Z_SPAN[1] - 2]} axis="z" fixed={x} />
+      ))}
       {sidewalks()}
       {utilityPoles()}
       {streetlamps()}
       {crossStreetSigns()}
       {alleyProps()}
-      {driveways()}
+      <Driveways />
     </group>
   )
 }
