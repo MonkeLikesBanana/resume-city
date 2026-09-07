@@ -41,6 +41,16 @@ const REGIONS: Rect[] = [
   { x: [50, 120], z: [-90, 100], count: 70 }, // east of the Plaza square (reaches x=36) and Lakeside (reaches x=37)
   { x: [-92, -46], z: [54, 100], count: 50 }, // wedge: north of Foundry (reaches z=47), west of the Lakeside corridor/court (reaches x=-37)
   { x: [-40, 50], z: [98, 140], count: 50 }, // beyond the Lakeside cul-de-sac (z=93)
+  // PRD v5.0 §4.6 — matches blocks.ts's WEDGE_EXCLUSION_ZONE exactly:
+  // foundry-blocks.ts and suburb-houses.ts both stop short of this
+  // near-junction quadrant now (neither district's filler is allowed to
+  // claim it, to avoid the two overlapping), so without this it would be
+  // a bare, undeveloped-looking gap instead of "the forest comes in a
+  // little closer here." A lower count than the outer regions — this
+  // reads more like an urban green buffer between two built-up areas than
+  // deep wilderness, which is the right density for how close it sits to
+  // downtown and the suburb.
+  { x: [-42, -13], z: [8, 50], count: 30 },
 ]
 
 // PRD v4 polish round 4 — a denser treeline ring hugging the map's outer

@@ -1,5 +1,5 @@
 import type { FillerBuilding } from '../types/attraction'
-import { generateBlock } from '../lib/blocks'
+import { generateBlock, clearsWedge } from '../lib/blocks'
 
 // PRD v3 §4.1/§8/§16b — downtown density scale-up: ~60 filler buildings
 // across three depth rows on each side of Main Street (the six real
@@ -46,10 +46,14 @@ const ALONG: [number, number] = [-16, -84]
 // range. Same generator, same per-row density (lotSpacing/jitter) as the
 // existing rows — this is "the same city, further out," not a denser one.
 // Forest.tsx's regions were pushed outward to match (see its own comment).
+// PRD v5.0 §4.6 — every row filtered through clearsWedge(): the +Z (north)
+// side of these rows can otherwise land in the same map quadrant
+// suburb-houses.ts's -X (west) rows independently claim near the junction
+// — see blocks.ts's WEDGE_EXCLUSION_ZONE comment for the full picture.
 export const FOUNDRY_BLOCKS: FillerBuilding[] = [
   ...generateBlock({ along: ALONG, streetAxis: 'x', rowOffsets: [16, -16], lotSpacing: 8, models: FRONT_MODELS, seed: 20260906 }),
   ...generateBlock({ along: ALONG, streetAxis: 'x', rowOffsets: [23, -23], lotSpacing: 9, models: TOWER_MODELS, seed: 20260907 }),
   ...generateBlock({ along: ALONG, streetAxis: 'x', rowOffsets: [31, -31], lotSpacing: 8, models: BACK_MODELS, seed: 20260908, jitter: 1.8 }),
   ...generateBlock({ along: ALONG, streetAxis: 'x', rowOffsets: [39, -39], lotSpacing: 8.5, models: BACK_MODELS, seed: 20260909, jitter: 1.8 }),
   ...generateBlock({ along: ALONG, streetAxis: 'x', rowOffsets: [47, -47], lotSpacing: 9.5, models: [...BACK_MODELS, ...FRONT_MODELS], seed: 20260910, jitter: 2 }),
-]
+].filter((b) => clearsWedge(b.position))

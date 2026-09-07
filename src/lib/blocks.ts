@@ -14,6 +14,27 @@ function mulberry32(seed: number) {
   }
 }
 
+// PRD v5.0 §4.6 — Foundry's downtown blocks place buildings on both sides
+// of Main Street (including its north/+Z side) and the Lakeside suburb's
+// blocks place houses on both sides of the Lakeside street (including its
+// west/-X side) — and those two "far" sides independently claim the same
+// map quadrant near the junction, each with no knowledge of the other.
+// Round 5's footprint expansion (foundry-blocks.ts's rows now reach z=47,
+// suburb-houses.ts's reach x=-37) made an actual building-placement overlap
+// there a real risk, not just a theoretical one — this zone comfortably
+// contains where both districts' claims can reach. Both foundry-blocks.ts
+// and suburb-houses.ts filter their generated buildings against it, and
+// Forest.tsx's own "neutral wedge" region was widened to include it, so the
+// result reads as "the forest comes in a little closer here" rather than a
+// bare gap where each district stopped just short of the other.
+export const WEDGE_EXCLUSION_ZONE = { x: [-42, -13] as [number, number], z: [8, 50] as [number, number] }
+
+export function clearsWedge(position: [number, number, number]): boolean {
+  const [x, , z] = position
+  const { x: zx, z: zz } = WEDGE_EXCLUSION_ZONE
+  return !(x >= zx[0] && x <= zx[1] && z >= zz[0] && z <= zz[1])
+}
+
 export interface BlockSpec {
   /** street-facing coordinate where the block's first row starts (world X for
    * a 'z'-running street's cross rows, or world Z for an 'x'-running street) */

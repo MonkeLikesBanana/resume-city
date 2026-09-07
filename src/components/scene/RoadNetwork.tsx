@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { Instances, Instance, useGLTF } from '@react-three/drei'
+import { Instances, Instance } from '@react-three/drei'
 import * as THREE from 'three'
 import Building from './Building'
 import StreetLamp from './StreetLamp'
@@ -57,7 +57,19 @@ interface StreetSpan {
  * right. Same reasoning for the junction corner between Main Street and
  * the Lakeside street: one small square plane closes the L-shaped gap
  * between where each street's own plane ends, overlapping each by half a
- * lane width. */
+ * lane width.
+ *
+ * PRD v5.0 §4.6 — height bumped from 0.01 to ROAD_Y (0.012): the plaza's
+ * own pavement plane (PlazaSquare.tsx) sits at 0.01 too, and its bounds
+ * spatially overlap this junction-fill square by a few square meters —
+ * two coincident opaque planes at the exact same height is real
+ * z-fighting (confirmed by computing both planes' actual bounds, not
+ * guessed from the "flickering at the fork" report alone), not a
+ * rendering artifact. A fractionally higher road height resolves the
+ * overlap deterministically — the road reads as on top of the plaza
+ * pavement there, which is the physically sensible choice anyway. */
+const ROAD_Y = 0.012
+
 function roadSurfaces() {
   const streets: StreetSpan[] = [
     { span: FOUNDRY_SPAN, axis: 'x', width: ROAD_WIDTH, fixed: 0 },
@@ -69,7 +81,7 @@ function roadSurfaces() {
       {streets.map((s, i) => {
         const center = (s.span[0] + s.span[1]) / 2
         const length = s.span[1] - s.span[0]
-        const position: [number, number, number] = s.axis === 'x' ? [center, 0.01, s.fixed] : [s.fixed, 0.01, center]
+        const position: [number, number, number] = s.axis === 'x' ? [center, ROAD_Y, s.fixed] : [s.fixed, ROAD_Y, center]
         const size: [number, number] = s.axis === 'x' ? [length, s.width] : [s.width, length]
         return (
           <mesh key={`street-${i}`} rotation={[-Math.PI / 2, 0, 0]} position={position} receiveShadow>
@@ -78,11 +90,11 @@ function roadSurfaces() {
           </mesh>
         )
       })}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.01, 0]} receiveShadow>
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, ROAD_Y, 0]} receiveShadow>
         <planeGeometry args={[ROAD_WIDTH, ROAD_WIDTH]} />
         <meshStandardMaterial color={PALETTE.asphalt} roughness={0.85} />
       </mesh>
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.01, LAKESIDE_SPAN[1]]} receiveShadow>
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, ROAD_Y, LAKESIDE_SPAN[1]]} receiveShadow>
         <circleGeometry args={[ROAD_WIDTH / 2, 24]} />
         <meshStandardMaterial color={PALETTE.asphalt} roughness={0.85} />
       </mesh>
@@ -94,36 +106,39 @@ function roadSurfaces() {
  * the street (which runs along Z), centered between the road edge and the
  * house's own lot.
  *
- * PRD v4 polish round 5 — one <Instances> block (a single shared model)
- * instead of a <Building> per house. Same issue and fix as Suburb.tsx's
- * yard greenery: this scales 1:1 with house count, and round 5's suburb
- * expansion turned "one driveway per house" into enough individually-
- * meshed objects to measurably hurt Lighthouse Total Blocking Time even
- * though the houses themselves were already instanced. */
+ * PRD v5.0 §4.6 — a plain paved plane (PALETTE.pavement, the same concrete
+ * tone as the sidewalks), not road-driveway-single.glb. That kit model
+ * turned out to share the exact same busy multi-swatch texture already
+ * replaced everywhere else on the roads (road-side.glb, road-straight.glb,
+ * etc.) — verified by extracting it, byte-identical — so every driveway
+ * was still showing the wrong out-of-place pattern throughout the suburb.
+ * Kept the <Instances> structure from the earlier round-5 perf fix (one
+ * geometry/material, not a mesh per house) — a shared plane geometry
+ * qualifies exactly the same way the shared GLB mesh did. */
+const DRIVEWAY_SIZE = TILE // matches the kit model's native 3x3m footprint at this scale
+// Between sidewalks() (0.005) and roadSurfaces() (0.012, see its own
+// comment) — a driveway crosses the sidewalk strip on its way from the
+// road to the house, so it needs a height distinct from both neighbors
+// it spatially overlaps, not just "somewhere near the ground."
+const DRIVEWAY_Y = 0.008
+
 function Driveways() {
-  const { scene } = useGLTF('/assets/models/road-driveway-single.glb')
-  const mesh = useMemo<THREE.Mesh | null>(() => {
-    let found: THREE.Mesh | null = null
-    scene.traverse((child) => {
-      if (!found && (child as THREE.Mesh).isMesh) found = child as THREE.Mesh
-    })
-    return found
-  }, [scene])
+  const geometry = useMemo(() => new THREE.PlaneGeometry(DRIVEWAY_SIZE, DRIVEWAY_SIZE), [])
+  const material = useMemo(() => new THREE.MeshStandardMaterial({ color: PALETTE.pavement, roughness: 0.95 }), [])
 
   const positions = useMemo(() => {
     const houses = [...ATTRACTIONS.filter((a) => a.district === 'lakeside' && a.model), ...SUBURB_HOUSES.map((h) => ({ position: h.position }))]
     return houses.map((h) => {
       const [hx, , hz] = h.position
       const dx = hx > 0 ? 2.5 : -2.5 // halfway between the road edge and a ±9 lot
-      return [dx, 0, hz] as [number, number, number]
+      return [dx, DRIVEWAY_Y, hz] as [number, number, number]
     })
   }, [])
 
-  if (!mesh) return null
   return (
-    <Instances geometry={mesh.geometry} material={mesh.material} castShadow receiveShadow>
+    <Instances geometry={geometry} material={material} receiveShadow>
       {positions.map((p, i) => (
-        <Instance key={i} position={p} scale={TILE} rotation={[0, Math.PI / 2, 0]} />
+        <Instance key={i} position={p} rotation={[-Math.PI / 2, 0, 0]} />
       ))}
     </Instances>
   )

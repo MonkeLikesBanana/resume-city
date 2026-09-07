@@ -45,19 +45,50 @@ interface GlowShader {
   uniforms: { uNightGlow: { value: number } }
 }
 
-function injectWindowMaskShader(material: THREE.MeshStandardMaterial) {
+// PRD v5.0 §4.7 — every glowing window turning on together read as a stage
+// cue. About a third of *building instances* (not building types) now stay
+// dark, which is trickier than it sounds: a body-tier material is shared
+// across every placement of that model (round 4's whole reason this is
+// cheap), so there's no per-instance JS handle to toggle individually.
+// Fixed inside the shader itself instead: for instanced meshes (filler
+// buildings via InstancedBuildings.tsx), hash each instance's own local
+// position — already sitting in `instanceMatrix`, no extra attribute
+// needed — into a pseudo-random 0..1 value per placement. For the
+// non-instanced case (attraction buildings via Hotspot.tsx, each with its
+// own genuinely unique material already), instancing isn't active, so the
+// hash falls back to a per-material seed rolled once at registration
+// time. Either way, one shader, one shared material, genuine per-building
+// variation — no per-instance material clones, no extra draw calls.
+const DARK_FRACTION = 0.33
+
+function injectWindowMaskShader(material: THREE.MeshStandardMaterial, materialSeed: number) {
   material.onBeforeCompile = (shader) => {
     shader.uniforms.uNightGlow = { value: 0 }
+    shader.uniforms.uMaterialSeed = { value: materialSeed }
     material.userData.glowShader = shader as unknown as GlowShader
+
+    shader.vertexShader =
+      'varying float vInstanceHash;\nuniform float uMaterialSeed;\n' +
+      shader.vertexShader.replace(
+        '#include <begin_vertex>',
+        `#include <begin_vertex>
+        #ifdef USE_INSTANCING
+          vInstanceHash = fract(sin(dot(instanceMatrix[3].xz, vec2(12.9898, 78.233))) * 43758.5453);
+        #else
+          vInstanceHash = uMaterialSeed;
+        #endif`,
+      )
+
     shader.fragmentShader =
-      'uniform float uNightGlow;\n' +
+      'uniform float uNightGlow;\nvarying float vInstanceHash;\n' +
       shader.fragmentShader.replace(
         '#include <emissivemap_fragment>',
         `#include <emissivemap_fragment>
         {
           float windowDiff = diffuseColor.b - max( diffuseColor.r, diffuseColor.g );
           float windowMask = smoothstep( 0.15, 0.3, windowDiff );
-          totalEmissiveRadiance += vec3( 1.0, 0.72, 0.42 ) * windowMask * uNightGlow;
+          float litTonight = step( ${DARK_FRACTION.toFixed(2)}, vInstanceHash );
+          totalEmissiveRadiance += vec3( 1.0, 0.72, 0.42 ) * windowMask * uNightGlow * litTonight;
         }`,
       )
   }
@@ -72,7 +103,7 @@ export function registerGlowMaterial(material: THREE.Material) {
   }
   if (bodyMaterials.has(material)) return
   bodyMaterials.add(material)
-  injectWindowMaskShader(material)
+  injectWindowMaskShader(material, Math.random())
 }
 
 const _glowColor = new THREE.Color('#ffcf8a')

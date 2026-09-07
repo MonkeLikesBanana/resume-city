@@ -73,6 +73,13 @@ const GRASS_CENTER: [number, number] = [0, 49]
 // third ground tone.
 const DOWNTOWN_GROUND_SIZE: [number, number] = [86, 112]
 const DOWNTOWN_GROUND_CENTER: [number, number] = [-48, 0]
+// PRD v5.0 §4.6 — this patch's bounds spatially overlap GRASS_SIZE's (both
+// districts' filler can reach the same near-junction quadrant, §4.6's wedge
+// note) — at the *same* height (both were -0.03) that's real z-fighting,
+// not a rendering artifact, confirmed by computing both rectangles'
+// actual overlap. A fractionally higher pavement height resolves it
+// deterministically instead of leaving it to GPU rounding.
+const DOWNTOWN_GROUND_Y = -0.028
 
 interface Peak {
   position: [number, number, number]
@@ -171,7 +178,7 @@ export default function Ground() {
         <meshStandardMaterial color={PALETTE.moss} roughness={1} />
       </mesh>
 
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[DOWNTOWN_GROUND_CENTER[0], -0.03, DOWNTOWN_GROUND_CENTER[1]]} receiveShadow>
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[DOWNTOWN_GROUND_CENTER[0], DOWNTOWN_GROUND_Y, DOWNTOWN_GROUND_CENTER[1]]} receiveShadow>
         <planeGeometry args={DOWNTOWN_GROUND_SIZE} />
         <meshStandardMaterial color={PALETTE.pavement} roughness={0.95} />
       </mesh>

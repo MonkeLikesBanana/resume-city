@@ -1,5 +1,5 @@
 import type { FillerBuilding } from '../types/attraction'
-import { generateBlock } from '../lib/blocks'
+import { generateBlock, clearsWedge } from '../lib/blocks'
 
 // PRD v3 §4.4/§8/§16c — ~26 additional houses lining the Lakeside street,
 // deliberately sparser than the Foundry downtown blocks (larger lotSpacing,
@@ -38,8 +38,16 @@ function clearsLandmarks(position: [number, number, number]): boolean {
 // density, just pushing the suburb's footprint further out (to ~±37) so it
 // reads as a real neighborhood extending toward the mountains rather than
 // two thin rows of houses with open ground behind them. Forest.tsx's
-// regions were pushed outward to match. The two new rows are filtered
-// against EXCLUSION_ZONES above — see its comment.
+// regions were pushed outward to match.
+//
+// PRD v5.0 §4.6 — every row (not just the round-5 additions) filtered
+// through clearsWedge() too: the -X (west) side of ANY row can land in the
+// same map quadrant foundry-blocks.ts's +Z (north) rows independently
+// claim near the junction — see blocks.ts's WEDGE_EXCLUSION_ZONE comment.
+// The original ±16/±23 rows technically had this risk already (their -X
+// side sits well inside the wedge zone's X range), it just wasn't visible
+// until foundry-blocks.ts's own footprint grew far enough to actually
+// reach the same territory.
 export const SUBURB_HOUSES: FillerBuilding[] = [
   ...generateBlock({ along: ALONG, streetAxis: 'z', rowOffsets: [16, -16], lotSpacing: 12, models: HOUSE_MODELS, seed: 20260917, jitter: 1.5 }),
   ...generateBlock({ along: ALONG, streetAxis: 'z', rowOffsets: [23, -23], lotSpacing: 14, models: HOUSE_MODELS, seed: 20260918, jitter: 1.8 }),
@@ -49,4 +57,4 @@ export const SUBURB_HOUSES: FillerBuilding[] = [
   ...generateBlock({ along: ALONG, streetAxis: 'z', rowOffsets: [37, -37], lotSpacing: 16, models: HOUSE_MODELS, seed: 20260920, jitter: 2 }).filter((b) =>
     clearsLandmarks(b.position),
   ),
-]
+].filter((b) => clearsWedge(b.position))

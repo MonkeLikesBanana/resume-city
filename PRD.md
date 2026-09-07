@@ -1,7 +1,55 @@
 # Vasnova City — Interactive City Resume
 ### Product & Technical Design Document (PRD)
-Status: v4.0 — ready to build · Owner: Aarav Vaswani
+Status: v5.0 — ready to build · Owner: Aarav Vaswani
 
+> **Revision note (v5.0):** three fixes reported from an actual screenshot of
+> the deployed site (the fork/junction area), after several rounds of
+> unversioned polish already shipped on top of v4.0. In the order given:
+> 1. **A kit road model is still visibly wrong in the suburbs** — driveways
+>    (`road-driveway-single.glb`) turned out to share the *exact same*
+>    texture atlas as the road tiles already replaced in earlier polish
+>    (confirmed by extracting it: byte-identical to road-side.glb's), so
+>    every driveway still shows the busy, out-of-place kit pattern that
+>    was fixed everywhere else. Replaced with a plain paved plane, the same
+>    fix already applied to every other road surface.
+> 2. **Ground flickers between green/road/gray at the fork** — a real
+>    z-fighting bug, not a rendering artifact: the plaza pavement plane and
+>    the road system's junction-fill plane sit at the *identical* height
+>    (y=0.01) and spatially overlap by a few square meters, and separately
+>    the suburb's grass patch and downtown's pavement patch sit at the
+>    identical height (y=-0.03) and overlap too — confirmed by computing
+>    both pairs' actual bounds, not guessed from the screenshot alone. Two
+>    coincident opaque planes at the same height is exactly what causes
+>    GPU-precision-dependent flicker. Root-caused a second, deeper issue
+>    while tracing this: Foundry's north-side filler rows and the suburb's
+>    west-side house rows both independently claim the same map quadrant
+>    near the junction (each was generated without knowledge of the
+>    other), so *building* placements can overlap there too, not just
+>    ground planes — round 5's footprint expansion made this much more
+>    likely to actually happen. Fixed both: every ground layer gets a
+>    distinct height (deterministic occlusion instead of coincident
+>    z-fighting), and a shared exclusion zone keeps each district's filler
+>    out of the other's claimed corner, with the resulting gap filled by
+>    extending the existing "neutral wedge" forest region rather than left
+>    bare.
+> 3. **Night lighting is all-or-nothing** — every streetlamp and every
+>    glowing window turns on together at full brightness the moment the
+>    day/night cycle crosses into night, which reads as a stage cue, not a
+>    real city (some windows are always dark — nobody's home, the lights
+>    are off, the shop is closed). Roughly a third of lights now stay off
+>    on any given night cycle, and darkness itself isn't static either:
+>    an off light has a small per-second chance to flicker briefly on
+>    (a loose connection, a motion light) the same way an on light already
+>    had a chance to flicker briefly off.
+>
+> Same overall goal restated once more, because it keeps being the right
+> compass for prioritizing which of these to fix first: make this as close
+> to a real city as possible.
+>
+> §4 is amended below with two new subsections (not fully rewritten — these
+> are corrections to existing v4.0 systems, not new ones). Every other
+> section carries over unchanged.
+>
 > **Revision note (v4.0):** major revision after seeing the v3.0 build. Five
 > changes, in the order the user gave them, plus the same overall goal
 > restated once more: make this as close to a real city as possible.
@@ -219,6 +267,80 @@ Every model named above (`light-square*`, `detail-parasol-*`,
 was verified present in the Roads/Commercial packs already extracted at v1.
 Clouds use drei's built-in procedural `<Cloud>` geometry — no texture or
 model download at all.
+
+### 4.6 Road/ground surface corrections (v5.0)
+
+Pre-v5.0 polish already replaced most kit road tiles (`road-side.glb`,
+`road-straight.glb`, `road-bend-sidewalk.glb`, `road-end-round.glb`,
+`road-crossroad.glb`) with plain asphalt-colored plane geometry, after
+finding they all share one busy multi-swatch texture that doesn't read as
+clean asphalt when tiled. `road-driveway-single.glb` was missed — it
+shares the identical texture (verified by extracting it: byte-identical
+to the others') and is placed at every house, so it was still showing the
+same wrong, out-of-place pattern throughout both districts. v5.0 gives it
+the same fix: a plain paved plane instead of the kit model.
+
+Every ground-plane "layer" (base ground, the suburb's grass patch,
+downtown's pavement patch, the road system's asphalt, the plaza's own
+pavement, sidewalks, the painted centerline) now sits at a **distinct,
+deliberately ordered height**, not sharing a height with any neighboring
+layer. Two of these previously *did* coincide exactly (plaza pavement and
+the road system's own junction-fill patch, both y=0.01; the suburb grass
+patch and downtown pavement patch, both y=-0.03) in regions that also
+spatially overlap, which is a textbook z-fighting setup — visually, two
+opaque coincident surfaces flicker between which one the GPU resolves as
+"on top" from frame to frame, exactly the "flickering between green,
+road, and gray" reported at the fork. Giving every layer its own height
+turns an accidental toss-up into deterministic, stable occlusion.
+
+The deeper cause behind *why* those planes overlapped in the first place:
+Foundry's downtown filler (`foundry-blocks.ts`) places buildings on both
+sides of Main Street, including its north side (positive Z), and the
+Lakeside suburb's filler (`suburb-houses.ts`) places houses on both sides
+of the Lakeside street, including its west side (negative X) — and both
+of those "far" sides claim the *same* map quadrant near the junction,
+independently of each other. Round 5's footprint expansion (§3 there)
+pushed both districts' rows far enough into that shared quadrant that
+actual building placements risk landing on top of each other, not just
+their ground planes. A shared exclusion zone now keeps each district's
+filler out of the other's claimed corner near the junction (in addition
+to the wider, farther-out "neutral wedge" the forest already occupied),
+and that same zone is folded into the forest's own wedge region so the
+result reads as "the forest comes in a little closer here," not a bare
+gap where two districts each stopped just short of each other.
+
+### 4.7 Night lighting isn't all-or-nothing (v5.0)
+
+§4.4/§7.4's day/night lighting (every streetlamp and every glowing window
+turning on together at dusk) reads as a stage cue once you actually watch
+it happen — a real city never has literally every light on at once, even
+late at night. Roughly a third of lights now stay off through the night,
+picked once per lamp/instance via the same seeded pseudo-randomness
+already used for flicker timing rather than re-rolled per day/night
+cycle — a *specific* lamp being the one that's out reads as more real
+than the set of dark lamps reshuffling every cycle, and needs no
+cycle-index tracking. Per streetlamp (each is its own component instance
+already) and, for window glow, genuinely
+**per building instance**, not per building type: window glow is one
+material shared across every placement of a given model (round 4's whole
+point, for cost reasons), so a per-instance on/off needed a per-instance
+signal inside a *shared* shader — solved by hashing each instance's own
+world position (already available per-vertex for instanced meshes) into
+a pseudo-random value in the shader itself, no per-instance material
+clones, no extra draw calls. Window glow's dark fraction is fixed for the
+whole session, the same "picked once, not reshuffled" choice as
+streetlamps — a time-varying per-instance flicker inside a shared shader
+(every dark window independently, occasionally, briefly lighting up)
+would need a meaningfully bigger shader (a noise function combining the
+per-instance hash with a running clock, not just a static threshold) for
+a subtlety easy to miss at the scale windows actually read at; streetlamps
+already carry the "this city flickers" sensation at the size/prominence
+where it's actually noticeable. Streetlamps get the full bidirectional
+version: darkness isn't static there either — an off lamp has a small
+per-second chance to flicker briefly *on*, mirroring the flicker-off
+chance an on lamp already had, some rooms have a light on a timer, a sign
+relay sticks briefly, the same texture of imperfection in both
+directions.
 
 ## 5. Content Map — Resume → City
 
