@@ -2,7 +2,19 @@ import { useMemo } from 'react'
 import { Instances, Instance, useGLTF } from '@react-three/drei'
 import * as THREE from 'three'
 
-const TREE_MODELS = ['/assets/models/tree-pine-a.glb', '/assets/models/tree-pine-b.glb', '/assets/models/tree-pine-tall.glb']
+// PRD v4 polish round 4 — widened from 3 pine variants to a real mixed
+// forest: several distinct pine silhouettes (round/tall/small) plus one
+// deciduous type for edge variety, matching how an actual Pacific NW
+// tree line is mostly-but-not-entirely conifer.
+const TREE_MODELS = [
+  '/assets/models/tree-pine-a.glb',
+  '/assets/models/tree-pine-b.glb',
+  '/assets/models/tree-pine-tall.glb',
+  '/assets/models/tree-pine-round-d.glb',
+  '/assets/models/tree-pine-small.glb',
+  '/assets/models/tree-pine-tall-b.glb',
+  '/assets/models/tree-oak.glb',
+]
 
 // PRD v3 §4.2 — the world is now an L-shape (Foundry west, Lakeside south)
 // plus the Plaza's open square, not a symmetric east-west corridor, so the
@@ -25,6 +37,15 @@ const REGIONS: Rect[] = [
   { x: [-92, -40], z: [35, 100], count: 50 }, // wedge: north of Foundry, west of the Lakeside corridor/court
   { x: [-40, 50], z: [98, 140], count: 50 }, // beyond the Lakeside cul-de-sac (z=93)
 ]
+
+// PRD v4 polish round 4 — a denser treeline ring hugging the map's outer
+// edge, just inside the mountain foothills (Ground.tsx's FOOTHILL_RING_RADIUS
+// = 150), on top of the five regions above rather than replacing them —
+// downtown/suburb sit well inside radius ~90, so this only ever thickens
+// the existing outer edge of the forest, the part actually visible against
+// the mountains, rather than making the whole map denser uniformly.
+const OUTER_TREELINE_COUNT = 160
+const OUTER_TREELINE_RADIUS: [number, number] = [95, 138]
 
 interface Placement {
   position: [number, number, number]
@@ -56,31 +77,61 @@ function scatterRegion(region: Rect, rand: () => number): Placement[] {
   return placements
 }
 
+/** A polar annulus scatter for OUTER_TREELINE — see the constant's comment. */
+function scatterRing(count: number, radiusRange: [number, number], rand: () => number): Placement[] {
+  const placements: Placement[] = []
+  for (let i = 0; i < count; i++) {
+    const angle = rand() * Math.PI * 2
+    const radius = radiusRange[0] + rand() * (radiusRange[1] - radiusRange[0])
+    placements.push({
+      position: [Math.cos(angle) * radius, 0, Math.sin(angle) * radius],
+      rotationY: rand() * Math.PI * 2,
+      scale: 4.5 + rand() * 3.5,
+    })
+  }
+  return placements
+}
+
+/** PRD v4 polish round 4 — every tree in this pack is >1 mesh (a separate
+ * bark-material primitive and leaves-material primitive, sometimes a third
+ * tiny detail primitive), which GLTFLoader turns into that many sibling
+ * THREE.Mesh nodes under one group. The previous version took only the
+ * *first* mesh found via scene.traverse and instanced just that — for a
+ * two-primitive pine, that meant every placed tree in the whole forest
+ * rendered as only its trunk or only its leaves, never both (a real bug
+ * found from the "trees look split up" report, not a hypothetical). Fixed
+ * by collecting every mesh and giving each its own <Instances> group, all
+ * driven by the same placements array — one extra draw call per tree type
+ * (not per instance), reconstructing the full tree at every placement. */
 function TreeInstances({ model, placements }: { model: string; placements: Placement[] }) {
   const { scene } = useGLTF(model)
-  const mesh = useMemo<THREE.Mesh | null>(() => {
-    let found: THREE.Mesh | null = null
+  const meshes = useMemo<THREE.Mesh[]>(() => {
+    const found: THREE.Mesh[] = []
     scene.traverse((child) => {
-      if (!found && (child as THREE.Mesh).isMesh) found = child as THREE.Mesh
+      if ((child as THREE.Mesh).isMesh) found.push(child as THREE.Mesh)
     })
     return found
   }, [scene])
 
-  if (!mesh) return null
+  if (meshes.length === 0) return null
   return (
-    <Instances geometry={mesh.geometry} material={mesh.material} castShadow receiveShadow>
-      {placements.map((p, i) => (
-        <Instance key={i} position={p.position} rotation={[0, p.rotationY, 0]} scale={p.scale} />
+    <group>
+      {meshes.map((mesh, mi) => (
+        <Instances key={mi} geometry={mesh.geometry} material={mesh.material} castShadow receiveShadow>
+          {placements.map((p, i) => (
+            <Instance key={i} position={p.position} rotation={[0, p.rotationY, 0]} scale={p.scale} />
+          ))}
+        </Instances>
       ))}
-    </Instances>
+    </group>
   )
 }
 
 export default function Forest() {
   const placementsByModel = useMemo(() => {
     const rand = mulberry32(20260906)
-    const all = REGIONS.flatMap((region) => scatterRegion(region, rand))
-    const byModel: Placement[][] = [[], [], []]
+    const all = [...REGIONS.flatMap((region) => scatterRegion(region, rand)), ...scatterRing(OUTER_TREELINE_COUNT, OUTER_TREELINE_RADIUS, rand)]
+    const byModel: Placement[][] = TREE_MODELS.map(() => [])
     all.forEach((p, i) => byModel[i % TREE_MODELS.length].push(p))
     return byModel
   }, [])

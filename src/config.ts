@@ -29,6 +29,13 @@ export const PALETTE = {
    * near-ground plane) — found via a diagnostic bright-color swap, not
    * assumed from a screenshot that happened to look fine. */
   pavement: '#a8a29a',
+  /** The travel-lane surface of Main Street/the Lakeside street — a plain
+   * flat plane (RoadNetwork.tsx's roadSurfaces()), not a kit road tile. The
+   * kit's road-side.glb/road-straight.glb share one flat color-swatch atlas
+   * and tile into a busy alternating light/dark band across the whole road
+   * width, not a clean asphalt surface — same "just paint it as its own flat
+   * plane" fix already used for `pavement`/`moss`. */
+  asphalt: '#404046',
 } as const
 
 /** Accent color as a UI fill/border (buttons, chip backgrounds, hotspot
@@ -80,4 +87,4 @@ export const ACCEL = 6 // units/sec²
 export const HOME_ATTRACTION_ID = 'welcome-plaza'
 
 /** PRD v4 §7.4 — a full day/night loop, continuous, repeating. */
-export const DAY_NIGHT_CYCLE_SECONDS = 90
+export const DAY_NIGHT_CYCLE_SECONDS = 130

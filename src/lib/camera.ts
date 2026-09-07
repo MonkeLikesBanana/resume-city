@@ -5,7 +5,7 @@ import type { TripCurve } from './roadGraph'
 
 const ARRIVAL_BLEND_FRACTION = 0.15 // last 15% of a trip blends the look toward the destination's tilt target
 const LOOKAHEAD_DELTA = 0.02
-const ROTATION_SMOOTHING_RATE = 10 // 1/seconds — exponential slerp damping constant
+const ROTATION_SMOOTHING_RATE = 5 // 1/seconds — exponential slerp damping constant; lower = the camera takes longer to catch up to a new heading, i.e. slower-feeling turns
 
 function clamp(v: number, min: number, max: number) {
   return Math.min(max, Math.max(min, v))

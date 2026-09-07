@@ -1,4 +1,6 @@
 import { useMemo } from 'react'
+import { Instances, Instance } from '@react-three/drei'
+import * as THREE from 'three'
 import Building from './Building'
 import StreetLamp from './StreetLamp'
 import { SUBURB_HOUSES } from '../../content/suburb-houses'
@@ -8,8 +10,11 @@ import { PALETTE } from '../../config'
 const TILE = 3 // road tiles are 1x1 native, scale 3 -> 3x3m
 
 // PRD v3 §4.1/§4.4/§7.1, extended by PRD v4 §4.2/§4.3 — the VISUAL road
-// network: Main Street + Lakeside street (road-side tiles), the junction
-// bend, driveways at every house, plus (new in v4) sidewalk paving strips
+// network: Main Street + Lakeside street (a plain asphalt plane plus a
+// hand-added dashed centerline — see roadSurfaces()/centerlineDashes()
+// below for why those are separate geometry rather than a kit road tile),
+// the junction bend, driveways at every house, plus (new in v4) sidewalk
+// paving strips
 // between the road and each filler row, more streetlamps at regular
 // intervals, street signs at cross-street intersections, dumpsters tucked
 // behind the back filler row, and awning/parasol clusters on a few
@@ -34,6 +39,33 @@ function tilePositions(span: [number, number], axis: 'x' | 'z', fixed: number): 
     positions.push(axis === 'x' ? [t, 0, fixed] : [fixed, 0, t])
   }
   return positions
+}
+
+const ROAD_WIDTH = 6
+
+/** PRD v4 polish round 4 — the actual travel-lane surface of Main Street and
+ * the Lakeside street: one continuous flat plane per street, not many tiled
+ * road-side.glb/road-straight.glb copies. See centerlineDashes() below for
+ * why the kit tiles were dropped for this — same reasoning, same fix. Meets
+ * road-bend-sidewalk.glb (the junction) flush at each span's inner edge, the
+ * same boundary the old tiled version used. */
+function roadSurfaces() {
+  const spans: Array<{ span: [number, number]; axis: 'x' | 'z' }> = [
+    { span: FOUNDRY_SPAN, axis: 'x' },
+    { span: LAKESIDE_SPAN, axis: 'z' },
+  ]
+  return spans.map(({ span, axis }, i) => {
+    const center = (span[0] + span[1]) / 2
+    const length = span[1] - span[0]
+    const position: [number, number, number] = axis === 'x' ? [center, 0.01, 0] : [0, 0.01, center]
+    const size: [number, number] = axis === 'x' ? [length, ROAD_WIDTH] : [ROAD_WIDTH, length]
+    return (
+      <mesh key={`road-surface-${i}`} rotation={[-Math.PI / 2, 0, 0]} position={position} receiveShadow>
+        <planeGeometry args={size} />
+        <meshStandardMaterial color={PALETTE.asphalt} roughness={0.85} />
+      </mesh>
+    )
+  })
 }
 
 /** A driveway connecting one Lakeside house to the street: perpendicular to
@@ -107,6 +139,59 @@ function sidewalks() {
   ))
 }
 
+const DASH_LENGTH = 1.4
+const DASH_GAP = 1.6
+const DASH_WIDTH = 0.22
+const DASH_PERIOD = DASH_LENGTH + DASH_GAP
+const DASH_MATERIAL_COLOR = '#dcd7c8'
+
+/** PRD v4 polish round 4 — a painted dashed centerline down Main Street and
+ * the Lakeside street. Not the road kit's own geometry: road-side.glb and
+ * road-straight.glb turned out to share the exact same texture (a flat
+ * color-swatch atlas, confirmed by extracting it directly), and tiling
+ * either one repeatedly produced a busy alternating light/dark band across
+ * the *whole* road width — not the plain asphalt-with-a-thin-centerline
+ * look asked for. A dedicated thin plane per dash, the same "just add the
+ * missing paint as its own flat geometry" technique sidewalks() already
+ * uses, gives full control over exactly what the line looks like instead
+ * of hoping a kit tile's built-in markings render the way its thumbnail
+ * suggested. Skips a short gap around each cross-street intersection
+ * (CROSS_STREETS_X) so a dash doesn't float on top of the crossroad tile.
+ *
+ * Rendered via drei's <Instances> (one geometry/material, ~55 <Instance>
+ * children), not a plain <mesh> per dash — the first version did exactly
+ * that and pushed mobile Lighthouse Total Blocking Time from ~110ms to
+ * ~1100ms (confirmed by disabling it and re-measuring). Same root cause,
+ * same fix as the mountain range and forest before it: many individually-
+ * meshed objects cost real mount-time work under mobile's CPU throttle,
+ * and the fix is always to instance, not to have less of it. */
+function CenterlineDashes({ span, axis, fixed }: { span: [number, number]; axis: 'x' | 'z'; fixed: number }) {
+  const positions = useMemo(() => {
+    const [from, to] = span
+    const count = Math.floor((to - from) / DASH_PERIOD)
+    const result: Array<[number, number, number]> = []
+    for (let i = 0; i < count; i++) {
+      const center = from + DASH_PERIOD / 2 + i * DASH_PERIOD
+      if (axis === 'x' && CROSS_STREETS_X.some((x) => Math.abs(x - center) < 2)) continue
+      result.push(axis === 'x' ? [center, 0.015, fixed] : [fixed, 0.015, center])
+    }
+    return result
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [span[0], span[1], axis, fixed])
+
+  const size: [number, number] = axis === 'x' ? [DASH_LENGTH, DASH_WIDTH] : [DASH_WIDTH, DASH_LENGTH]
+  const geometry = useMemo(() => new THREE.PlaneGeometry(size[0], size[1]), [size[0], size[1]])
+  const material = useMemo(() => new THREE.MeshStandardMaterial({ color: DASH_MATERIAL_COLOR, roughness: 0.7 }), [])
+
+  return (
+    <Instances geometry={geometry} material={material}>
+      {positions.map((p, i) => (
+        <Instance key={i} position={p} rotation={[-Math.PI / 2, 0, 0]} />
+      ))}
+    </Instances>
+  )
+}
+
 /** PRD v4 §4.2 — dumpsters behind the back filler row, where a real alley
  * would have one; a couple of awning/parasol clusters on front-row
  * storefronts for variety. */
@@ -132,8 +217,6 @@ function crossStreetSigns() {
 }
 
 export default function RoadNetwork() {
-  const mainStreetTiles = useMemo(() => tilePositions(FOUNDRY_SPAN, 'x', 0), [])
-  const lakesideStreetTiles = useMemo(() => tilePositions(LAKESIDE_SPAN, 'z', 0), [])
   const crossStreetTiles = useMemo(
     () => CROSS_STREETS_X.flatMap((x) => tilePositions(CROSS_STREET_Z_SPAN, 'z', x).filter((p) => Math.abs(p[2]) > TILE / 2)),
     [],
@@ -141,12 +224,7 @@ export default function RoadNetwork() {
 
   return (
     <group>
-      {mainStreetTiles.map((p, i) => (
-        <Building key={`main-${i}`} model="/assets/models/road-side.glb" position={p} scale={TILE} rotationY={Math.PI / 2} />
-      ))}
-      {lakesideStreetTiles.map((p, i) => (
-        <Building key={`lakeside-${i}`} model="/assets/models/road-side.glb" position={p} scale={TILE} />
-      ))}
+      {roadSurfaces()}
       <Building model="/assets/models/road-bend-sidewalk.glb" position={[0, 0, 0]} scale={TILE} rotationY={JUNCTION_ROTATION} />
       <Building model="/assets/models/road-end-round.glb" position={[0, 0, 93]} scale={TILE} rotationY={Math.PI} />
 
@@ -160,6 +238,8 @@ export default function RoadNetwork() {
       <Building model="/assets/models/traffic-light.glb" position={[-6, 0, -3]} scale={4} rotationY={Math.PI / 2} />
       <Building model="/assets/models/road-sign-street.glb" position={[6, 0, -3]} scale={4} rotationY={-Math.PI / 2} />
 
+      <CenterlineDashes span={[FOUNDRY_SPAN[0] + 2, -4]} axis="x" fixed={0} />
+      <CenterlineDashes span={[4, LAKESIDE_SPAN[1] - 2]} axis="z" fixed={0} />
       {sidewalks()}
       {utilityPoles()}
       {streetlamps()}

@@ -13,10 +13,17 @@ import { Cloud, Clouds as CloudGroup } from '@react-three/drei'
 // this reduced version). Three sparse, simple clouds read as "the sky has
 // motion" just as well as five dense ones for a background atmosphere
 // effect that's never the subject of a shot.
+//
+// PRD v4 polish round 4 — raised from y=55-60 to y=145-155: the mountain
+// range's tallest peaks reach apex y≈106 (Ground.tsx's Mountains, height up
+// to 110), so clouds sitting at 55-60 floated *inside* the mountain
+// silhouette rather than above it — at a distance, a flat grey-white puff
+// parked next to/below a peak reads as smoke coming off the mountain, not
+// a cloud in open sky. Well clear of every peak now.
 const PLACEMENTS: Array<{ position: [number, number, number]; scale: number; speed: number; opacity: number }> = [
-  { position: [-40, 55, -20], scale: 8, speed: 0.15, opacity: 0.7 },
-  { position: [20, 60, 40], scale: 9, speed: 0.1, opacity: 0.65 },
-  { position: [-60, 56, 60], scale: 7, speed: 0.18, opacity: 0.6 },
+  { position: [-40, 145, -20], scale: 8, speed: 0.15, opacity: 0.7 },
+  { position: [20, 155, 40], scale: 9, speed: 0.1, opacity: 0.65 },
+  { position: [-60, 148, 60], scale: 7, speed: 0.18, opacity: 0.6 },
 ]
 
 export default function Clouds() {

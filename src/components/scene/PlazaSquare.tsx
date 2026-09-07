@@ -8,7 +8,13 @@ import { PALETTE } from '../../config'
  * the Foundry arm's entrance specifically (a monumental downtown gateway
  * makes sense where downtown starts); the Lakeside arm gets a lighter,
  * residential-appropriate transition instead of a matching monument. */
-const SQUARE_SIZE: [number, number] = [40, 40]
+// PRD v4 polish round 4 — shrunk 30% (was [40,40]): the open paved square
+// read as oversized relative to everything else in the city. Every prop
+// scattered across the square below is placed at 0.7x its old offset from
+// SQUARE_CENTER, so the whole layout compresses toward the center in
+// proportion rather than leaving props stranded outside the new, smaller
+// paved footprint.
+const SQUARE_SIZE: [number, number] = [28, 28]
 const SQUARE_CENTER: [number, number] = [16, -16] // +X,-Z quadrant
 
 const GATE_X = -10 // just past the junction, onto Main Street proper
@@ -46,26 +52,35 @@ export default function PlazaSquare() {
           parasol clusters, and more planters/trees so the square doesn't
           read as a mostly-bare rectangle with a gate in it. */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[SQUARE_CENTER[0], 0.015, SQUARE_CENTER[1]]}>
-        <ringGeometry args={[6, 6.6, 48]} />
+        <ringGeometry args={[4.2, 4.62, 48]} />
         <meshStandardMaterial color="#9d9689" roughness={0.9} />
       </mesh>
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[SQUARE_CENTER[0], 0.015, SQUARE_CENTER[1]]}>
-        <ringGeometry args={[3.2, 3.6, 40]} />
+        <ringGeometry args={[2.24, 2.52, 40]} />
         <meshStandardMaterial color="#9d9689" roughness={0.9} />
       </mesh>
 
-      <StreetLamp model="/assets/models/light-square-double.glb" position={[32, 0, -32]} scale={5} rotationY={Math.PI * 1.25} lampHeight={2.8} flickerSeed={0.3} />
-      <StreetLamp model="/assets/models/light-square-double.glb" position={[32, 0, 2]} scale={5} rotationY={-Math.PI * 0.25} lampHeight={2.8} flickerSeed={0.6} />
+      <StreetLamp model="/assets/models/light-square-double.glb" position={[27.2, 0, -27.2]} scale={5} rotationY={Math.PI * 1.25} lampHeight={2.8} flickerSeed={0.3} />
+      <StreetLamp model="/assets/models/light-square-double.glb" position={[27.2, 0, -3.4]} scale={5} rotationY={-Math.PI * 0.25} lampHeight={2.8} flickerSeed={0.6} />
 
-      <Building model="/assets/models/detail-parasol-a.glb" position={[24, 0, -24]} scale={5} />
-      <Building model="/assets/models/detail-parasol-b.glb" position={[27, 0, -21]} scale={5} rotationY={1.1} />
-      <Building model="/assets/models/detail-parasol-a.glb" position={[9, 0, -25]} scale={5} rotationY={2.4} />
+      {/* Not the plain 0.7x-of-original spot (21.6,-21.6): the camera's own
+          parked position for Welcome Plaza is a FIXED point independent of
+          this square (road.ts's PLAZA_ARM ends at [22,0,-22]), and that
+          point's offset from SQUARE_CENTER happens to sit almost exactly on
+          this parasol's own offset direction — shrinking proportionally
+          dragged the canopy right on top of the parked camera (found by
+          actually looking at the rendered frame: a huge dark shape filling
+          it, not a hypothetical). Hand-placed here instead, at a position
+          that clears the parked camera by a safe margin. */}
+      <Building model="/assets/models/detail-parasol-a.glb" position={[20, 0, -24]} scale={5} />
+      <Building model="/assets/models/detail-parasol-b.glb" position={[23.7, 0, -19.5]} scale={5} rotationY={1.1} />
+      <Building model="/assets/models/detail-parasol-a.glb" position={[11.1, 0, -22.3]} scale={5} rotationY={2.4} />
 
-      <Building model="/assets/models/planter.glb" position={[34, 0, -34]} scale={2.5} />
-      <Building model="/assets/models/planter.glb" position={[34, 0, -2]} scale={2.5} />
-      <Building model="/assets/models/planter.glb" position={[2, 0, -34]} scale={2.5} />
-      <Building model="/assets/models/tree-large.glb" position={[30, 0, -6]} scale={3.4} rotationY={0.6} />
-      <Building model="/assets/models/tree-small.glb" position={[6, 0, -30]} scale={3.2} rotationY={1.8} />
+      <Building model="/assets/models/planter.glb" position={[28.6, 0, -28.6]} scale={2.5} />
+      <Building model="/assets/models/planter.glb" position={[28.6, 0, -6.2]} scale={2.5} />
+      <Building model="/assets/models/planter.glb" position={[6.2, 0, -28.6]} scale={2.5} />
+      <Building model="/assets/models/tree-large.glb" position={[25.8, 0, -9]} scale={3.4} rotationY={0.6} />
+      <Building model="/assets/models/tree-small.glb" position={[9, 0, -25.8]} scale={3.2} rotationY={1.8} />
     </group>
   )
 }
