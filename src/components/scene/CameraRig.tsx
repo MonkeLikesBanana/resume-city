@@ -8,6 +8,7 @@ import { TOUR_ORDER } from '../../content/tour'
 import { TOUR_CURVE, TOUR_STOP_U, tourIndexFor, nearestTourIndex } from '../../lib/tourCurve'
 import { tripProgress, totalTripTime } from '../../lib/motion'
 import { driveFrame, scrubFrame, snapTo } from '../../lib/camera'
+import { scrubState } from '../../lib/scrubState'
 import { HOME_ATTRACTION_ID, DEFAULT_FOV, HOME_FOV, MAX_SPEED, ACCEL } from '../../config'
 import useReducedMotion from '../../hooks/useReducedMotion'
 
@@ -101,6 +102,7 @@ export default function CameraRig() {
     if (!hasInitializedRef.current || reducedMotion) {
       hasInitializedRef.current = true
       currentURef.current = targetU
+      scrubState.currentU = targetU
       driveRef.current = null
       perspCamera.fov = targetFovFor(attraction.id)
       perspCamera.updateProjectionMatrix()
@@ -127,6 +129,22 @@ export default function CameraRig() {
 
   useFrame((_, delta) => {
     const perspCamera = camera as THREE.PerspectiveCamera
+
+    // --- ExploreScrubBar dragging the slider takes priority over
+    // everything else this frame — same visual treatment as holding an
+    // arrow key (scrubFrame, no arrival-tilt blend), just driven by a
+    // pointer position instead of a ramping speed. See scrubState.ts. ---
+    if (scrubState.requestedU !== null) {
+      const dir: 1 | -1 = scrubState.requestedU >= currentURef.current ? 1 : -1
+      currentURef.current = THREE.MathUtils.clamp(scrubState.requestedU, 0, 1)
+      scrubState.currentU = currentURef.current
+      scrubLastDirRef.current = dir
+      wasScrubbingRef.current = true
+      driveRef.current = null
+      scrubFrame(perspCamera, TOUR_CURVE, currentURef.current, dir, delta)
+      return
+    }
+
     const heldDir = scrubHeldDirRef.current
 
     // --- Explore-yourself scrub owns the frame whenever it's active or
@@ -140,6 +158,7 @@ export default function CameraRig() {
       const dir = scrubLastDirRef.current
       const deltaU = (dir * scrubSpeedRef.current * delta) / TOUR_CURVE.getLength()
       currentURef.current = THREE.MathUtils.clamp(currentURef.current + deltaU, 0, 1)
+      scrubState.currentU = currentURef.current
       scrubFrame(perspCamera, TOUR_CURVE, currentURef.current, dir, delta)
 
       if (heldDir === 0 && scrubSpeedRef.current <= 0.01) {
@@ -161,6 +180,7 @@ export default function CameraRig() {
     const u = THREE.MathUtils.lerp(drive.startU, drive.targetU, localProgress)
     const direction: 1 | -1 = drive.targetU >= drive.startU ? 1 : -1
     currentURef.current = u // keep truthful every frame, not just at completion — a scrub key pressed mid-drive cancels driveRef and must resume from here, not from wherever the drive started
+    scrubState.currentU = u
 
     const attraction = getAttraction(drive.attractionId)
     if (!attraction) {
@@ -175,6 +195,7 @@ export default function CameraRig() {
     if (localProgress >= 1) {
       driveRef.current = null
       currentURef.current = drive.targetU
+      scrubState.currentU = drive.targetU
       // Hard-correct the final frame — eliminates any residual slerp error
       // so the parked framing is always exact, never "almost caught up."
       snapTo(perspCamera, TOUR_CURVE.getPointAt(drive.targetU), attraction)

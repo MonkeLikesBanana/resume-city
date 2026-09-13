@@ -7,6 +7,7 @@ import PlazaSquare from './PlazaSquare'
 import Suburb from './Suburb'
 import Park from './Park'
 import BasketballCourt from './BasketballCourt'
+import DowntownPocketPark from './DowntownPocketPark'
 
 // PRD v3 §4.1/§4.3/§4.4/§7.1 — the world is now an L-shape (Foundry west,
 // Lakeside south) plus the Plaza's open square in the +X,-Z quadrant, not a
@@ -187,6 +188,7 @@ export default function Ground() {
       <Suburb />
       <Park />
       <BasketballCourt />
+      <DowntownPocketPark />
       <Forest />
       <Mountains />
     </group>

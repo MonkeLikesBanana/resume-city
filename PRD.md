@@ -1,7 +1,35 @@
 # Vasnova City — Interactive City Resume
 ### Product & Technical Design Document (PRD)
-Status: v5.0 — ready to build · Owner: Aarav Vaswani
+Status: v6.0 — ready to build · Owner: Aarav Vaswani
 
+> **Revision note (v6.0):** v5.0 was declared MVP. Three more asks, plus the
+> standing goal restated once more (make this as close to a real city as
+> possible):
+> 1. **There's still a large amount of open space** — explicitly *not* by
+>    adding more buildings or forest density, but by putting real things in
+>    the empty ground that's already there: parks, benches, the kind of
+>    street furniture a real city block actually has.
+> 2. **A lot of the smaller sprites are messed up/bugged** — investigated
+>    directly rather than guessed at (a temporary isolated model-comparison
+>    render of every small prop in the game, at each one's *real* in-game
+>    scale, not a uniform test scale that would just recreate a fake
+>    "some look huge" artifact). Found one clear, verifiable bug: the
+>    Plaza gate's four `streetlamp.glb` fixtures were scaled to roughly
+>    half the height of every other streetlamp in the city, despite the
+>    underlying model being almost identically proportioned to the one
+>    used everywhere else (`light-square.glb`) — confirmed via direct
+>    model-dimension inspection, not eyeballing.
+> 3. **A scrub bar for explore-yourself mode** — holding ←/→ (§7.5) had no
+>    visual feedback and no way to jump straight to a stop without
+>    physically scrubbing there first. A bottom bar, visible only while
+>    actually scrubbing, showing every stop along the tour: drag it to
+>    move through the city directly, or click a stop to jump straight to
+>    its panel.
+>
+> §4 gets one more new subsection (§4.8) for the furniture/pocket-park
+> work and the streetlamp fix; §7 gets one for the scrub bar (§7.8). Every
+> other section carries over unchanged.
+>
 > **Revision note (v5.0):** three fixes reported from an actual screenshot of
 > the deployed site (the fork/junction area), after several rounds of
 > unversioned polish already shipped on top of v4.0. In the order given:
@@ -342,6 +370,70 @@ chance an on lamp already had, some rooms have a light on a timer, a sign
 relay sticks briefly, the same texture of imperfection in both
 directions.
 
+### 4.8 Street furniture and a pocket park (v6.0)
+
+"Open space" wasn't a density problem — foundry-blocks.ts/suburb-houses.ts
+already fill the map about as much as a real city/suburb split reasonably
+would (PRD v5.0 §3) — it was an *emptiness* problem: real paved and
+grassed ground with nothing on it. No Kenney pack on disk has park
+furniture (benches, a picnic table, a trash can) — the same situation
+BasketballCourt.tsx already solved for a hoop/court — so
+`Bench.tsx`/`PicnicTable.tsx`/`TrashCan.tsx` are built from primitive
+geometry the same way, at real-world-ish proportions (a bench seat ~0.45m
+high, a trash can ~0.65m tall).
+
+Placed where the emptiness actually was, not scattered randomly:
+- Both sidewalks (Main Street, the Lakeside street) get a bench + trash
+  can pair at regular intervals, alternating sides, offset from the
+  streetlamp interval so the two don't always coincide
+  (`RoadNetwork.tsx`'s `streetFurniture()`).
+- The Plaza's paved square had nothing inviting you to actually stop
+  there beyond the medallion itself — two benches facing it, plus a trash
+  can.
+- Park.tsx's existing park (stumps were the only seating before, because
+  no bench model existed) gets a real bench and a picnic table alongside
+  the stumps, not instead of them.
+- The single biggest genuinely-bare stretch: foundry-blocks.ts's filler
+  rows stop at z=±47, but Ground.tsx's downtown pavement patch and
+  Forest.tsx's forest regions don't meet until z=±54 — a ~7-unit-deep
+  strip of bare paved nothing running the full length of downtown, both
+  sides. `DowntownPocketPark.tsx` turns one side of that strip into a
+  small green break (moss, street trees, two benches, a trash can) —
+  deliberately not a full second park (there's already a real one on the
+  Lakeside side), just enough that the strip reads as a leftover
+  downtown block got a pocket park, not as an unfinished edge of the map.
+  Positioned and bounds-checked against `blocks.ts`'s
+  `WEDGE_EXCLUSION_ZONE` and Forest.tsx's own wedge region specifically —
+  the exact kind of unchecked-overlap mistake that caused PRD v5.0's
+  z-fighting bug.
+
+### 4.9 A verified small-prop bug, not a guess (v6.0)
+
+"Smaller sprites are messed up" needed an actual look at every small prop
+side by side before concluding anything — a temporary, throwaway page
+(`public/_debug-props.html`, removed after use) loaded every small
+decorative model directly with Three.js + GLTFLoader/DRACOLoader outside
+the main app entirely, laid out in a grid, **each at the exact scale its
+real call site in the app uses** — a flat test scale across every model
+would just reproduce a "some look huge, some look tiny" artifact from
+each model's own differing native bounding box, telling you nothing real.
+
+That render showed `streetlamp.glb` (used only by PlazaSquare.tsx's four
+gate lamps, at scale 2.5) as a barely-visible sliver next to
+`light-square.glb`/`light-square-double.glb` (used by every other
+streetlamp in the city, at scale 5) reading as full, proper lamp posts.
+Direct model-dimension inspection confirmed why: `streetlamp.glb`'s
+native bounding box (0.05 × 0.675 × 0.225) is nearly identical to
+`light-square.glb`'s (0.05 × 0.6 × 0.237) — these are meant to be the
+same real-world size, and using scale 2.5 for one and scale 5 for the
+near-identical other left the gate lamps at roughly half height, with
+nothing about the gate's design calling for shorter fixtures there.
+Fixed by matching scale (5) and adjusting `lampHeight` to match (the
+point light's own position, previously tuned to the wrong, shorter
+scale). Every other small prop checked out proportionally sound at this
+pass — this was the one real, confirmed bug, not a symptom of some
+broader systemic issue.
+
 ## 5. Content Map — Resume → City
 
 **Unchanged from v3** — no facts, copy, or district assignments change in
@@ -552,6 +644,57 @@ visible from a distance in the first place). The one visible marker also
 stops being a `<button>` — since it's never a navigation target anymore (you
 only ever see it once you're already there), it becomes a plain label,
 matching its new purely-informational role.
+
+### 7.8 ExploreScrubBar — visual feedback and a shortcut for §7.5 (v6.0)
+
+§7.5's explore-yourself scrub had no visual feedback (no sense of where
+you are along the tour while holding an arrow key) and no shortcut (no
+way to jump to a specific stop without physically scrubbing/driving
+there). A new bottom bar fixes both, rendered only while
+`activeAttractionId === null` — TourBar.tsx's exact mirror-image
+condition (it already renders nothing during a scrub, §9), so the two
+bars are mutually exclusive by construction and never compete for the
+same screen slot.
+
+The technical wrinkle: `currentURef`, CameraRig's own position along
+`TOUR_CURVE`, is a plain ref private to that component, updated every R3F
+frame. A DOM overlay outside the `<Canvas>` can't use `useFrame` to read
+it, and pushing it through Zustand every frame would re-render every
+subscriber at 60fps for what's normally a purely cosmetic slider
+position — the same category of problem `dayNightState`/`windowGlow`'s
+registries already solved with a shared mutable object instead of React
+state. `src/lib/scrubState.ts` is that same pattern applied here:
+
+```ts
+// src/lib/scrubState.ts — NEW
+export const scrubState = {
+  currentU: 0,           // CameraRig writes this every frame; the bar reads
+                          // it in its own requestAnimationFrame loop to move
+                          // the slider thumb imperatively, no re-render.
+  requestedU: null as number | null,
+                          // the bar writes this while a drag is in progress;
+                          // CameraRig checks it at the top of useFrame and,
+                          // if set, drives the camera straight there via
+                          // scrubFrame() (the same function keyboard-held
+                          // scrubbing already uses) — then the check falls
+                          // through to normal keyboard-scrub/drive logic
+                          // whenever it's null.
+}
+```
+
+Dragging the bar's track computes a 0..1 position from the pointer's X
+position and writes it to `scrubState.requestedU` every `pointermove` —
+CameraRig picks it up next frame, same visual treatment (no arrival-tilt
+blend) as holding an arrow key. Releasing the drag clears `requestedU`
+and calls `navigate()` to the nearest `TOUR_STOP_U` entry directly — the
+exact same "settle onto the nearest stop" `navigate()` call §7.5's own
+release-and-coast logic already makes, just triggered immediately instead
+of after a deceleration ramp. Each stop also gets its own small tick mark
+positioned at its real `TOUR_STOP_U` value along the track; clicking one
+calls `navigate()` straight to that stop, skipping the drag/scrub
+entirely — the click-to-jump half of the ask, reusing the identical
+router-driven discrete-drive path Prev/Next/AccessibleNav already trigger,
+not a new navigation mechanism.
 
 ## 8. Data Model
 

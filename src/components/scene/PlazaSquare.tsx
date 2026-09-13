@@ -1,5 +1,7 @@
 import Building from './Building'
 import StreetLamp from './StreetLamp'
+import Bench from './Bench'
+import TrashCan from './TrashCan'
 import { PALETTE } from '../../config'
 
 /** PRD v3 §4.3 — the Welcome Plaza is now an open paved square occupying the
@@ -45,10 +47,20 @@ export default function PlazaSquare() {
       <Building model="/assets/models/plaza-gate.glb" position={[GATE_X, 0, 0]} scale={1} />
       <Building model="/assets/models/planter.glb" position={[GATE_X + 0.8, 0, -2.8]} scale={2.5} />
       <Building model="/assets/models/planter.glb" position={[GATE_X - 0.8, 0, 2.8]} scale={2.5} rotationY={Math.PI} />
-      <StreetLamp model="/assets/models/streetlamp.glb" position={[GATE_X - 2, 0, -3]} scale={2.5} lampHeight={1.6} flickerSeed={0.1} />
-      <StreetLamp model="/assets/models/streetlamp.glb" position={[GATE_X - 2, 0, 3]} scale={2.5} rotationY={Math.PI} lampHeight={1.6} flickerSeed={0.4} />
-      <StreetLamp model="/assets/models/streetlamp.glb" position={[-1.5, 0, -3]} scale={2.5} lampHeight={1.6} flickerSeed={0.7} />
-      <StreetLamp model="/assets/models/streetlamp.glb" position={[-1.5, 0, 3]} scale={2.5} rotationY={Math.PI} lampHeight={1.6} flickerSeed={0.9} />
+      {/* PRD v6.0 §2 — scale bumped 2.5->5 (lampHeight 1.6->3 to match): a
+          direct model-dimension check found streetlamp.glb's native size is
+          nearly identical to light-square.glb's (~0.6-0.68 tall), but every
+          other streetlamp in the city uses scale=5 for that near-identical
+          model — these four, gate-only, were rendering at roughly half the
+          height of every other lamp in the city, a real, measurable
+          inconsistency and not a deliberate "shorter gate lamp" choice
+          (nothing else about the gate calls for shorter fixtures). Found via
+          a temporary isolated model-comparison render, not a guess from a
+          screenshot. */}
+      <StreetLamp model="/assets/models/streetlamp.glb" position={[GATE_X - 2, 0, -3]} scale={5} lampHeight={3} flickerSeed={0.1} />
+      <StreetLamp model="/assets/models/streetlamp.glb" position={[GATE_X - 2, 0, 3]} scale={5} rotationY={Math.PI} lampHeight={3} flickerSeed={0.4} />
+      <StreetLamp model="/assets/models/streetlamp.glb" position={[-1.5, 0, -3]} scale={5} lampHeight={3} flickerSeed={0.7} />
+      <StreetLamp model="/assets/models/streetlamp.glb" position={[-1.5, 0, 3]} scale={5} rotationY={Math.PI} lampHeight={3} flickerSeed={0.9} />
 
       {/* Lakeside transition — flanking trees/planters, no monument (§4.3) */}
       <Building model="/assets/models/planter.glb" position={[-2.8, 0, 7]} scale={2.5} rotationY={Math.PI / 2} />
@@ -81,6 +93,14 @@ export default function PlazaSquare() {
       <Building model="/assets/models/planter.glb" position={[18, 0, -2]} scale={2.5} />
       <Building model="/assets/models/tree-large.glb" position={[16, 0, -6]} scale={3.4} rotationY={0.6} />
       <Building model="/assets/models/tree-small.glb" position={[3, 0, -12]} scale={3.2} rotationY={1.8} />
+
+      {/* PRD v6.0 §1 — the medallion itself was the only thing anchoring the
+          square's open pavement; nothing invited you to actually stop there.
+          Two benches facing it plus a trash can, the same "give the open
+          paving a reason to exist" fix applied to the sidewalks/Park below. */}
+      <Bench position={[SQUARE_CENTER[0] - 5, 0, SQUARE_CENTER[1]]} rotationY={-Math.PI / 2} />
+      <Bench position={[SQUARE_CENTER[0], 0, SQUARE_CENTER[1] - 5]} rotationY={0} />
+      <TrashCan position={[SQUARE_CENTER[0] - 4, 0, SQUARE_CENTER[1] - 4]} />
     </group>
   )
 }

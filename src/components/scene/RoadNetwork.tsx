@@ -3,6 +3,8 @@ import { Instances, Instance } from '@react-three/drei'
 import * as THREE from 'three'
 import Building from './Building'
 import StreetLamp from './StreetLamp'
+import Bench from './Bench'
+import TrashCan from './TrashCan'
 import { SUBURB_HOUSES } from '../../content/suburb-houses'
 import { ATTRACTIONS } from '../../content/attractions'
 import { PALETTE } from '../../config'
@@ -181,6 +183,32 @@ function streetlamps() {
   ))
 }
 
+const FURNITURE_INTERVAL = 22 // offset from LAMP_INTERVAL (16) so benches don't always line up with a lamp post
+
+/** PRD v6.0 §1 — benches + trash cans along both sidewalks, between the
+ * streetlamp line (±3) and the filler buildings (±16) — the sidewalk
+ * itself (below) already paved this strip, but paving alone doesn't give
+ * anyone a reason to actually be there. Same alternating-side, regular-
+ * interval pattern streetlamps() already established, at a different
+ * period so the two don't always land on top of each other. */
+function streetFurniture() {
+  const items: Array<{ position: [number, number, number]; rotationY: number }> = []
+  let side = -1
+  for (let x = FOUNDRY_SPAN[0] + 12; x < -14; x += FURNITURE_INTERVAL, side *= -1) {
+    items.push({ position: [x, 0, side * 6], rotationY: side > 0 ? Math.PI : 0 })
+  }
+  side = -1
+  for (let z = LAKESIDE_SPAN[0] + 12; z < 78; z += FURNITURE_INTERVAL, side *= -1) {
+    items.push({ position: [side * 6, 0, z], rotationY: side > 0 ? -Math.PI / 2 : Math.PI / 2 })
+  }
+  return items.map((f, i) => (
+    <group key={`furniture-${i}`}>
+      <Bench position={f.position} rotationY={f.rotationY} />
+      <TrashCan position={[f.position[0] + Math.sin(f.rotationY) * 1.2, 0, f.position[2] + Math.cos(f.rotationY) * 1.2]} />
+    </group>
+  ))
+}
+
 /** PRD v4 §4.2 — paved sidewalk strips between the road and each filler
  * row, both districts. Plain planes, same technique/tone as PlazaSquare's
  * paving — the single biggest "this reads as a real street" fix, since bare
@@ -294,6 +322,7 @@ export default function RoadNetwork() {
       {sidewalks()}
       {utilityPoles()}
       {streetlamps()}
+      {streetFurniture()}
       {crossStreetSigns()}
       {alleyProps()}
       <Driveways />

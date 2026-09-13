@@ -7,6 +7,7 @@ import InfoPanel from './components/ui/InfoPanel'
 import AccessibleNav from './components/ui/AccessibleNav'
 import WelcomeOverlay from './components/ui/WelcomeOverlay'
 import TourBar from './components/ui/TourBar'
+import ExploreScrubBar from './components/ui/ExploreScrubBar'
 import Header from './components/layout/Header'
 import NoWebGLFallback from './components/ui/NoWebGLFallback'
 import useCityStore from './store/useCityStore'
@@ -97,6 +98,7 @@ function Experience() {
         <Header />
         <InfoPanel />
         <TourBar />
+        <ExploreScrubBar />
       </div>
       <WelcomeOverlay />
     </div>

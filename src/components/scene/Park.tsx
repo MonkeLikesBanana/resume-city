@@ -1,4 +1,7 @@
 import Building from './Building'
+import Bench from './Bench'
+import PicnicTable from './PicnicTable'
+import TrashCan from './TrashCan'
 import { PALETTE } from '../../config'
 
 /** PRD v3 §4.4 — a real park lot along the Lakeside street: a grass patch,
@@ -6,8 +9,10 @@ import { PALETTE } from '../../config'
  * "Lakeside should have a lake" feature, §4.2), park-style deciduous trees
  * (visibly different from the forest's pine silhouette — that's deliberate,
  * a park should read differently from the wild forest belt behind it),
- * flowers, and rustic tree-stump seating in place of a bench model (none
- * exists in any pack on disk). */
+ * flowers, and rustic tree-stump seating alongside real benches/a picnic
+ * table (PRD v6.0 §1 — Bench.tsx/PicnicTable.tsx, built from primitives
+ * the same way BasketballCourt.tsx's hoop was, since no pack on disk has
+ * park furniture — the stumps were the only seating option before that). */
 const CENTER: [number, number] = [32, 45]
 const [cx, cz] = CENTER
 
@@ -45,6 +50,10 @@ export default function Park() {
       <Building model="/assets/models/stump-square.glb" position={[cx - 1, 0, cz - 6]} scale={2.5} />
       <Building model="/assets/models/rock-small-a.glb" position={[cx + 8, 0, cz + 2]} scale={2.5} />
       <Building model="/assets/models/rock-small-b.glb" position={[cx - 9, 0, cz - 2]} scale={2.5} />
+
+      <Bench position={[cx + 3.5, 0, cz + 4]} rotationY={-0.9} />
+      <PicnicTable position={[cx - 5, 0, cz - 8]} rotationY={0.3} />
+      <TrashCan position={[cx - 2.5, 0, cz - 3]} />
     </group>
   )
 }
