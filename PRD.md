@@ -1,7 +1,54 @@
 # Vasnova City — Interactive City Resume
 ### Product & Technical Design Document (PRD)
-Status: v6.0 — ready to build · Owner: Aarav Vaswani
+Status: v7.0 — in progress · Owner: Aarav Vaswani
 
+> **Revision note (v7.0, round 1):** a denser-and-more-realistic pass, plus
+> a standing directive to keep iterating autonomously afterward until an
+> honest self-review turns up nothing left to fix. This round's asks:
+> 1. **Denser but contextually sensible props** — construction cones/
+>    barriers closing off both cross streets' dead ends (they never
+>    connected through to anything — a real city would mark that), and a
+>    denser bench pass specifically along the Lakeside street (suburb
+>    only, not downtown — the ask was for the suburb to feel more lived-in,
+>    not a uniform bump everywhere).
+> 2. **Suburb ground still gray, not green** — root-caused this time, not
+>    just re-widened: `Ground.tsx`'s `DOWNTOWN_GROUND` pavement rectangle
+>    (sized for Foundry's own filler footprint) reached far enough east,
+>    at a higher Y than the grass patch, to cover part of the suburb's own
+>    west-row houses once they resume past the wedge exclusion zone
+>    (z>50) — confirmed by computing the two rectangles' actual overlap,
+>    not re-guessing at the grass patch's bounds a third time. Pulled
+>    `DOWNTOWN_GROUND`'s z-extent back to match Foundry's real reach, and
+>    (the real, durable fix) gave every house — generated filler and the
+>    real Lakeside attractions alike — its own lawn plane via the new
+>    `Yard.tsx`, rendered above every coarse ground rectangle so it can't
+>    lose to whichever one happens to reach furthest next time either
+>    district's footprint grows.
+> 3. **A forest sat between Lakeside and Foundry** — unrealistic for two
+>    built-up districts that close together. Replaced with an actual river
+>    (`River.tsx`, a chain of overlapping water circles echoing Park.tsx's
+>    pond), checked against every real building in that quadrant (NEEMO HQ,
+>    the x=-26 cross street's road bed, DowntownPocketPark) so nothing
+>    collides. This was the same fix as "remove the trees within the main
+>    city area" — Forest.tsx's other regions were all already outside
+>    every district's real footprint (checked directly, not assumed), so
+>    the wedge was the only region that qualified.
+> 4. **Outside forests much denser** — roughly doubled every genuine
+>    outer-wilderness region's tree count, plus the outer treeline ring
+>    (the mass of trees actually visible against the mountains from most
+>    camera angles, so the highest-leverage place to add density).
+> 5. **Suburb housing much denser, "like a real neighborhood"** — six rows
+>    per side now (was four), every row's lot spacing tightened, not just
+>    more rows added at the old spacing. Fenced-in lawns (`Yard.tsx`, see
+>    #2) at the same time, for the same "real neighborhood" effect.
+>
+> New sections: §4.10 (Yard.tsx/River.tsx, this round). Every other section
+> carries over unchanged. This is round 1 of an open-ended iteration — the
+> standing goal after this round ships is an autonomous, exhaustive
+> self-review of the deployed tour (every flaw, however small, judged as
+> if seeing the site fresh) turned into a round 2 PRD, repeated until the
+> review turns up nothing left worth fixing.
+>
 > **Revision note (v6.0):** v5.0 was declared MVP. Three more asks, plus the
 > standing goal restated once more (make this as close to a real city as
 > possible):
@@ -433,6 +480,28 @@ point light's own position, previously tuned to the wrong, shorter
 scale). Every other small prop checked out proportionally sound at this
 pass — this was the one real, confirmed bug, not a symptom of some
 broader systemic issue.
+
+### 4.10 Fenced yards and a river (v7.0)
+
+`Yard.tsx` gives every suburb house — both the generated filler
+(`suburb-houses.ts`) and the real Lakeside attractions that are actual
+houses (cafe, arcade, sports-field, open-road) — its own lawn plane and a
+three-sided low picket fence (`fence-low.glb`, GPU-instanced the same way
+`Forest.tsx`'s trees are: real geometry/material pulled from the glb, not
+a `<Clone>` per instance). The fence leaves the street-facing edge open
+with a gate-width gap in the middle rather than the house's own wall
+side, which needs no panel at all. This is deliberately redundant with the
+coarse `GRASS_SIZE`/`DOWNTOWN_GROUND` rectangles in `Ground.tsx` — it's
+the fix that doesn't depend on two unrelated rectangles' bounds staying
+clear of each other as either district's footprint grows again later.
+
+`River.tsx` replaces the old wedge Forest region between Lakeside and
+Foundry: a chain of six overlapping water circles (same technique as
+Park.tsx's pond, just repeated with a drifting center for a meander
+rather than one shape), plus bank rocks/flowers/a few pines. Every
+segment's center+radius was checked directly against NEEMO HQ's position,
+the x=-26 cross street's actual road-bed width, and DowntownPocketPark's
+X_RANGE — margins of 2m+ on every side, not assumed clear.
 
 ## 5. Content Map — Resume → City
 
