@@ -184,6 +184,7 @@ function streetlamps() {
 }
 
 const FURNITURE_INTERVAL = 22 // offset from LAMP_INTERVAL (16) so benches don't always line up with a lamp post
+const SUBURB_FURNITURE_INTERVAL = 11 // half FURNITURE_INTERVAL, phase-shifted below — the suburb-only "more benches along the street" pass (PRD v7.0 §1)
 
 /** PRD v6.0 §1 — benches + trash cans along both sidewalks, between the
  * streetlamp line (±3) and the filler buildings (±16) — the sidewalk
@@ -205,6 +206,43 @@ function streetFurniture() {
     <group key={`furniture-${i}`}>
       <Bench position={f.position} rotationY={f.rotationY} />
       <TrashCan position={[f.position[0] + Math.sin(f.rotationY) * 1.2, 0, f.position[2] + Math.cos(f.rotationY) * 1.2]} />
+    </group>
+  ))
+}
+
+/** PRD v7.0 §1 — extra benches along the Lakeside street specifically, at
+ * half streetFurniture()'s interval and offset so the two passes interleave
+ * rather than double up at the same spot — the user's ask was explicitly
+ * "benches along the side of the roads in the suburb areas," denser than
+ * downtown, not a uniform bump to both districts. */
+function suburbBenches() {
+  const items: Array<{ position: [number, number, number]; rotationY: number }> = []
+  let side = 1
+  for (let z = LAKESIDE_SPAN[0] + 12 + SUBURB_FURNITURE_INTERVAL / 2; z < 82; z += SUBURB_FURNITURE_INTERVAL, side *= -1) {
+    items.push({ position: [side * 6, 0, z], rotationY: side > 0 ? -Math.PI / 2 : Math.PI / 2 })
+  }
+  return items.map((f, i) => <Bench key={`suburb-bench-${i}`} position={f.position} rotationY={f.rotationY} />)
+}
+
+/** PRD v7.0 §1 — cones/barriers closing off both cross streets' dead ends
+ * (CROSS_STREET_Z_SPAN's ±31 — these side streets never connect through to
+ * anything, so a real city would have exactly this at the end of them),
+ * the concrete "cones closing off side roads" example from the goal. A
+ * small angled cone cluster plus one barrier per end, not a wall straight
+ * across the lane — reads as "road work/dead end ahead," not a hard clip
+ * a driver would visibly clip through. */
+function roadClosures() {
+  const ends = CROSS_STREETS_X.flatMap((x) => [
+    { x, z: CROSS_STREET_Z_SPAN[1], rotationY: 0 },
+    { x, z: CROSS_STREET_Z_SPAN[0], rotationY: Math.PI },
+  ])
+  return ends.map((e, i) => (
+    <group key={`closure-${i}`} position={[e.x, 0, e.z]} rotation={[0, e.rotationY, 0]}>
+      <Building model="/assets/models/construction-barrier.glb" position={[0, 0, 0.3]} scale={6} />
+      <Building model="/assets/models/construction-cone.glb" position={[-1.6, 0, 0.9]} scale={7} rotationY={0.4} />
+      <Building model="/assets/models/construction-cone.glb" position={[-0.6, 0, 1.2]} scale={7} rotationY={-0.3} />
+      <Building model="/assets/models/construction-cone.glb" position={[0.6, 0, 1.2]} scale={7} rotationY={0.6} />
+      <Building model="/assets/models/construction-cone.glb" position={[1.6, 0, 0.9]} scale={7} rotationY={-0.5} />
     </group>
   ))
 }
@@ -323,8 +361,10 @@ export default function RoadNetwork() {
       {utilityPoles()}
       {streetlamps()}
       {streetFurniture()}
+      {suburbBenches()}
       {crossStreetSigns()}
       {alleyProps()}
+      {roadClosures()}
       <Driveways />
     </group>
   )

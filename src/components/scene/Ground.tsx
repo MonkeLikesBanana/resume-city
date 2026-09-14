@@ -8,6 +8,8 @@ import Suburb from './Suburb'
 import Park from './Park'
 import BasketballCourt from './BasketballCourt'
 import DowntownPocketPark from './DowntownPocketPark'
+import Yard from './Yard'
+import River from './River'
 
 // PRD v3 §4.1/§4.3/§4.4/§7.1 — the world is now an L-shape (Foundry west,
 // Lakeside south) plus the Plaza's open square in the +X,-Z quadrant, not a
@@ -60,7 +62,12 @@ function mulberry32(seed: number) {
 // color instead of grass (exactly the "many suburbs still don't have
 // grass" report — those houses were simply outside the patch, not a
 // missing-material bug).
-const GRASS_SIZE: [number, number] = [96, 94]
+// PRD v7.0 — widened again (x half-width 48->50): suburb-houses.ts now
+// reaches ±43 (six rows, up from four at ±37, §1 "much more dense"), so the
+// old half-width of 48 left only ~5m margin around the new outer row's own
+// footprint. 50 keeps the same ~7m margin the ±37 row had against the old
+// 48 half-width.
+const GRASS_SIZE: [number, number] = [100, 94]
 const GRASS_CENTER: [number, number] = [0, 49]
 
 // PRD v4 polish round 5 §4 — the same "some ground has no proper surface"
@@ -72,7 +79,21 @@ const GRASS_CENTER: [number, number] = [0, 49]
 // pavement between buildings, not bare ground — and shares PALETTE.pavement
 // with the sidewalks/plaza it sits flush next to, rather than introducing a
 // third ground tone.
-const DOWNTOWN_GROUND_SIZE: [number, number] = [86, 112]
+//
+// PRD v7.0 §2 — z-extent pulled back in from 112 to 96: at its old size
+// this rectangle's z-range ([-56,56]) reached past the wedge exclusion
+// zone's z=50 cap into the suburb's own west-row houses (x=-16..-37 all
+// fall inside this rectangle's x-range too), which resume past z=50 — and
+// since this pavement plane sits at a higher Y than the grass patch, it was
+// winning there, showing gray pavement under suburb houses instead of
+// green (the actual "suburb ground still gray" bug, confirmed by computing
+// both rectangles' overlap directly rather than re-guessing at the grass
+// patch's own bounds again). 96 keeps a comfortable ~2m margin over
+// Foundry's real ±47 filler reach without reaching into the suburb's z>50
+// tail. Yard.tsx's per-house lawn planes (rendered above both this and the
+// grass patch) are the actual belt-and-suspenders fix for every remaining
+// house — this rectangle just stops actively fighting them.
+const DOWNTOWN_GROUND_SIZE: [number, number] = [86, 96]
 const DOWNTOWN_GROUND_CENTER: [number, number] = [-48, 0]
 // PRD v5.0 §4.6 — this patch's bounds spatially overlap GRASS_SIZE's (both
 // districts' filler can reach the same near-junction quadrant, §4.6's wedge
@@ -186,9 +207,11 @@ export default function Ground() {
 
       <PlazaSquare />
       <Suburb />
+      <Yard />
       <Park />
       <BasketballCourt />
       <DowntownPocketPark />
+      <River />
       <Forest />
       <Mountains />
     </group>

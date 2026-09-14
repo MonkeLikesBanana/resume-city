@@ -40,21 +40,28 @@ function clearsLandmarks(position: [number, number, number]): boolean {
 // two thin rows of houses with open ground behind them. Forest.tsx's
 // regions were pushed outward to match.
 //
-// PRD v5.0 §4.6 — every row (not just the round-5 additions) filtered
-// through clearsWedge() too: the -X (west) side of ANY row can land in the
-// same map quadrant foundry-blocks.ts's +Z (north) rows independently
-// claim near the junction — see blocks.ts's WEDGE_EXCLUSION_ZONE comment.
-// The original ±16/±23 rows technically had this risk already (their -X
-// side sits well inside the wedge zone's X range), it just wasn't visible
-// until foundry-blocks.ts's own footprint grew far enough to actually
-// reach the same territory.
-export const SUBURB_HOUSES: FillerBuilding[] = [
-  ...generateBlock({ along: ALONG, streetAxis: 'z', rowOffsets: [16, -16], lotSpacing: 12, models: HOUSE_MODELS, seed: 20260917, jitter: 1.5 }),
-  ...generateBlock({ along: ALONG, streetAxis: 'z', rowOffsets: [23, -23], lotSpacing: 14, models: HOUSE_MODELS, seed: 20260918, jitter: 1.8 }),
-  ...generateBlock({ along: ALONG, streetAxis: 'z', rowOffsets: [30, -30], lotSpacing: 14, models: HOUSE_MODELS, seed: 20260919, jitter: 1.8 }).filter((b) =>
-    clearsLandmarks(b.position),
-  ),
-  ...generateBlock({ along: ALONG, streetAxis: 'z', rowOffsets: [37, -37], lotSpacing: 16, models: HOUSE_MODELS, seed: 20260920, jitter: 2 }).filter((b) =>
-    clearsLandmarks(b.position),
-  ),
-].filter((b) => clearsWedge(b.position))
+// PRD v7.0 §1 — "much more dense, like a real neighborhood": six rows per
+// side now (was four), and every lotSpacing tightened (was 12-16, now
+// 7-10.5) rather than just adding rows at the old spacing — a real
+// neighborhood has houses closer together, not just more of them further
+// out. The new outer row (±43) stays inside GRASS_SIZE's widened half-width
+// (Ground.tsx, 50) with margin. clearsLandmarks/clearsWedge are now applied
+// to the whole generated set in one pass below instead of per-row: tighter
+// spacing means lots from the *inner* rows (13/19/25) can now reach far
+// enough along the street to land in Park's/BasketballCourt's exclusion
+// boxes too, not just the two outermost rows as before.
+const ROW_OFFSETS = [13, 19, 25, 31, 37, 43]
+const ROW_SPACING = [7, 7.5, 8.5, 9, 9.5, 10.5]
+export const SUBURB_HOUSES: FillerBuilding[] = ROW_OFFSETS.flatMap((offset, i) =>
+  generateBlock({
+    along: ALONG,
+    streetAxis: 'z',
+    rowOffsets: [offset, -offset],
+    lotSpacing: ROW_SPACING[i],
+    models: HOUSE_MODELS,
+    seed: 20260930 + i,
+    jitter: 1.3 + i * 0.15,
+  }),
+)
+  .filter((b) => clearsLandmarks(b.position))
+  .filter((b) => clearsWedge(b.position))

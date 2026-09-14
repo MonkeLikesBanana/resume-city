@@ -35,22 +35,23 @@ interface Rect {
 // foundry-blocks.ts and suburb-houses.ts both grew two more depth rows,
 // reaching z/x=±47/±37 respectively (§3 "fill out the map"), so the old
 // boundaries would now have new filler buildings poking into the forest.
+// PRD v7.0 §3 — the old wedge region here (x:[-42,-13], z:[8,50], matching
+// blocks.ts's WEDGE_EXCLUSION_ZONE) put forest directly between Lakeside
+// and the Foundry district, which doesn't read as realistic for two
+// built-up districts that close to each other — River.tsx now occupies
+// that quadrant instead (§2 of the same PRD note). The remaining regions
+// are all genuine outside-the-city wilderness (checked against every
+// district's real footprint in each region's own comment below), so this
+// is the one and only forest region removed for the river, not a general
+// "remove trees near downtown" pass — everywhere else, "denser" is the
+// only change (counts roughly doubled, per the PRD's explicit "outside
+// forests much denser" ask).
 const REGIONS: Rect[] = [
-  { x: [-175, -92], z: [-90, 100], count: 70 }, // west of Foundry's far end
-  { x: [-92, 50], z: [-90, -54], count: 70 }, // south of Foundry (filler now reaches z=-47)
-  { x: [50, 120], z: [-90, 100], count: 70 }, // east of the Plaza square (reaches x=36) and Lakeside (reaches x=37)
-  { x: [-92, -46], z: [54, 100], count: 50 }, // wedge: north of Foundry (reaches z=47), west of the Lakeside corridor/court (reaches x=-37)
-  { x: [-40, 50], z: [98, 140], count: 50 }, // beyond the Lakeside cul-de-sac (z=93)
-  // PRD v5.0 §4.6 — matches blocks.ts's WEDGE_EXCLUSION_ZONE exactly:
-  // foundry-blocks.ts and suburb-houses.ts both stop short of this
-  // near-junction quadrant now (neither district's filler is allowed to
-  // claim it, to avoid the two overlapping), so without this it would be
-  // a bare, undeveloped-looking gap instead of "the forest comes in a
-  // little closer here." A lower count than the outer regions — this
-  // reads more like an urban green buffer between two built-up areas than
-  // deep wilderness, which is the right density for how close it sits to
-  // downtown and the suburb.
-  { x: [-42, -13], z: [8, 50], count: 30 },
+  { x: [-175, -92], z: [-90, 100], count: 140 }, // west of Foundry's far end
+  { x: [-92, 50], z: [-90, -54], count: 140 }, // south of Foundry (filler now reaches z=-47)
+  { x: [50, 120], z: [-90, 100], count: 140 }, // east of the Plaza square (reaches x=36) and Lakeside (reaches x=37)
+  { x: [-92, -46], z: [54, 100], count: 100 }, // north of Foundry (reaches z=47), west of the Lakeside corridor/court (reaches x=-37) — clear of River.tsx's segments (max x=-30.5, all at z<=48)
+  { x: [-40, 50], z: [98, 140], count: 100 }, // beyond the Lakeside cul-de-sac (z=93)
 ]
 
 // PRD v4 polish round 4 — a denser treeline ring hugging the map's outer
@@ -59,7 +60,11 @@ const REGIONS: Rect[] = [
 // downtown/suburb sit well inside radius ~90, so this only ever thickens
 // the existing outer edge of the forest, the part actually visible against
 // the mountains, rather than making the whole map denser uniformly.
-const OUTER_TREELINE_COUNT = 160
+// PRD v7.0 §3 — count roughly doubled (160->300), same "outside forests
+// much denser" ask — this ring is the single most visible mass of trees
+// against the mountains from nearly every camera angle, so it's where
+// "denser" reads most immediately.
+const OUTER_TREELINE_COUNT = 300
 const OUTER_TREELINE_RADIUS: [number, number] = [95, 138]
 
 interface Placement {
