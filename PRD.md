@@ -2,6 +2,44 @@
 ### Product & Technical Design Document (PRD)
 Status: v7.0 — in progress · Owner: Aarav Vaswani
 
+> **Revision note (v7.0, round 4):** continuing the same self-review —
+> this pass specifically checked a real mobile viewport (390×844) and a
+> Lighthouse run, neither of which round 1-3's desktop-only screenshot
+> sweeps had covered. Two more real findings:
+> 1. **A mobile-only layout bug hiding two important controls.** InfoPanel
+>    becomes a full-width bottom sheet on mobile (`inset-x-0 bottom-0`);
+>    TourBar's floating Prev/Next pill and Header's résumé-download button
+>    both sit at fixed positions that land inside that sheet's own
+>    footprint, at the same z-index — confirmed by screenshotting a real
+>    mobile width: TourBar rendered on top, visibly clipping the panel's
+>    text, and the résumé button was hidden underneath entirely. Since an
+>    attraction is essentially always active once the tour is entered
+>    (§3/§8), this meant mobile visitors couldn't reach the résumé
+>    download for the whole visit — not a rare edge case. Fixed by hiding
+>    both floating bars below the `sm` breakpoint and giving InfoPanel its
+>    own inline Prev/Next row + résumé link for mobile, laid out as part
+>    of the panel's own content instead of a separately-fixed overlay
+>    racing it. Desktop unaffected.
+> 2. **A missing/malformed `llms.txt`.** A Lighthouse pass (run to confirm
+>    the density changes hadn't regressed performance — they hadn't, see
+>    the methodology note below) surfaced a new `agentic-browsing`
+>    category flagging this. The SPA's catch-all route was serving
+>    `index.html` for `/llms.txt` since no real file existed; added one
+>    following llmstxt.org's convention (H1, summary, linked sections per
+>    district) so any LLM-based crawler gets a direct, accurate map of
+>    every stop instead of having to infer structure from the 3D scene.
+>
+> **Methodology note**: re-ran Lighthouse against the production build to
+> check whether this round's density increases (denser forests/suburb,
+> Yard.tsx's per-house fence instancing) regressed performance. First
+> desktop run: 0.81 / 408ms TBT — alarming at a glance, but two immediate
+> re-runs on the *identical unchanged build* came back 0.99 / ~15-20ms TBT,
+> matching this project's own previously-documented "never trust a single
+> Lighthouse reading" lesson yet again. Mobile-preset numbers (0.82,
+> ~230ms TBT across two consistent runs) matched the historical v4.0 QA
+> baseline (0.83) almost exactly — the instancing discipline held under
+> real density growth, no regression.
+>
 > **Revision note (v7.0, round 3):** one more finding from the same
 > self-review pass, caught while re-verifying round 2's camera fixes with a
 > scrub sweep across the full day/night cycle rather than only checking
