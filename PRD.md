@@ -2,6 +2,40 @@
 ### Product & Technical Design Document (PRD)
 Status: v7.0 — in progress · Owner: Aarav Vaswani
 
+> **Revision note (v7.0, round 2):** the first pass of the self-review the
+> round-1 note below promised — driving the deployed tour stop by stop as
+> a fresh visitor would, screenshotting every stop, and looking hard at
+> each one rather than assuming round 1 shipped clean. Found three real
+> issues, one of them severe:
+> 1. **A whole-app crash, not a cosmetic bug.** `Clouds.tsx` used drei's
+>    `<Cloud>` with its default `texture` prop — a hardcoded third-party
+>    CDN URL. When that fetch fails for any visitor (network hiccup, CDN
+>    outage, a corporate firewall blocking an unfamiliar host), three.js
+>    throws, there was no error boundary anywhere in the tree, and the
+>    ENTIRE React app unmounted to a blank white page — not just the sky
+>    losing its clouds. Confirmed directly: reproduced the failure, saw
+>    the blank page, read the stack. Fixed at the source with a small
+>    self-generated, self-hosted cloud sprite (no external dependency at
+>    all), and added an error boundary around the Canvas as defense in
+>    depth — any future failure now degrades to the existing
+>    `NoWebGLFallback` (full resume still reachable) instead of a silent
+>    blank page.
+> 2. **Two arrival shots didn't show their building.** Robotics Workshop
+>    (11m) and DECA Business Center (13.4m) are real, intentionally tall
+>    kitbashed towers — but every attraction parks at the same fixed ~9m
+>    road standoff regardless of height, and at that distance neither
+>    tower's silhouette fit in frame; the arrival shot was just a wall of
+>    siding. Fixed by backing the camera further from unusually tall
+>    buildings specifically (§7.3), left as a no-op for the other 10
+>    attractions.
+> 3. **A streetlamp landed 0.5m from a parked camera position** ("More
+>    Coming Soon"), filling most of that stop's frame. Streetlamp
+>    placement now skips any spot within 5m of a real attraction.
+>
+> New section: §7.9 (arrival standoff, this round). This is round 2 of the
+> open-ended iteration from round 1's note — the loop continues: ship
+> fixes, self-review the live deploy again from scratch, repeat.
+>
 > **Revision note (v7.0, round 1):** a denser-and-more-realistic pass, plus
 > a standing directive to keep iterating autonomously afterward until an
 > honest self-review turns up nothing left to fix. This round's asks:
@@ -764,6 +798,37 @@ calls `navigate()` straight to that stop, skipping the drag/scrub
 entirely — the click-to-jump half of the ask, reusing the identical
 router-driven discrete-drive path Prev/Next/AccessibleNav already trigger,
 not a new navigation mechanism.
+
+### 7.9 Arrival standoff for unusually tall buildings (v7.0 round 2)
+
+Every attraction parks at `curbFor()`'s nearest point on its own arm's road
+centerline — a fixed ~9m perpendicular distance from the building for
+every attraction, since that's just a geometric property of the arm/lot
+layout, not something the camera code chooses per attraction. That
+standoff frames every attraction from 2-4m tall correctly, but Robotics
+Workshop (11m) and DECA Business Center (13.4m, both real kitbashed
+towers) are tall enough that 9m away doesn't fit the silhouette in frame
+— confirmed by screenshotting both and finding neither read as "a
+building," just flat wall.
+
+`camera.ts`'s `standoffBoost(height)` returns `0` below a 4m threshold
+(so 10 of 12 attractions are completely unaffected) and scales up from
+there, capped at 3.5m extra. `applyStandoff()` pushes the camera further
+in the same direction it's already offset from the building (i.e. "back
+away, don't reroute" — no new position logic, just extending the existing
+offset vector), applied in both `snapTo` (instant placement) and
+`driveFrame`'s position calculation, blended in via the same
+`arrivalBlend` fraction the arrival tilt already uses so there's no
+position pop on arrival.
+
+A first attempt also capped the *height* fed into the existing arrival
+tilt target, reasoning that a shorter look-target height means a gentler
+upward angle — reverted after screenshotting it: combined with the
+standoff push-back, the capped tilt aimed proportionally too low for the
+now-further-back camera and clipped the hotspot title marker
+(`attraction.height + 1.5`, uncapped) off the top of the frame. The real,
+uncapped height is the correct tilt target regardless of standoff
+distance — only the distance needed fixing, not the angle.
 
 ## 8. Data Model
 
