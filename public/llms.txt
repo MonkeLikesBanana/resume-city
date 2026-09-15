@@ -1,0 +1,33 @@
+# Vasnova City
+
+> Vasnova City is Aarav Vaswani's résumé, presented as an interactive 3D
+> city you drive through instead of a static document. Each building is
+> one entry from his résumé — robotics, entrepreneurship, academics,
+> volunteering, and personal interests — grouped into three districts:
+> The Foundry District (school/technical/business activities), Lakeside
+> (personal interests), and the Welcome Plaza (contact info and summary).
+
+A downloadable PDF of the same résumé content is available at
+[/resume-aarav-vaswani.pdf](https://resume-city.vercel.app/resume-aarav-vaswani.pdf)
+for anything that needs plain text rather than the 3D scene.
+
+## Welcome Plaza
+
+- [Welcome Plaza](https://resume-city.vercel.app/plaza/welcome-plaza): Aarav Vaswani — summary, location, and contact info.
+
+## The Foundry District — school, technical, and business activities
+
+- [Robotics Workshop](https://resume-city.vercel.app/foundry/robotics-workshop): Saints Robotics — FRC Team. Vice President; Control Systems Officer — Electrical; Technician - Competition.
+- [NEEMO HQ](https://resume-city.vercel.app/foundry/neemo-hq): Co-Founder of a business focused on long-range RFID tracking of parts within robotics workshops.
+- [Interlake High School — Academic Hall](https://resume-city.vercel.app/foundry/academic-hall): IB Diploma Candidate — GPA, AP exam scores, and IB Higher Level coursework.
+- [Makers Club Workshop (3D Printing)](https://resume-city.vercel.app/foundry/makers-club): Co-Founder & Officer of a school 3D design/printing club.
+- [DECA Business Center](https://resume-city.vercel.app/foundry/deca-center): Competitor in entrepreneurship-focused business events, advanced to the State competition.
+- [FLL Mentorship Center](https://resume-city.vercel.app/foundry/fll-center): Mentor for two FIRST LEGO League teams.
+
+## Lakeside — personal interests
+
+- [The Café](https://resume-city.vercel.app/lakeside/cafe): Coffee, sushi, Indian food, and cooking.
+- [Arcade / Game Room](https://resume-city.vercel.app/lakeside/arcade): Video games — Minecraft.
+- [Sports Field](https://resume-city.vercel.app/lakeside/sports-field): Plays a variety of sports recreationally.
+- [The Open Road](https://resume-city.vercel.app/lakeside/open-road): Driving.
+- [More Coming Soon](https://resume-city.vercel.app/lakeside/coming-soon): An empty lot reserved for future interests.
