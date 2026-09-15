@@ -23,9 +23,20 @@ import { ATTRACTIONS } from '../../content/attractions'
 const YARD_DEPTH = 5 // meters, from the house out toward the street
 const YARD_WIDTH = 6 // meters, along the street
 const LAWN_Y = 0.006 // between sidewalks() (0.005) and Driveways() (0.008) — a yard's lawn crosses neither, it sits between the house and the driveway strip, but still needs a height distinct from both since its bounds are close to each
-const FENCE_MODEL = '/assets/models/fence-low.glb'
+// PRD v7.0 round 5 — was '/assets/models/fence-low.glb', found broken during
+// self-review: screenshotting the actual in-game fences showed panels
+// floating above the ground at odd tilted angles, not sitting flat. Isolated
+// fence-low.glb alone in a debug page (identity rotation, flat grid, no game
+// code involved) and confirmed it directly — the mesh itself is modeled as a
+// leaning/knocked-over fence variant (the "low" refers to a fallen-down
+// state, not a short-but-upright fence), not a placement bug in this file.
+// fence.glb (internal mesh name "fence-1x2") is a normal flat straight panel
+// with integrated end/center posts, confirmed via the same isolated-render
+// technique — a top-down orthographic shot showed a clean straight run along
+// its local X axis, sitting flat on the ground plane.
+const FENCE_MODEL = '/assets/models/fence.glb'
 const FENCE_SCALE = 1.4
-const FENCE_PANEL_LENGTH = 1.276 * FENCE_SCALE // native bbox x-extent (the panel's long axis), measured directly from the glb
+const FENCE_PANEL_LENGTH = 0.876 * FENCE_SCALE // native bbox x-extent (the panel's long axis), measured directly from the glb
 const GATE_GAP = 1.8 // meters left open in the middle of the street-facing edge
 
 interface FencePanel {
