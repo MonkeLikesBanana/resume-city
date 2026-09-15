@@ -2,6 +2,32 @@
 ### Product & Technical Design Document (PRD)
 Status: v7.0 — in progress · Owner: Aarav Vaswani
 
+> **Revision note (v7.0, round 3):** one more finding from the same
+> self-review pass, caught while re-verifying round 2's camera fixes with a
+> scrub sweep across the full day/night cycle rather than only checking
+> static parked shots: the "dark curved tentacle shapes hanging in the sky"
+> independently spotted in the user's original round-7 screenshot (never
+> confirmed at the time — the first two reproduction attempts, checking a
+> parked stop at night, didn't recreate it) turned out to be real, and
+> reproduces reliably once tested the right way — mid-scrub, at dusk, not
+> parked at full night. Root cause: drei's `<Cloud>` defaults to a LIT
+> material (`MeshLambertMaterial`), so cloud puffs dim along with the
+> scene's actual day/night light exactly like a building would — at dusk
+> that renders as dark, oddly-shaped hanging silhouettes, exactly matching
+> what was reported. Fixed with an unlit `MeshBasicMaterial` swap
+> (`Clouds.tsx`) — clouds are a flat atmospheric decoration, not a
+> physically-lit object, so they read the same soft off-white at any time
+> of day now, the way real clouds stay visibly bright well into dusk.
+>
+> **Methodology note**: the lesson from this one is really about test
+> coverage, not the bug itself — round 2's camera/streetlamp verification
+> only checked static parked screenshots at default (noon) lighting, which
+> is why this survived one whole round undetected despite already being
+> under active investigation. Any future "something looks visually wrong"
+> report tied to lighting/time-of-day needs a scrub across the actual cycle,
+> not just a parked-stop spot check, before concluding a fix worked or a
+> repro attempt failed.
+>
 > **Revision note (v7.0, round 2):** the first pass of the self-review the
 > round-1 note below promised — driving the deployed tour stop by stop as
 > a fresh visitor would, screenshotting every stop, and looking hard at
