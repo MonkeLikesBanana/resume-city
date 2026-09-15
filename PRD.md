@@ -2,6 +2,33 @@
 ### Product & Technical Design Document (PRD)
 Status: v7.0 — in progress · Owner: Aarav Vaswani
 
+> **Revision note (v7.0, round 5):** continuing the same self-review —
+> zoomed into a close-up crop of a suburb yard's fence (round 1's own new
+> feature) rather than trusting the wide establishing shots already
+> checked, and found the panels floating above the ground at inconsistent
+> tilted angles instead of forming a clean line. Root-caused with the
+> project's established isolated-render technique (load the model alone,
+> identity rotation, on a flat grid, no game code involved) rather than
+> re-deriving rotation math from the wrong assumption: `fence-low.glb` is
+> modeled as a leaning/knocked-over fence variant BY DESIGN — one end sits
+> on the ground, the other floats well above it, confirmed by rendering it
+> in isolation and seeing exactly that. Not a placement bug — a wrong
+> model choice. `fence.glb` (internal mesh name "fence-1x2") is the
+> correct flat straight panel; confirmed the same way, from directly
+> overhead, before swapping it in and recalculating the panel-length
+> constant from its real bounding box.
+>
+> **Methodology note**: this is the same lesson the project has now hit
+> at least three times (the streetlamp scale bug in v6.0, the window-glow
+> threshold miscalibration in v4.0, and now this) — when a visual defect
+> can't be explained by the placement code's own math, isolate the asset
+> and look at it directly rather than re-deriving the math a second or
+> third time under a different guess. It's also a reminder that a wide
+> establishing shot can hide a defect a close crop reveals immediately —
+> worth deliberately cropping into small/detailed props during any future
+> visual review, not just checking whether the overall scene looks right
+> from a normal viewing distance.
+>
 > **Revision note (v7.0, round 4):** continuing the same self-review —
 > this pass specifically checked a real mobile viewport (390×844) and a
 > Lighthouse run, neither of which round 1-3's desktop-only screenshot
