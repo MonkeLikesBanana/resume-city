@@ -1,4 +1,5 @@
 import { Cloud, Clouds as CloudGroup } from '@react-three/drei'
+import { MeshBasicMaterial } from 'three'
 
 // PRD v4 §4.4/§7.4 — a handful of drifting clouds using drei's built-in
 // procedural <Cloud> (already ships with @react-three/drei, §4.5/§6).
@@ -35,6 +36,24 @@ const CLOUD_TEXTURE = '/assets/cloud-puff.png'
 // motion" just as well as five dense ones for a background atmosphere
 // effect that's never the subject of a shot.
 //
+// PRD v7.0 round 3 — this is the real identity of the "dark curved
+// tentacle shapes hanging in the sky" the user spotted in a screenshot
+// (round 7's original /goal): drei's <Cloud> defaults to a LIT material
+// (MeshLambertMaterial, confirmed by reading Cloud.js directly), so every
+// puff is shaded by the scene's actual hemisphere/directional light like
+// any other object in the city. That's correct behavior for a building,
+// wrong for a stylized background cloud — as the day/night cycle dims
+// toward dusk/night, the clouds dim right along with it, and a
+// dark-grey-to-black Lambert-shaded blob, seen edge-on with a few
+// overlapping puffs, silhouettes into exactly the "weird dark tentacle"
+// shape reported. Confirmed by reproducing it: scrubbing through dusk
+// lighting reliably reproduces two dark hanging shapes over the road, not
+// an occasional glitch. Fixed by swapping in an unlit MeshBasicMaterial —
+// clouds are a flat atmospheric decoration, not a physically-lit object,
+// so they should read the same soft off-white at any time of day, the way
+// real clouds still read as bright against a darkening sky right up until
+// full night (they're never the darkest thing in frame in reality either).
+//
 // PRD v4 polish round 4 — raised from y=55-60 to y=145-155: the mountain
 // range's tallest peaks reach apex y≈106 (Ground.tsx's Mountains, height up
 // to 110), so clouds sitting at 55-60 floated *inside* the mountain
@@ -49,7 +68,7 @@ const PLACEMENTS: Array<{ position: [number, number, number]; scale: number; spe
 
 export default function Clouds() {
   return (
-    <CloudGroup texture={CLOUD_TEXTURE} limit={40} range={100}>
+    <CloudGroup texture={CLOUD_TEXTURE} material={MeshBasicMaterial} limit={40} range={100}>
       {PLACEMENTS.map((p, i) => (
         <Cloud
           key={i}
