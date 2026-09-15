@@ -3,8 +3,10 @@ import { useNavigate } from 'react-router-dom'
 import useCityStore from '../../store/useCityStore'
 import { getAttraction } from '../../content/attractions'
 import { DISTRICTS } from '../../content/districts'
+import { TOUR_ORDER } from '../../content/tour'
 import useReducedMotion from '../../hooks/useReducedMotion'
 import { ACCENT_FILL, ACCENT_TEXT } from '../../config'
+import DownloadResumeButton from './DownloadResumeButton'
 
 // PRD §5.1 — "Skills are not their own building — they render as a
 // persistent tag strip pinned to the bottom of every Foundry District panel."
@@ -19,6 +21,7 @@ export default function InfoPanel() {
   const navigate = useNavigate()
   const reducedMotion = useReducedMotion()
   const attraction = activeId ? getAttraction(activeId) : undefined
+  const tourIndex = TOUR_ORDER.findIndex((a) => a.id === activeId)
 
   return (
     <AnimatePresence>
@@ -51,6 +54,42 @@ export default function InfoPanel() {
               ← Back to city
             </button>
           </div>
+
+          {/* PRD v7.0 round 4 — mobile-only: TourBar's Prev/Next and
+              Header's résumé download both float at fixed viewport
+              positions that land inside this panel's own full-width
+              mobile footprint (see each component's own comment) —
+              rather than trying to keep two independently-fixed overlays
+              clear of a third that can change height with its content,
+              these controls live inside the panel itself on mobile, so
+              they reflow with it instead of racing it. */}
+          {tourIndex !== -1 && (
+            <div className="mt-3 flex items-center gap-2 sm:hidden">
+              <button
+                type="button"
+                onClick={() => navigate(`/${TOUR_ORDER[tourIndex - 1].district}/${TOUR_ORDER[tourIndex - 1].id}`)}
+                disabled={tourIndex === 0}
+                aria-label="Previous stop"
+                className="rounded-full border border-[var(--color-ink)]/15 px-2.5 py-1 text-xs font-medium text-[var(--color-ink)] disabled:pointer-events-none disabled:opacity-30"
+              >
+                ← Prev
+              </button>
+              <span className="text-xs text-[var(--color-ink)]/60 tabular-nums">
+                {tourIndex + 1} / {TOUR_ORDER.length}
+              </span>
+              <button
+                type="button"
+                onClick={() => navigate(`/${TOUR_ORDER[tourIndex + 1].district}/${TOUR_ORDER[tourIndex + 1].id}`)}
+                disabled={tourIndex === TOUR_ORDER.length - 1}
+                aria-label="Next stop"
+                className="rounded-full px-2.5 py-1 text-xs font-medium text-[var(--color-ink)] disabled:pointer-events-none disabled:opacity-30"
+                style={{ background: ACCENT_FILL[attraction.accentColor] }}
+              >
+                Next →
+              </button>
+              <DownloadResumeButton className="ml-auto" />
+            </div>
+          )}
 
           {attraction.description && <p className="mt-4 text-sm leading-relaxed text-[var(--color-ink)]">{attraction.description}</p>}
 

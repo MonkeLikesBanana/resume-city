@@ -6,7 +6,18 @@ import { TOUR_ORDER } from '../../content/tour'
  * tourMode toggle — there's no longer a separate "tour mode" to opt into,
  * §6), Prev/Next only (autoplay/Play-Pause/Exit are retired along with
  * tourMode). Disables — doesn't wrap — at the first/last stop: a real
- * guided tour doesn't loop from the end back to the start mid-drive. */
+ * guided tour doesn't loop from the end back to the start mid-drive.
+ *
+ * PRD v7.0 round 4 — hidden below `sm` entirely. On mobile, InfoPanel
+ * becomes a full-width `inset-x-0 bottom-0` sheet (its own mobile layout),
+ * and this bar's `fixed bottom-4 left-1/2` position sits inside that
+ * sheet's footprint at the same z-index — confirmed by screenshotting a
+ * mobile viewport with a panel open: the Prev/Next pill rendered on top
+ * of, clipping, the panel's own text. InfoPanel gets its own inline
+ * Prev/Next row for `sm:hidden` instead (same TOUR_ORDER logic, just laid
+ * out as part of the panel's content so it can never overlap the panel it
+ * lives inside). Desktop's floating pill is unaffected — InfoPanel is a
+ * compact right-side card there, nowhere near this bar's position. */
 export default function TourBar() {
   const activeAttractionId = useCityStore((s) => s.activeAttractionId)
   const navigate = useNavigate()
@@ -20,7 +31,7 @@ export default function TourBar() {
   }
 
   return (
-    <div className="pointer-events-auto fixed bottom-4 left-1/2 z-20 flex -translate-x-1/2 items-center gap-2 rounded-full bg-[var(--color-ink)] px-3 py-2 text-sm text-[var(--color-ground)] shadow-xl">
+    <div className="pointer-events-auto fixed bottom-4 left-1/2 z-20 hidden -translate-x-1/2 items-center gap-2 rounded-full bg-[var(--color-ink)] px-3 py-2 text-sm text-[var(--color-ground)] shadow-xl sm:flex">
       <button
         type="button"
         onClick={() => goTo(index - 1)}
