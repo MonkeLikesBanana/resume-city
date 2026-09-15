@@ -1,10 +1,31 @@
 import { Cloud, Clouds as CloudGroup } from '@react-three/drei'
 
 // PRD v4 §4.4/§7.4 — a handful of drifting clouds using drei's built-in
-// procedural <Cloud> (no texture/model download at all — already ships with
-// @react-three/drei, §4.5/§6). Positions are hand-placed rather than
-// randomized: only a handful of clouds exist, and this keeps them spread
-// out over the whole city rather than risking a random cluster.
+// procedural <Cloud> (already ships with @react-three/drei, §4.5/§6).
+// Positions are hand-placed rather than randomized: only a handful of
+// clouds exist, and this keeps them spread out over the whole city rather
+// than risking a random cluster.
+//
+// PRD v7.0 round 2 — the original comment here claimed "no texture/model
+// download at all," which turned out to be false and never actually
+// verified: drei's <Cloud> defaults its `texture` prop to a hardcoded
+// THIRD-PARTY CDN URL (rawcdn.githack.com), fetched at runtime for every
+// visitor. Confirmed the failure mode directly: when that fetch fails
+// (network hiccup, CDN outage, a firewall/ad-blocker blocking a
+// third-party host — this sandbox's own network reproduced it on demand),
+// three.js's TextureLoader throws, React has no error boundary around the
+// Canvas to catch it, and the ENTIRE app unmounts to a blank white page —
+// not just the clouds. `cloud-puff.png` (public/assets/) is a small
+// self-generated soft radial-puff sprite (Python/PIL, no external source)
+// that removes the dependency entirely — same-origin, ships in the build,
+// works offline. `texture` is a prop of the <Clouds> group wrapper, not
+// individual <Cloud> elements (confirmed against drei's own Cloud.d.ts —
+// CloudProps has no `texture` field, only CloudsProps does), so it's set
+// once below rather than per-placement. `CityCanvas.tsx` also gained an
+// error boundary around the Canvas as defense-in-depth, so a future
+// failure anywhere in the 3D scene degrades to a message instead of a
+// silent blank page.
+const CLOUD_TEXTURE = '/assets/cloud-puff.png'
 //
 // Kept deliberately low-poly: drei's default segment/volume settings
 // generate enough procedural geometry per cloud to measurably block the
@@ -28,7 +49,7 @@ const PLACEMENTS: Array<{ position: [number, number, number]; scale: number; spe
 
 export default function Clouds() {
   return (
-    <CloudGroup limit={40} range={100}>
+    <CloudGroup texture={CLOUD_TEXTURE} limit={40} range={100}>
       {PLACEMENTS.map((p, i) => (
         <Cloud
           key={i}

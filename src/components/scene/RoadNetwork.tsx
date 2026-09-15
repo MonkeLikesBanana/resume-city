@@ -157,6 +157,25 @@ function utilityPoles() {
   ))
 }
 
+// PRD v7.0 round 2 — a real attraction's parked camera sits at the curb
+// point nearest its own position (roadGraph.ts's curbFor()), which for
+// these two straight arms lands at the same along-the-road coordinate as
+// the attraction's own position (the nearest point on a straight line only
+// depends on the along-axis projection, not the perpendicular offset). The
+// streetlamp loop below places lamps on a fixed interval with no idea
+// where any attraction actually is — confirmed a real case where they
+// collide: "More Coming Soon" (position z=58) landed 0.5m from a lamp at
+// z=57.5, so the parked camera ends up almost touching the lamp post,
+// which then fills most of the frame. Margin of 5m clears CAR_EYE_HEIGHT-
+// scale parking geometry comfortably without visibly thinning the lamp
+// line anywhere else (LAMP_INTERVAL is 16, so skipping one lamp near an
+// attraction still leaves neighbors within a normal-looking distance).
+const LAMP_ATTRACTION_MARGIN = 5
+
+function tooCloseToAttraction(along: number, axis: 'x' | 'z', district: 'foundry' | 'lakeside'): boolean {
+  return ATTRACTIONS.some((a) => a.district === district && Math.abs(a.position[axis === 'x' ? 0 : 2] - along) < LAMP_ATTRACTION_MARGIN)
+}
+
 /** PRD v4 §4.2 — regularly-spaced streetlamps along both Main Street and the
  * Lakeside street, alternating sides, in addition to the handful already
  * clustered at the Plaza (PlazaSquare.tsx). */
@@ -164,10 +183,12 @@ function streetlamps() {
   const lamps: Array<{ position: [number, number, number]; rotationY: number }> = []
   let side = 1
   for (let x = FOUNDRY_SPAN[0] + 8; x < -10; x += LAMP_INTERVAL, side *= -1) {
+    if (tooCloseToAttraction(x, 'x', 'foundry')) continue
     lamps.push({ position: [x, 0, side * 3], rotationY: side > 0 ? 0 : Math.PI })
   }
   side = 1
   for (let z = LAKESIDE_SPAN[0] + 8; z < 82; z += LAMP_INTERVAL, side *= -1) {
+    if (tooCloseToAttraction(z, 'z', 'lakeside')) continue
     lamps.push({ position: [side * 3, 0, z], rotationY: side > 0 ? -Math.PI / 2 : Math.PI / 2 })
   }
   return lamps.map((l, i) => (

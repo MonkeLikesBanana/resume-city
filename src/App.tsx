@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { Routes, Route, useParams, useNavigate } from 'react-router-dom'
 import CityCanvas from './components/scene/CityCanvas'
+import CanvasErrorBoundary from './components/scene/CanvasErrorBoundary'
 import City from './components/scene/City'
 import Breadcrumb from './components/ui/Breadcrumb'
 import InfoPanel from './components/ui/InfoPanel'
@@ -89,9 +90,11 @@ function Experience() {
             those values escape this wrapper and paint over siblings below
             (Welcome overlay, InfoPanel) regardless of this div's own z-index. */}
         <div className="absolute inset-0 isolate">
-          <CityCanvas>
-            <City />
-          </CityCanvas>
+          <CanvasErrorBoundary>
+            <CityCanvas>
+              <City />
+            </CityCanvas>
+          </CanvasErrorBoundary>
         </div>
         <Breadcrumb />
         <AccessibleNav />
