@@ -1,6 +1,31 @@
 import { Cloud, Clouds as CloudGroup } from '@react-three/drei'
 import { MeshBasicMaterial } from 'three'
 
+// PRD v7.0 round 8 — round 3's MeshBasicMaterial swap stopped the scene's
+// directional/hemisphere LIGHTS from darkening the clouds, but missed a
+// second, independent darkening path: DayNightCycle.tsx sets
+// `scene.fog.color` to the sky's current horizon color every frame
+// (`skyBottom` in dayNight.ts, which ranges from a warm dusk orange down to
+// a dark navy `#1a2744` at night), and `MeshBasicMaterial.fog` defaults to
+// `true` in three.js — so distant clouds still blended toward that dark
+// fog color regardless of the lighting fix, reproducing a fainter version
+// of the same "dark shape" symptom (confirmed: a scrub sweep after the
+// round-3 fix still showed two small dark blobs near the treeline at a
+// dusk-transitioning sky, at a position/scale matching two of the three
+// PLACEMENTS entries below). A plain subclass with `this.fog = false` set
+// in its own constructor, passed as the `material` prop, survives drei's
+// own `class extends material` wrapping (its constructor's `super()` call
+// runs this one), removing the fog contribution the same way the round-3
+// fix removed the lighting one — clouds are a flat, distance-independent
+// atmospheric decoration, not something that should fade toward the fog
+// color like fog-shrouded geometry would.
+class UnlitCloudMaterial extends MeshBasicMaterial {
+  constructor(parameters?: ConstructorParameters<typeof MeshBasicMaterial>[0]) {
+    super(parameters)
+    this.fog = false
+  }
+}
+
 // PRD v4 §4.4/§7.4 — a handful of drifting clouds using drei's built-in
 // procedural <Cloud> (already ships with @react-three/drei, §4.5/§6).
 // Positions are hand-placed rather than randomized: only a handful of
@@ -68,7 +93,7 @@ const PLACEMENTS: Array<{ position: [number, number, number]; scale: number; spe
 
 export default function Clouds() {
   return (
-    <CloudGroup texture={CLOUD_TEXTURE} material={MeshBasicMaterial} limit={40} range={100}>
+    <CloudGroup texture={CLOUD_TEXTURE} material={UnlitCloudMaterial} limit={40} range={100}>
       {PLACEMENTS.map((p, i) => (
         <Cloud
           key={i}
