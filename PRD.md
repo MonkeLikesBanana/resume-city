@@ -2,6 +2,36 @@
 ### Product & Technical Design Document (PRD)
 Status: v7.0 — in progress · Owner: Aarav Vaswani
 
+> **Revision note (v7.0, round 8):** a follow-up to round 7's fix, caught
+> by re-verifying it with a full scrub sweep across the day/night cycle
+> (not just the one screenshot that first exposed the plaza-gate-lamp
+> bug) — a much fainter version of the same "dark shape" symptom was
+> still visible, small dark blobs near the treeline during a dusk-
+> transitioning sky, at a size/position matching two of `Clouds.tsx`'s
+> three placements. Round 3's `MeshBasicMaterial` swap removed the
+> scene's LIGHTS from darkening clouds but missed a second, independent
+> path: `DayNightCycle.tsx` sets `scene.fog.color` to the sky's current
+> horizon color every frame (dark navy at night, warm orange at dusk),
+> and `MeshBasicMaterial.fog` defaults to `true` in three.js — so distant
+> clouds still blended toward that color regardless of the lighting fix.
+> Fixed with a small subclass (`UnlitCloudMaterial`) that sets
+> `this.fog = false` in its own constructor, surviving drei's internal
+> `class extends material` wrapping. Verified clean across a full scrub
+> from daylight through dusk to full night this time, not a single
+> screenshot.
+>
+> **Methodology note**: this is the second time in two rounds a fix
+> verified against only ONE reproduction of a lighting-dependent bug
+> turned out to be incomplete — round 7's proximity-query fix WAS fully
+> correct for what it targeted (the gate lamps), but the original bug
+> report actually had two independent causes bundled into one visual
+> symptom, and fixing one silenced the loudest evidence of the other
+> without eliminating it. **Lesson**: when a bug is lighting/time-of-day
+> dependent, "the exact screenshot that reported it now looks clean" is
+> necessary but not sufficient — sweep the full cycle before declaring it
+> fixed, since a fainter residual can hide in exactly the range not
+> re-checked.
+>
 > **Revision note (v7.0, round 7):** the resolution to a bug open since
 > the very beginning of this PRD round — the "dark curved tentacle
 > shapes" independently spotted in the original round-1 screenshot,
