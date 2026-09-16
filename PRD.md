@@ -2,6 +2,45 @@
 ### Product & Technical Design Document (PRD)
 Status: v7.0 — in progress · Owner: Aarav Vaswani
 
+> **Revision note (v7.0, round 7):** the resolution to a bug open since
+> the very beginning of this PRD round — the "dark curved tentacle
+> shapes" independently spotted in the original round-1 screenshot,
+> before any of the explicit asks were even addressed. Round 3 found and
+> fixed a real, separate cloud-material bug that PRODUCED a similar
+> symptom at dusk/night, but re-testing at full daylight (while checking
+> a cross-street closure placement, unrelated to clouds entirely) showed
+> the exact same dark shapes in bright daylight — proving the cloud fix,
+> while a legitimate bug in its own right, was never the actual cause of
+> the originally-reported one.
+>
+> Root-caused this time with a scene-graph proximity query — a temporary
+> `useThree()` hook exposing the live THREE.Scene/camera to `window`,
+> queried from Playwright at the exact camera position that reproduced
+> the shapes — rather than guessing again. The culprit: the Welcome
+> Plaza's own 4 gate streetlamps (`PlazaSquare.tsx`) use `streetlamp.glb`,
+> whose internal mesh is literally named "light-curved" — a thick, smooth,
+> curved swan-neck arm, confirmed via a side-by-side isolated render
+> against `light-square.glb` (a sharp right-angle arm, used by every other
+> streetlamp in the city). At the ~3-4m lateral distance every streetlamp
+> in the city sits from the road — an unavoidable, universal distance, not
+> something unique to the gate — the curved arm's silhouette loses its
+> "obviously a lamp" read and looms as a large dark curved shape;
+> `light-square.glb`'s angular arm has passed this identical distance at
+> hundreds of placements with zero reports. Swapped the gate lamps to
+> match, eliminating a whole distinct model rather than trying to tune the
+> curved one's scale/rotation to be safe from every possible camera angle.
+>
+> **Methodology note**: round 6.0's original investigation of this exact
+> model (the gate-lamp *height* bug) measured bounding-box similarity
+> between `streetlamp.glb` and `light-square.glb` and concluded they were
+> safe to treat as interchangeable modulo scale — true for overall
+> dimensions, false for silhouette/shape, which a bounding box cannot
+> capture. **Lesson, worth remembering generally**: bbox comparison proves
+> two models are the same SIZE, never that they're the same SHAPE — an
+> actual rendered silhouette comparison is the only way to know that, and
+> is worth doing whenever a model swap or reuse decision is being made
+> "because the dimensions are close enough."
+>
 > **Revision note (v7.0, round 6):** continuing the same self-review —
 > checked the far end of the Lakeside suburb (past every named attraction,
 > right up against the outer treeline ring) for overlap risk given round
