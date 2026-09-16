@@ -67,7 +67,7 @@ export const ATTRACTIONS: Attraction[] = [
           "Responsible for the design, wiring, and maintenance of the robot's electrical control systems. Taught and managed 10+ members, working with one co-officer and other sub-teams.",
       },
       {
-        role: 'Technician – Competition',
+        role: 'Technician — Competition',
         dateRange: '2026–Present',
         description:
           'Quick thinking and decision-making to fix the robot between matches — both mechanical and electrical — while managing team resources in real time.',
