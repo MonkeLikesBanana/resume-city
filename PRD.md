@@ -2,6 +2,17 @@
 ### Product & Technical Design Document (PRD)
 Status: v7.0 — in progress · Owner: Aarav Vaswani
 
+> **Revision note (v7.0, round 9):** checked `public/og-image.png` — the
+> social-preview image shown in every link unfurl (Slack, iMessage,
+> Twitter/X cards, etc.) — against the current deployed world rather than
+> assuming a September 6th capture still represented it. It didn't: the
+> old image showed a large dark-grey "smoke" cloud directly over downtown
+> — the exact cloud-material bug fixed in rounds 3/8, meaning this image
+> had been capturing that bug's visible symptom the whole time it was
+> live — plus the pre-round-1 city (no river, no fenced yards, a visibly
+> sparser suburb and forest). Regenerated at the standard 1200×630 OG
+> size against the current deploy.
+>
 > **Revision note (v7.0, round 8):** a follow-up to round 7's fix, caught
 > by re-verifying it with a full scrub sweep across the day/night cycle
 > (not just the one screenshot that first exposed the plaza-gate-lamp
