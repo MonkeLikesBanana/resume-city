@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import useCityStore from '../../store/useCityStore'
 import { TOUR_ORDER } from '../../content/tour'
+import { ACCENT_FILL } from '../../config'
 
 /** PRD v4 §3/§7.3/§9 — replaces TourControls.tsx. Always rendered (no
  * tourMode toggle — there's no longer a separate "tour mode" to opt into,
@@ -17,13 +18,23 @@ import { TOUR_ORDER } from '../../content/tour'
  * Prev/Next row for `sm:hidden` instead (same TOUR_ORDER logic, just laid
  * out as part of the panel's content so it can never overlap the panel it
  * lives inside). Desktop's floating pill is unaffected — InfoPanel is a
- * compact right-side card there, nowhere near this bar's position. */
+ * compact right-side card there, nowhere near this bar's position.
+ *
+ * PRD v7.0 round 6 — the "Next →" button was hardcoded to
+ * `--color-foundry` (teal) regardless of the active attraction's own
+ * accentColor, the one piece of chrome on screen that DIDN'T switch to
+ * orange on a Lakeside stop while the breadcrumb, InfoPanel's border, and
+ * the hotspot pill all correctly did — confirmed by screenshotting a
+ * Lakeside stop and comparing. Now reads `TOUR_ORDER[index].accentColor`
+ * the same way InfoPanel already does for its own (already-correct)
+ * mobile Next button. */
 export default function TourBar() {
   const activeAttractionId = useCityStore((s) => s.activeAttractionId)
   const navigate = useNavigate()
 
   const index = TOUR_ORDER.findIndex((a) => a.id === activeAttractionId)
   if (index === -1) return null // transient: mid-scrub (activeAttractionId is null), nothing to show
+  const accentColor = TOUR_ORDER[index].accentColor
 
   const goTo = (i: number) => {
     const stop = TOUR_ORDER[i]
@@ -49,7 +60,8 @@ export default function TourBar() {
         onClick={() => goTo(index + 1)}
         disabled={index === TOUR_ORDER.length - 1}
         aria-label="Next stop"
-        className="rounded-full bg-[var(--color-foundry)] px-3 py-1 font-medium text-[var(--color-ink)] hover:opacity-90 disabled:pointer-events-none disabled:opacity-30 cursor-pointer"
+        className="rounded-full px-3 py-1 font-medium text-[var(--color-ink)] hover:opacity-90 disabled:pointer-events-none disabled:opacity-30 cursor-pointer"
+        style={{ background: ACCENT_FILL[accentColor] }}
       >
         Next →
       </button>
