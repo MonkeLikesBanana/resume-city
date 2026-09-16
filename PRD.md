@@ -2,6 +2,21 @@
 ### Product & Technical Design Document (PRD)
 Status: v7.0 — in progress · Owner: Aarav Vaswani
 
+> **Revision note (v7.0, round 10):** a full proofread of every résumé
+> copy string in `attractions.ts` — description, subtitle, facts, and
+> timeline text for all 12 stops — checked for typos, factual
+> inconsistency, and typographic consistency (apostrophe style, dash
+> usage). Found one real issue: Robotics Workshop's third timeline entry
+> read `role: 'Technician – Competition'` (en dash) while its sibling
+> entry two lines above reads `'Control Systems Officer — Electrical'`
+> (em dash) — the identical "role — qualifier" pattern, inconsistently
+> dashed. Every other en dash in the file is a correctly-used date range
+> (`2025–2026`, etc.), confirmed by checking each one's context
+> individually rather than assuming; this was the one genuine mismatch.
+> Apostrophe usage checked separately and found consistent (plain ASCII
+> throughout prose, matching the code's own string-literal style — not
+> a mix of smart and straight quotes).
+>
 > **Revision note (v7.0, round 9):** checked `public/og-image.png` — the
 > social-preview image shown in every link unfurl (Slack, iMessage,
 > Twitter/X cards, etc.) — against the current deployed world rather than
