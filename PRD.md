@@ -1240,3 +1240,70 @@ missing from that list would be unreachable except via a direct deep link or
 - Carried over, still open: a literal Lakeside entrance sign (v3 §17), a net
   mesh on the basketball hoops (v3 §17), the Onshape→Blender→GLB pipeline,
   custom domain, sound design.
+
+## 18. v7.0 Self-Review Log
+
+The standing directive behind v7.0 (beyond round 1's explicit asks): drive
+the deployed tour personally, note every real flaw with total honesty, and
+keep iterating — implement, re-review, repeat — until nothing legitimate
+is left. This section is the single consolidated record of that process,
+rather than something scattered only across each round's revision note
+above. Every item below was found by actually using the deployed site
+(screenshots, scrub sweeps, real drive-throughs, Lighthouse runs, keyboard
+navigation) — not by re-reading source and guessing.
+
+**Found and fixed, rounds 2-11** (full detail in each round's own revision
+note near the top of this file):
+1. A whole-app crash: `<Cloud>`'s default third-party CDN texture, no
+   error boundary anywhere → self-hosted texture + `CanvasErrorBoundary`.
+2. Two tall buildings' arrival shots didn't fit their silhouette in frame
+   → `standoffBoost()` in `camera.ts`.
+3. A streetlamp 0.5m from a parked camera spot → proximity-filtered.
+4. Clouds rendering dark under scene lighting (half of the original
+   "dark tentacle" report) → unlit material.
+5. A mobile layout bug hiding the résumé download and Prev/Next for the
+   entire mobile visit → both floating bars moved into InfoPanel on mobile.
+6. Missing `llms.txt` (a new Lighthouse audit category) → added.
+7. A broken/leaning fence 3D model used throughout the suburb → swapped.
+8. TourBar's Next button ignoring district accent color → fixed.
+9. The REAL "dark tentacle" bug (the Welcome Plaza gate lamps' curved-arm
+   model) → swapped to the same model every other streetlamp uses.
+10. Clouds still darkened by fog independently of lighting (the other half
+    of the original report, survived round 4's fix) → fog disabled on the
+    cloud material specifically.
+11. A stale `og-image.png` still showing the (now-fixed) cloud bug and the
+    pre-round-1 city → regenerated.
+12. An em/en dash inconsistency in one timeline entry's copy → fixed.
+13. Two dead, misleading fields on `DistrictMeta` → removed.
+
+**Verified clean, not just assumed** (checked directly, nothing found):
+suburb house lot spacing vs. real footprint width at the new tighter
+6-row density (no clipping); the fixed-position driveway paving mark
+against the much-deeper outer suburb rows (blends into the sidewalk,
+not a visible defect); every other Kenney asset for a "curved" internal
+mesh name matching the gate-lamp bug's signature (none found — the fix
+was exhaustive, not a spot patch); keyboard-only navigation end to end,
+including the welcome overlay's focus trap; a full real-motion (not
+reduced-motion) drive-through of all 12 stops via repeated Next clicks,
+spanning a full day/night transition; Lighthouse desktop and mobile
+against the final build (0.99/~15ms TBT desktop, 0.82/~230ms TBT mobile —
+matching the historical v4.0 mobile baseline despite substantially more
+geometry, confirming the instancing discipline held).
+
+**Known, disclosed limitation**: this sandbox only has Chromium available
+for testing — Firefox/WebKit installation failed on missing system
+dependencies partway through this session, and wasn't re-attempted since
+Chromium-only testing has been this project's standing, documented
+constraint since v4.0's QA record. Cross-browser rendering differences
+(if any) are unverified, not verified-clean, for this v7.0 pass.
+
+**Current honest assessment**: after this many independent passes across
+functionality, every point in the day/night cycle, mobile layout,
+keyboard accessibility, performance, asset-level silhouette correctness,
+and prose copy — each pass finding genuinely fewer and smaller issues
+than the last, and the most recent full sweep (round 11's drive-through)
+finding zero new defects — this is the point where continuing to search
+for problems without a new signal (a fresh screenshot, a different
+device, an actual user's reaction) would mean manufacturing findings
+rather than reporting real ones. That's the honest state of the review,
+not a claim that literally nothing could ever be improved further.
