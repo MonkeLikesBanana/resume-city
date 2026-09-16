@@ -2,6 +2,22 @@
 ### Product & Technical Design Document (PRD)
 Status: v7.0 — in progress · Owner: Aarav Vaswani
 
+> **Revision note (v7.0, round 6):** continuing the same self-review —
+> checked the far end of the Lakeside suburb (past every named attraction,
+> right up against the outer treeline ring) for overlap risk given round
+> 1's density increases, and found that area clean. But comparing that
+> screenshot against an earlier Foundry one side by side surfaced a real,
+> pre-existing (not introduced this round) UI inconsistency: TourBar's
+> desktop "Next →" button was hardcoded to Foundry's teal accent color
+> regardless of which district is active, while the breadcrumb tab,
+> InfoPanel's left border, and the hotspot title pill all correctly switch
+> to Lakeside's orange on a Lakeside stop — three pieces of chrome doing it
+> right, one doing it wrong, all visible in the same frame. Fixed by
+> reading the active attraction's own `accentColor` via `ACCENT_FILL`, the
+> same pattern InfoPanel's mobile inline Next button (added round 4)
+> already used correctly — TourBar's desktop version had just never been
+> updated to match when accent-coding was first introduced.
+>
 > **Revision note (v7.0, round 5):** continuing the same self-review —
 > zoomed into a close-up crop of a suburb yard's fence (round 1's own new
 > feature) rather than trusting the wide establishing shots already
