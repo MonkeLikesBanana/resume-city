@@ -56,11 +56,30 @@ export default function PlazaSquare() {
           inconsistency and not a deliberate "shorter gate lamp" choice
           (nothing else about the gate calls for shorter fixtures). Found via
           a temporary isolated model-comparison render, not a guess from a
-          screenshot. */}
-      <StreetLamp model="/assets/models/streetlamp.glb" position={[GATE_X - 2, 0, -3]} scale={5} lampHeight={3} flickerSeed={0.1} />
-      <StreetLamp model="/assets/models/streetlamp.glb" position={[GATE_X - 2, 0, 3]} scale={5} rotationY={Math.PI} lampHeight={3} flickerSeed={0.4} />
-      <StreetLamp model="/assets/models/streetlamp.glb" position={[-1.5, 0, -3]} scale={5} lampHeight={3} flickerSeed={0.7} />
-      <StreetLamp model="/assets/models/streetlamp.glb" position={[-1.5, 0, 3]} scale={5} rotationY={Math.PI} lampHeight={3} flickerSeed={0.9} />
+          screenshot.
+          PRD v7.0 round 7 — model itself swapped from streetlamp.glb to
+          light-square.glb (same model every other streetlamp in the city
+          uses), replacing the OTHER real bug the v6.0 investigation missed:
+          streetlamp.glb's internal mesh is named "light-curved" for a
+          reason — it has a smooth, thick, curved swan-neck arm, not
+          light-square.glb's sharp right-angle one (confirmed with a direct
+          side-by-side isolated render of both). At the ~3-4m lateral
+          distance the car passes every streetlamp in the city (an
+          unavoidable, universal distance — every lamp in RoadNetwork.tsx
+          uses the identical ±3 offset), the curved arm's smooth silhouette
+          loses its "obviously a lamp" read and appears as a large dark
+          curved shape hanging into frame — this is the actual identity of
+          the "dark tentacle" shapes originally spotted in a screenshot at
+          the very start of this PRD round, finally reproduced on purpose
+          (scene-graph proximity query pinpointed these exact fixtures) and
+          root-caused, not just patched by scale. light-square.glb's angular
+          arm has passed this same close distance at hundreds of placements
+          across the whole city with zero reports — proven safe, not just
+          assumed safe by bbox similarity like the v6.0 fix mistakenly was. */}
+      <StreetLamp model="/assets/models/light-square.glb" position={[GATE_X - 2, 0, -3]} scale={5} lampHeight={3} flickerSeed={0.1} />
+      <StreetLamp model="/assets/models/light-square.glb" position={[GATE_X - 2, 0, 3]} scale={5} rotationY={Math.PI} lampHeight={3} flickerSeed={0.4} />
+      <StreetLamp model="/assets/models/light-square.glb" position={[-1.5, 0, -3]} scale={5} lampHeight={3} flickerSeed={0.7} />
+      <StreetLamp model="/assets/models/light-square.glb" position={[-1.5, 0, 3]} scale={5} rotationY={Math.PI} lampHeight={3} flickerSeed={0.9} />
 
       {/* Lakeside transition — flanking trees/planters, no monument (§4.3) */}
       <Building model="/assets/models/planter.glb" position={[-2.8, 0, 7]} scale={2.5} rotationY={Math.PI / 2} />
