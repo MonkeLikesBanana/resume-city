@@ -2,6 +2,21 @@
 ### Product & Technical Design Document (PRD)
 Status: v7.0 — in progress · Owner: Aarav Vaswani
 
+> **Revision note (v7.0, round 11):** a real, full-motion drive-through of
+> the entire 12-stop tour (clicking Next repeatedly with actual drive
+> animations playing, not deep-linking with reduced motion) — the one
+> navigation path this round's testing hadn't directly exercised yet.
+> Confirmed clean end to end, including the river/gate area at night and
+> the full fenced suburb at both dusk and daylight (the day/night clock
+> advanced naturally over the ~40-second drive). While auditing
+> `DISTRICTS` lookups during this pass, found `DistrictMeta.accent` and
+> `.blurb` are dead fields — grepped every call site and confirmed only
+> `.name` is ever read. `.accent`'s type union even included `'plaza'`,
+> implying `ACCENT_FILL`/`ACCENT_TEXT` should have a plaza entry — they
+> never will, since the Welcome Plaza's real accent (used everywhere
+> styling actually happens) is `'foundry'`. Removed both fields rather
+> than leave unused data implying a design surface that doesn't exist.
+>
 > **Revision note (v7.0, round 10):** a full proofread of every résumé
 > copy string in `attractions.ts` — description, subtitle, facts, and
 > timeline text for all 12 stops — checked for typos, factual
