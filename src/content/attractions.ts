@@ -34,7 +34,7 @@ export const ATTRACTIONS: Attraction[] = [
     district: 'foundry',
     name: 'Saints Robotics (FRC)',
     placeName: 'Robotics Workshop',
-    subtitle: '',
+    subtitle: 'Vice President',
     position: [-16, 0, -9],
     scale: 2.1,
     rotationY: Math.PI * (155 / 180),
@@ -71,13 +71,13 @@ export const ATTRACTIONS: Attraction[] = [
     name: 'NEEMO',
     placeName: 'NEEMO HQ',
     subtitle: 'Co-Founder, 2026–Present',
-    // Set the lot west of the cross street and approach the facade from the east.
-    position: [-35, 0, 9],
+    // Use the dry strip between the river and the cross street.
+    position: [-30.5, 0, 23],
     scale: 3,
-    rotationY: Math.PI,
+    rotationY: Math.PI * (214 / 180),
     model: '/assets/models/neemo-hq.glb',
     height: 3.9,
-    curb: nearestPositionOnArm('foundry', [-30, 0, 0]),
+    curb: nearestPositionOnArm('foundry', [-32, 0, 0]),
     description:
       'Co-founded a business focused on long-range RFID tracking of parts within robotics workshops. Generated $1,000+ in revenue in the first month. In charge of product technical development.',
     tags: ['Entrepreneurship', 'RFID', 'Hardware', 'Product Development'],
@@ -108,11 +108,13 @@ export const ATTRACTIONS: Attraction[] = [
     name: 'Makers Club',
     placeName: 'Makers Club Workshop (3D Printing)',
     subtitle: 'Co-Founder & Officer, 2025–Present',
-    position: [-46, 0, 9],
+    // Leave the cross street open and show the side of the workshop on arrival.
+    position: [-51.5, 0, 9],
     scale: 3,
-    rotationY: Math.PI,
+    rotationY: Math.PI * (185 / 180),
     model: '/assets/models/makers-club.glb',
     height: 2.7,
+    curb: nearestPositionOnArm('foundry', [-45, 0, 0]),
     description:
       "Co-founded a school club building a community around 3D design, 3D printing, and creative projects. Brought in roughly 50% of the club's non-officer membership.",
     tags: ['3D Printing', 'CAD', 'Community Building'],
@@ -161,6 +163,7 @@ export const ATTRACTIONS: Attraction[] = [
     rotationY: -Math.PI / 2, // west-side lot, faces east toward the street
     model: '/assets/models/cafe.glb',
     height: 2.5,
+    curb: nearestPositionOnArm('lakeside', [0, 0, 21]),
     description: 'Coffee, sushi, Indian food, and cooking.',
     tags: [],
     accentColor: 'lakeside',
