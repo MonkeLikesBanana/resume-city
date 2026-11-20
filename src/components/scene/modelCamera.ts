@@ -29,7 +29,8 @@ export function stopPose(stop: Attraction, frame: ReturnType<typeof composition>
   bounds.translate(new Vector3(...stop.position))
   const target = bounds.getCenter(new Vector3())
   const overview = stop.district === 'plaza'
-  const direction = new Vector3(overview ? .8 : .52, .83, 1).normalize()
+  const waterfront = stop.id === 'academic-hall' || stop.id === 'deca-center'
+  const direction = new Vector3(overview ? .8 : .52, waterfront ? .62 : .83, 1).normalize()
   const right = new Vector3(direction.z, 0, -direction.x).normalize()
   const up = new Vector3().crossVectors(direction, right)
   const halfHeight = Math.tan(MODEL_FOV * Math.PI / 360) * .72 / frame.height

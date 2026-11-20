@@ -103,7 +103,8 @@ const signature: Record<ResumeEntryId, () => Part[]> = {
     footprint([[-4.55, -2.65], [4.55, -2.65], [4.55, -.3], [1.7, -.3], [1.7, 2.65], [-4.55, 2.65]], 1.75),
     slab(-4.25, -.3, 5.65, 2.65, 1.04, 1.75),
     slab(1.7, -.28, 2.55, 1.9, .22, 1.53),
-    slab(4, 1.18, .2, .22, 1.53),
+    slab(1.95, 1.18, .23, .22, 1.53),
+    slab(3.92, 1.18, .23, .22, 1.53),
   ],
 }
 
@@ -113,10 +114,12 @@ export const BLOCK_LOCATIONS = Array.from({ length: 8 }, (_, i) => 20 - i * 13)
 export const PARCELS = combine(BLOCK_LOCATIONS.flatMap(x =>
   [-14, 2].map(z => slab(x - 5.7, z, 11.4, 12, .055, -.055)),
 ))
-export const TYPICAL_MASS = combine([
-  slab(-.5, -.5, 1, 1, .72),
-  slab(-.44, -.48, .82, .78, .28, .72),
-])
+export const INFILL_GEOMETRIES = [
+  combine([slab(-.5, -.5, 1, 1, .72), slab(-.44, -.48, .82, .78, .28, .72)]),
+  combine([slab(-.5, -.44, 1, .88, .7), ...parapet(-.47, -.41, .94, .82, .7)]),
+  combine([footprint([[-.5, -.5], [.5, -.5], [.5, -.08], [.15, -.08], [.15, .5], [-.5, .5]], .82)]),
+  combine([slab(-.43, -.5, .86, 1, .63), slab(-.43, -.5, .61, .62, .27, .63)]),
+]
 // Cover the whole visible ground beyond the model. The shoreline remains a
 // separate material break, with no exposed back or side edges in the frustum.
 export const GROUND = slab(-400, -400, 800, 800, .15, -.15)
@@ -126,10 +129,10 @@ export const WATER = footprint([
 ], .008)
 
 export const INFILL = BLOCK_LOCATIONS.flatMap((x, i) => [
-  { position: new Vector3(x + 2.3, 0, -11.5), scale: new Vector3(3.1, 2.5 + i % 3, 2.5) },
-  { position: new Vector3(x - 3.2, 0, -11.8), scale: new Vector3(2.4, 2 + i % 2, 2.8) },
-  { position: new Vector3(x + 2.55, 0, 12), scale: new Vector3(3, 1.8 + i % 3 * .55, 2.6) },
-  { position: new Vector3(x - 2.7, 0, 11.7), scale: new Vector3(2.8, 1.5 + i % 2 * .9, 2.1) },
+  { variant: i % 4, position: new Vector3(x + 2.3, 0, -11.5), scale: new Vector3(3.1, 2.5 + i % 3, 2.5) },
+  { variant: (i + 2) % 4, position: new Vector3(x - 3.2, 0, -11.8), scale: new Vector3(2.4, 2 + i % 2, 2.8) },
+  { variant: (i + 3) % 4, position: new Vector3(x + 2.55, 0, 12), scale: new Vector3(3, 1.8 + i % 3 * .55, 2.6) },
+  { variant: (i + 1) % 4, position: new Vector3(x - 2.7, 0, 11.7), scale: new Vector3(2.8, 1.5 + i % 2 * .9, 2.1) },
 ])
 
 // Glass sits just behind the raised sill and mullion faces.

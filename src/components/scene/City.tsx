@@ -6,7 +6,7 @@ import {
 import { ATTRACTIONS } from '../../content/attractions'
 import type { ResumeEntryId } from '../../content/resume'
 import useCityStore from '../../store/useCityStore'
-import { FACADES, GROUND, INFILL, MODEL_PALETTE, PARCELS, SIGNATURES, TYPICAL_MASS, WATER } from './massing'
+import { FACADES, GROUND, INFILL, INFILL_GEOMETRIES, MODEL_PALETTE, PARCELS, SIGNATURES, WATER } from './massing'
 
 function matte(color: string) {
   return new MeshStandardMaterial({ color, roughness: 1, metalness: 0 })
@@ -18,6 +18,14 @@ const plinth = matte(MODEL_PALETTE.plinth)
 const parcels = matte(MODEL_PALETTE.blocks)
 const glass = matte(MODEL_PALETTE.glass)
 const water = matte(MODEL_PALETTE.water)
+water.onBeforeCompile = (shader) => {
+  // Fade the water before the wider scene fog reaches the blocks.
+  shader.fragmentShader = shader.fragmentShader.replace('#include <fog_fragment>', `
+    #ifdef USE_FOG
+      gl_FragColor.rgb = mix(gl_FragColor.rgb, fogColor, smoothstep(31.0, 57.0, vFogDepth));
+    #endif
+  `)
+}
 
 const infill = INFILL.filter(({ position, scale }) => ATTRACTIONS.every(stop => {
   const bounds = SIGNATURES[stop.id as ResumeEntryId].boundingBox!
@@ -26,6 +34,11 @@ const infill = INFILL.filter(({ position, scale }) => ATTRACTIONS.every(stop => 
     || position.x - scale.x / 2 - .5 > x + bounds.max.x
     || position.z + scale.z / 2 + .5 < z + bounds.min.z
     || position.z - scale.z / 2 - .5 > z + bounds.max.z
+}))
+
+const infillGroups = INFILL_GEOMETRIES.map((geometry, variant) => ({
+  geometry,
+  items: infill.filter(item => item.variant === variant),
 }))
 
 function RepeatedMasses({ geometry, material, items }: {
@@ -54,7 +67,9 @@ export default function City() {
       <mesh geometry={GROUND} material={plinth} receiveShadow />
       <mesh geometry={PARCELS} material={parcels} position={[0, .035, 0]} receiveShadow />
       <mesh geometry={WATER} material={water} receiveShadow />
-      <RepeatedMasses geometry={TYPICAL_MASS} material={building} items={infill} />
+      {infillGroups.map(({ geometry, items }) => (
+        <RepeatedMasses key={geometry.uuid} geometry={geometry} material={building} items={items} />
+      ))}
       {ATTRACTIONS.map(stop => {
         const id = stop.id as ResumeEntryId
         const material = stop.id === active ? selected : building
