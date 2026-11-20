@@ -12,3 +12,4 @@ Aarav Vaswani's résumé site: a 3D city (Vite, React 19, TypeScript, React Thre
 - Résumé facts live in `src/content/*.ts`. Don't invent accomplishments, dates or numbers; if copy needs a fact you don't have, leave `TODO(fact): ...` and list it in your report.
 - Goal is a professional, restrained design that a recruiter or admissions reader trusts in 10 seconds. Prefer removing effects over adding them.
 - The plain HTML view (`NoWebGLFallback`, `AccessibleNav`) must stay complete: every stop's content readable without WebGL.
+- Owner decision (2026-11-19): keep the phone number on the site. Do not remove or flag it.
