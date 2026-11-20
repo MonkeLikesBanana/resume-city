@@ -23,6 +23,7 @@ function moveTowards(current: number, target: number, maxDelta: number): number 
 
 interface DriveState {
   startU: number
+  departureOffset: THREE.Vector3
   targetU: number
   distance: number
   startTime: number
@@ -108,8 +109,11 @@ export default function CameraRig() {
     if (Math.abs(startU - targetU) < 1e-6) return // already here
 
     const distance = Math.abs(targetU - startU) * TOUR_CURVE.getLength()
+    // Ease back onto the road from the previous parked pose.
+    const departureOffset = perspCamera.position.clone().sub(TOUR_CURVE.getPointAt(startU)).setY(0)
     driveRef.current = {
       startU,
+      departureOffset,
       targetU,
       distance,
       startTime: performance.now(),
@@ -182,7 +186,7 @@ export default function CameraRig() {
       return
     }
 
-    driveFrame(perspCamera, TOUR_CURVE, u, direction, localProgress, attraction, delta)
+    driveFrame(perspCamera, TOUR_CURVE, u, direction, localProgress, attraction, delta, drive.departureOffset)
     perspCamera.fov = THREE.MathUtils.lerp(drive.startFov, drive.targetFov, localProgress)
     perspCamera.updateProjectionMatrix()
 

@@ -78,6 +78,7 @@ export const ATTRACTIONS: Attraction[] = [
     model: '/assets/models/neemo-hq.glb',
     height: 3.9,
     curb: nearestPositionOnArm('foundry', [-32, 0, 0]),
+    parkingInset: 1.5,
     description:
       'Co-founded a business focused on long-range RFID tracking of parts within robotics workshops. Generated $1,000+ in revenue in the first month. In charge of product technical development.',
     tags: ['Entrepreneurship', 'RFID', 'Hardware', 'Product Development'],
@@ -90,10 +91,12 @@ export const ATTRACTIONS: Attraction[] = [
     placeName: 'Interlake High School — Academic Hall',
     subtitle: 'IB Diploma Candidate, 2025–Present',
     position: [-36, 0, -9],
-    scale: 3.4,
-    rotationY: 0,
-    model: '/assets/models/academic-hall.glb',
-    height: 3.7,
+    // Face the low-rise model's windowed entrance toward Main Street.
+    scale: 2.75,
+    rotationY: Math.PI,
+    model: '/assets/models/filler/building-e.glb',
+    height: 2.46,
+    curb: nearestPositionOnArm('foundry', [-43, 0, 0]),
     facts: [
       'GPA 4.0 / 4.0',
       'AP Exams: World History (5), Calculus AB (5), Physics C: Mechanics (5), United States History (5)',

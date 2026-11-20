@@ -28,6 +28,8 @@ export interface Attraction {
   height: number
   /** Override the nearest point on the district road when a stop needs a specific view. */
   curb?: RoadPosition
+  /** Move the parked camera toward the building without changing the tour route. */
+  parkingInset?: number
   rotationY?: number
   scale?: number
   /** path to .glb under /public/assets/models/. Optional — the Welcome

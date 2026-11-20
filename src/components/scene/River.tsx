@@ -37,7 +37,7 @@ function BankDecor() {
       <Building model="/assets/models/rock-small-a.glb" position={[-32, 0, 38]} scale={2.2} rotationY={2.2} />
       <Building model="/assets/models/flower-purple.glb" position={[-30.5, 0, 20]} scale={2.2} />
       <Building model="/assets/models/flower-yellow.glb" position={[-41, 0, 32]} scale={2.2} />
-      <Building model="/assets/models/tree-pine-small.glb" position={[-29, 0, 16]} scale={4.2} rotationY={0.3} />
+      <Building model="/assets/models/tree-pine-small.glb" position={[-30.5, 0, 34]} scale={4.2} rotationY={0.3} />
       <Building model="/assets/models/tree-pine-a.glb" position={[-42, 0, 28]} scale={4.6} rotationY={1.1} />
       <Building model="/assets/models/tree-pine-round-d.glb" position={[-28.5, 0, 44]} scale={4} rotationY={2.4} />
     </>

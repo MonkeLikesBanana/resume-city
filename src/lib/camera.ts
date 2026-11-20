@@ -37,16 +37,13 @@ function standoffBoost(height: number): number {
   return Math.min(MAX_STANDOFF_BOOST, Math.max(0, height - STANDOFF_HEIGHT_THRESHOLD) * STANDOFF_PER_METER)
 }
 
-/** Pushes (px, pz) further from destination.position along the direction
- * it's already offset in — i.e. "back away, don't reroute" — scaled by
- * `boost` (already 0 for anything under STANDOFF_HEIGHT_THRESHOLD, so this
- * is a no-op call for 10 of the 12 attractions). */
-function applyStandoff(px: number, pz: number, destination: Attraction, boost: number): [number, number] {
-  if (boost <= 0) return [px, pz]
+function parkedPosition(px: number, pz: number, destination: Attraction, blend = 1): [number, number] {
+  const offset = (standoffBoost(destination.height) - (destination.parkingInset ?? 0)) * blend
+  if (offset === 0) return [px, pz]
   const dx = px - destination.position[0]
   const dz = pz - destination.position[2]
-  const len = Math.hypot(dx, dz) || 1
-  return [px + (dx / len) * boost, pz + (dz / len) * boost]
+  const distance = Math.hypot(dx, dz) || 1
+  return [px + (dx / distance) * offset, pz + (dz / distance) * offset]
 }
 
 function applyLookAt(camera: THREE.PerspectiveCamera, target: THREE.Vector3, delta: number) {
@@ -65,11 +62,16 @@ export function driveFrame(
   localProgress: number,
   destination: Attraction,
   delta: number,
+  departureOffset?: THREE.Vector3,
 ) {
   const p = tripCurve.getPointAt(curveU)
   const arrivalBlend = smoothstep(1 - ARRIVAL_BLEND_FRACTION, 1, localProgress)
-  const [px, pz] = applyStandoff(p.x, p.z, destination, standoffBoost(destination.height) * arrivalBlend)
+  const [px, pz] = parkedPosition(p.x, p.z, destination, arrivalBlend)
   camera.position.set(px, p.y + CAR_EYE_HEIGHT, pz)
+  if (departureOffset) {
+    const departureBlend = 1 - smoothstep(0, ARRIVAL_BLEND_FRACTION, localProgress)
+    camera.position.addScaledVector(departureOffset, departureBlend)
+  }
 
   const aheadU = clamp(curveU + LOOKAHEAD_DELTA * direction, 0, 1)
   const ahead = tripCurve.getPointAt(aheadU)
@@ -98,7 +100,7 @@ export function scrubFrame(camera: THREE.PerspectiveCamera, tripCurve: TripCurve
  * of every trip (eliminates any residual slerp error so the parked framing
  * is always pixel-exact, never "almost caught up"). */
 export function snapTo(camera: THREE.PerspectiveCamera, curbPoint: THREE.Vector3, destination: Attraction) {
-  const [px, pz] = applyStandoff(curbPoint.x, curbPoint.z, destination, standoffBoost(destination.height))
+  const [px, pz] = parkedPosition(curbPoint.x, curbPoint.z, destination)
   camera.position.set(px, curbPoint.y + CAR_EYE_HEIGHT, pz)
   tiltTargetFor(destination, _tiltTarget)
   _lookMatrix.lookAt(camera.position, _tiltTarget, _up)
