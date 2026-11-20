@@ -8,7 +8,7 @@ function CityRoute() {
   return (
     <Suspense fallback={
       <main className="mx-auto max-w-md px-6 py-16">
-        <p role="status">Loading the 3D portfolio…</p>
+        <p role="status">Loading the interactive city…</p>
         <Link to="/" className="mt-4 inline-block underline underline-offset-2">Back to résumé</Link>
       </main>
     }>
@@ -24,7 +24,7 @@ export default function App() {
       <Route path="/city" element={<CityRoute />} />
       <Route path="/plaza/:id" element={<CityRoute />} />
       <Route path="/foundry/:id" element={<CityRoute />} />
-      <Route path="/lakeside/:id" element={<Navigate replace to="/#outside-work" />} />
+      <Route path="/lakeside/:id" element={<Navigate replace to="/#interests" />} />
       <Route path="*" element={<Navigate replace to="/" />} />
     </Routes>
   )

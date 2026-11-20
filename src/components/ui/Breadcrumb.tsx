@@ -9,8 +9,8 @@ export default function Breadcrumb() {
 
   return (
     <nav aria-label="Breadcrumb" className="pointer-events-auto fixed top-4 left-4 z-20 flex max-w-[calc(100vw-6.5rem)] flex-wrap items-center gap-1.5 text-sm">
-      <Button as="link" to="/">Résumé</Button>
-      <Button as="link" to="/city">Overview</Button>
+      <Button as="link" to="/">← Résumé</Button>
+      <Button as="link" to="/city">City overview</Button>
       {attraction && attraction.district !== 'plaza' && (
         <>
           <span aria-hidden="true" className="hidden text-[var(--color-ink)]/40 sm:inline">›</span>

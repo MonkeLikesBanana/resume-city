@@ -9,15 +9,7 @@
 }
 
 @theme {
-  --color-sky-top: #b8d4e3;
-  --color-sky-bottom: #f0e6d2;
-  --color-evergreen: #2d5843;
-  --color-moss: #4a7856;
-  --color-mountain: #7c93a3;
-  --color-lake: #3e7ca6;
   --color-ground: #f4f1ea;
-  --color-foundry: #2ec4b6;
-  --color-lakeside: #c97b4a;
   --color-ink: #1f2a24;
 
   --font-body: "Space Grotesk", system-ui, sans-serif;

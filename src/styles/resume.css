@@ -1,3 +1,10 @@
+@font-face {
+  font-family: "Inter Variable";
+  src: url("@fontsource-variable/inter/files/inter-latin-wght-normal.woff2") format("woff2");
+  font-weight: 100 900;
+  font-display: swap;
+}
+
 .resume-page {
   --resume-paper: #fbfaf7;
   --resume-text: #19201d;
@@ -7,6 +14,7 @@
   min-height: 100%;
   background: var(--resume-paper);
   color: var(--resume-text);
+  font-family: "Inter Variable", system-ui, sans-serif;
   font-size: 1rem;
   line-height: 1.6;
 }
@@ -14,7 +22,7 @@
 .resume-document {
   max-width: 68rem;
   margin-inline: auto;
-  padding: clamp(2.5rem, 7vw, 6.5rem) clamp(1.25rem, 5vw, 4.5rem) 4rem;
+  padding: clamp(2.25rem, 5.5vw, 5rem) clamp(1.25rem, 5vw, 4.5rem) 4rem;
 }
 
 .resume-page a {
@@ -36,15 +44,17 @@
   padding-bottom: 2rem;
 }
 
+.resume-header h1, .resume-section h2, .resume-entry h3 { font-family: var(--font-body); }
+
 .resume-header h1 {
-  font-size: clamp(2.75rem, 7.6vw, 6.25rem);
+  font-size: clamp(2.6rem, 6vw, 4.5rem);
   line-height: 1.02;
-  letter-spacing: -.07em;
+  letter-spacing: -.035em;
   font-weight: 700;
 }
 
 .resume-positioning {
-  margin-top: 1rem;
+  margin-top: .75rem;
   font-size: clamp(1.05rem, 2vw, 1.3rem);
   line-height: 1.45;
 }
@@ -58,12 +68,15 @@
   font-size: .95rem;
 }
 
-.resume-portfolio {
-  margin-top: 1rem;
-  font-size: .9rem;
+.resume-summary {
+  max-width: 68ch;
+  margin-top: .8rem;
+  color: var(--resume-muted);
 }
 
-.resume-portfolio a { color: var(--resume-muted); }
+.resume-footer { padding-top: 1.5rem; font-size: .9rem; }
+.resume-notice { margin-bottom: .8rem; color: var(--resume-muted); font-size: .9rem; }
+.resume-print-only { display: none; }
 
 .resume-section {
   display: grid;
@@ -97,14 +110,11 @@
   letter-spacing: -.025em;
 }
 
-.resume-subtitle,
 .resume-role-heading p {
   color: var(--resume-muted);
   font-size: .9rem;
 }
 
-.resume-subtitle { margin-top: .3rem; }
-.resume-description { margin-top: .55rem; }
 .resume-roles { display: grid; gap: 1rem; margin-top: .95rem; }
 
 .resume-role-heading {
@@ -125,22 +135,32 @@
   .resume-section h2 { padding-top: .15rem; }
 }
 
+@media screen and (max-width: 40rem) {
+  .resume-header { padding-bottom: 1.35rem; }
+  .resume-contact { margin-top: 1rem; }
+  .resume-section { padding-block: 1.2rem; gap: .65rem; }
+  .resume-roles { margin-top: .65rem; }
+  .resume-role-heading { flex-direction: column; align-items: flex-start; }
+}
+
 @media print {
   @page { margin: 12mm; }
-  html, body, #root { height: auto; }
-  .resume-page { --resume-accent: #000; --resume-muted: #222; min-height: 0; background: white; color: black; font-size: 9.5pt; line-height: 1.35; }
+  html, body, #root { height: auto; background: white; }
+  .resume-page { --resume-accent: #000; --resume-muted: #222; min-height: 0; background: white; color: black; font-size: 9pt; line-height: 1.32; }
   .resume-document { max-width: none; padding: 0; }
   .resume-header { padding-bottom: .7rem; }
-  .resume-header h1 { font-size: 34pt; }
-  .resume-positioning { font-size: 11pt; margin-top: .45rem; }
+  .resume-header h1 { font-size: 29pt; }
+  .resume-positioning { font-size: 10pt; margin-top: .35rem; }
+  .resume-summary { max-width: none; margin-top: .35rem; }
   .resume-contact { font-size: 9pt; margin-top: .45rem; }
   .resume-screen-only { display: none; }
+  .resume-print-only { display: list-item; }
   .resume-section { grid-template-columns: 7rem minmax(0, 1fr); gap: 1rem; padding-block: .5rem; }
   .resume-section h2 { font-size: 8pt; }
   .resume-entry { break-inside: avoid; }
   .resume-entry h3 { font-size: 12pt; }
   .resume-entry + .resume-entry { margin-top: .44rem; padding-top: .44rem; }
   .resume-roles { gap: .45rem; margin-top: .45rem; }
-  .resume-subtitle, .resume-role-heading p { font-size: 8.5pt; }
-  .resume-description, .resume-education-facts { margin-top: .3rem; }
+  .resume-role-heading p { font-size: 8.5pt; }
+  .resume-education-facts { margin-top: .3rem; }
 }

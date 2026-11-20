@@ -15,8 +15,4 @@ export const DISTRICTS: Record<District, DistrictMeta> = {
     id: 'foundry',
     name: DISTRICT_NAMES.foundry,
   },
-  lakeside: {
-    id: 'lakeside',
-    name: DISTRICT_NAMES.lakeside,
-  },
 }

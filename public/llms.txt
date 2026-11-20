@@ -1,8 +1,8 @@
 # Aarav Vaswani — Résumé
 
-> Student at Interlake High School (IB Diploma) · Robotics, electronics, entrepreneurship
+> Saints Robotics Vice President · NEEMO Co-Founder · IB Diploma Candidate
 
-Aarav Vaswani’s [online résumé](https://resume-city.vercel.app) includes an optional [3D portfolio](https://resume-city.vercel.app/city).
+Aarav Vaswani’s [online résumé](https://resume-city.vercel.app) includes an optional [interactive 3D city](https://resume-city.vercel.app/city).
 
 [Download the résumé PDF](https://resume-city.vercel.app/resume-aarav-vaswani.pdf)
 
@@ -12,13 +12,13 @@ Aarav Vaswani’s [online résumé](https://resume-city.vercel.app) includes an 
 
 ## The Foundry District — school, technical, and business activities
 
-- [Saints Robotics (FRC)](https://resume-city.vercel.app/foundry/robotics-workshop): Saints Robotics — FRC Team. Vice President; Technician — Competition; former Control Systems Officer — Electrical.
+- [Saints Robotics (FRC)](https://resume-city.vercel.app/foundry/robotics-workshop): Saints Robotics — FRC Team. Vice President; Competition Technician; former Electrical Control Systems Officer.
 - [NEEMO](https://resume-city.vercel.app/foundry/neemo-hq): Co-Founder of a business focused on long-range RFID tracking of parts within robotics workshops.
 - [Interlake High School](https://resume-city.vercel.app/foundry/academic-hall): IB Diploma Candidate — GPA, AP exam scores, and IB Higher Level coursework.
 - [Makers Club](https://resume-city.vercel.app/foundry/makers-club): Co-Founder & Officer of a school 3D design/printing club.
 - [DECA](https://resume-city.vercel.app/foundry/deca-center): Competitor in entrepreneurship-focused business events, advanced to the State competition.
 - [FIRST LEGO League](https://resume-city.vercel.app/foundry/fll-center): Mentor for two FIRST LEGO League teams.
 
-## Outside work
+## Interests
 
-Cooking, coffee, sushi, Indian food, recreational sports, driving, and video games, especially Minecraft.
+Cooking, recreational sports, driving, and video games.

@@ -1,6 +1,6 @@
 # Vasnova City
 
-Aarav Vaswani’s one-page résumé covers experience, education, and skills. The optional 3D portfolio presents seven stops in a small city. A complete text version and a downloadable PDF are available.
+Aarav Vaswani’s one-page résumé covers experience, education, and skills. The optional 3D portfolio presents seven stops in a procedural architectural model. A complete text version and a downloadable PDF are available.
 
 [Visit the résumé](https://resume-city.vercel.app)
 
@@ -17,12 +17,8 @@ npm run lint
 
 To regenerate the 1200 × 630 link-preview card on macOS, run `python3 scripts/render-og-image.py` with Pillow installed.
 
-## Model credits
+## 3D portfolio
 
-Kenney model packs are licensed under Creative Commons CC0.
+The city uses procedural massing, instanced block and tree geometry, and a static shadow map. It loads only when visitors open the 3D portfolio or follow a city deep link.
 
-- [City Kit (Roads)](https://kenney.nl/assets/city-kit-roads)
-- [City Kit (Commercial)](https://kenney.nl/assets/city-kit-commercial)
-- [City Kit (Suburban)](https://kenney.nl/assets/city-kit-suburban)
-- [Building Kit](https://kenney.nl/assets/building-kit)
-- [Nature Kit](https://kenney.nl/assets/nature-kit)
+Legacy GLB assets are Kenney Creative Commons CC0 packs retained for the earlier city. [Kenney asset licensing](https://kenney.nl/support)

@@ -16,8 +16,8 @@ export default function TourBar({ mobile = false }: TourBarProps) {
   const previous = TOUR_ORDER[index - 1]
   const next = TOUR_ORDER[index + 1]
   const classes = mobile
-    ? 'mt-2 flex flex-wrap items-center gap-1.5 sm:hidden'
-    : 'pointer-events-auto fixed bottom-4 left-1/2 z-20 hidden -translate-x-1/2 items-center gap-2 whitespace-nowrap rounded-2xl bg-[var(--color-ground)] p-2 shadow-lg sm:flex'
+    ? 'mt-2 flex flex-wrap items-center gap-1.5 min-[900px]:hidden'
+    : 'city-desktop-tour'
 
   return (
     <nav aria-label="Tour navigation" className={classes}>

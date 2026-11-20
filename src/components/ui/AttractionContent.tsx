@@ -1,4 +1,3 @@
-import { ACCENT_FILL, ACCENT_TEXT } from '../../config'
 import type { Attraction } from '../../types/attraction'
 
 export default function AttractionContent({ attraction }: { attraction: Attraction }) {
@@ -11,12 +10,11 @@ export default function AttractionContent({ attraction }: { attraction: Attracti
           {attraction.timeline.map((entry) => (
             <li key={entry.role} className="relative">
               <span
-                className="absolute -left-[21px] top-1.5 h-2.5 w-2.5 rounded-full border-2 border-[var(--color-ground)]"
-                style={{ background: ACCENT_FILL[attraction.accentColor] }}
+                className="absolute -left-[21px] top-1.5 h-2.5 w-2.5 rounded-full border-2 border-ground bg-ink/60"
               />
               <p className="text-[11px] font-medium tracking-wide text-[var(--color-ink)]/70 uppercase">{entry.dateRange}</p>
               <p className="text-sm font-semibold text-[var(--color-ink)]">{entry.role}</p>
-              <p className="mt-0.5 text-sm leading-relaxed text-[var(--color-ink)]/85">{entry.description}</p>
+              {entry.description && <p className="mt-0.5 text-sm leading-relaxed text-[var(--color-ink)]/85">{entry.description}</p>}
             </li>
           ))}
         </ol>
@@ -27,7 +25,7 @@ export default function AttractionContent({ attraction }: { attraction: Attracti
           {attraction.facts?.map((fact) => (
             <li key={fact} className={attraction.district === 'plaza' ? undefined : 'flex gap-2'}>
               {attraction.district !== 'plaza' && (
-                <span aria-hidden="true" style={{ color: ACCENT_TEXT[attraction.accentColor] }}>·</span>
+                <span aria-hidden="true">·</span>
               )}
               {fact}
             </li>

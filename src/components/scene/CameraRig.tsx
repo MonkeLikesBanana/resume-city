@@ -1,203 +1,56 @@
-import { useEffect, useRef } from 'react'
+import { useLayoutEffect, useRef } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
-import { useNavigate } from 'react-router-dom'
-import * as THREE from 'three'
-import useCityStore from '../../store/useCityStore'
 import { getAttraction } from '../../content/attractions'
-import { TOUR_ORDER } from '../../content/tour'
-import { TOUR_CURVE, TOUR_STOP_U, tourIndexFor, nearestTourIndex } from '../../lib/tourCurve'
-import { tripProgress, totalTripTime } from '../../lib/motion'
-import { driveFrame, scrubFrame, snapTo } from '../../lib/camera'
-import { scrubState } from '../../lib/scrubState'
-import { HOME_ATTRACTION_ID, DEFAULT_FOV, HOME_FOV, MAX_SPEED, ACCEL } from '../../config'
+import { HOME_ATTRACTION_ID } from '../../config'
 import useReducedMotion from '../../hooks/useReducedMotion'
+import useCityStore from '../../store/useCityStore'
+import { MOVE_SECONDS, poseBetween, stopPose, type ModelPose } from './modelCamera'
 
-function targetFovFor(id: string): number {
-  return id === HOME_ATTRACTION_ID ? HOME_FOV : DEFAULT_FOV
+interface Move {
+  from: ModelPose
+  to: ModelPose
+  start: number
 }
 
-function moveTowards(current: number, target: number, maxDelta: number): number {
-  if (Math.abs(target - current) <= maxDelta) return target
-  return current + Math.sign(target - current) * maxDelta
-}
-
-interface DriveState {
-  startU: number
-  departureOffset: THREE.Vector3
-  targetU: number
-  distance: number
-  startTime: number
-  duration: number
-  attractionId: string
-  startFov: number
-  targetFov: number
-}
-
-const SCRUB_KEYS: Record<string, 1 | -1> = { ArrowRight: 1, ArrowLeft: -1 }
-
-function isTypingTarget(el: EventTarget | null): boolean {
-  const tag = (el as HTMLElement)?.tagName
-  return tag === 'INPUT' || tag === 'TEXTAREA' || Boolean((el as HTMLElement)?.isContentEditable)
-}
-
-/** Track progress on one tour curve so key-driven scrubbing can take over a drive without jumping. */
-export default function CameraRig() {
-  const { camera } = useThree()
-  const navigate = useNavigate()
-  const activeAttractionId = useCityStore((s) => s.activeAttractionId)
-  const setActiveAttractionId = useCityStore((s) => s.setActiveAttractionId)
+export default function CameraRig({ initialStopId }: { initialStopId: string }) {
+  const camera = useThree(state => state.camera)
+  const { width, height } = useThree(state => state.size)
+  const invalidate = useThree(state => state.invalidate)
+  const active = useCityStore(state => state.activeAttractionId)
   const reducedMotion = useReducedMotion()
+  const current = useRef<ModelPose | null>(null)
+  const move = useRef<Move | null>(null)
+  const lastStop = useRef<string | null>(null)
 
-  const currentURef = useRef(0)
-  const driveRef = useRef<DriveState | null>(null)
-  const hasInitializedRef = useRef(false)
-
-  const scrubHeldDirRef = useRef<1 | -1 | 0>(0)
-  const scrubLastDirRef = useRef<1 | -1>(1)
-  const scrubSpeedRef = useRef(0)
-  const wasScrubbingRef = useRef(false)
-
-  // Hold either arrow key to scrub along the tour curve.
-  useEffect(() => {
-    function onKeyDown(e: KeyboardEvent) {
-      if (e.metaKey || e.ctrlKey || e.altKey || isTypingTarget(e.target)) return
-      const dir = SCRUB_KEYS[e.key]
-      if (!dir) return
-      e.preventDefault()
-      if (scrubHeldDirRef.current === 0) {
-        driveRef.current = null // scrubbing takes over from any in-flight discrete drive
-        setActiveAttractionId(null) // entering scrub — hide the title/panel until it settles
-      }
-      scrubHeldDirRef.current = dir
-      scrubLastDirRef.current = dir
+  useLayoutEffect(() => {
+    const stop = getAttraction(current.current ? active ?? initialStopId : initialStopId) ?? getAttraction(HOME_ATTRACTION_ID)
+    if (!stop || width <= 0 || height <= 0) return
+    const next = stopPose(stop, width / height)
+    // The moving camera keeps its progress when the details panel changes height.
+    if (move.current && !reducedMotion && lastStop.current === stop.id) {
+      move.current.to = next
+    } else if (!current.current || reducedMotion || lastStop.current === stop.id) {
+      current.current = next
+      camera.position.copy(next.position)
+      camera.lookAt(next.target)
+      move.current = null
+    } else {
+      move.current = { from: current.current, to: next, start: performance.now() }
     }
-    function onKeyUp(e: KeyboardEvent) {
-      if (SCRUB_KEYS[e.key] && scrubHeldDirRef.current === SCRUB_KEYS[e.key]) {
-        scrubHeldDirRef.current = 0
-      }
-    }
-    window.addEventListener('keydown', onKeyDown)
-    window.addEventListener('keyup', onKeyUp)
-    return () => {
-      window.removeEventListener('keydown', onKeyDown)
-      window.removeEventListener('keyup', onKeyUp)
-    }
-  }, [setActiveAttractionId])
+    lastStop.current = stop.id
+    invalidate()
+  }, [active, camera, height, initialStopId, invalidate, reducedMotion, width])
 
-  useEffect(() => {
-    // null means either "not yet initialized" or "mid-scrub" (transient,
-    // set directly via the store above, not through the router) — either
-    // way there's nothing for this effect to drive toward yet.
-    if (activeAttractionId === null) return
-    const attraction = getAttraction(activeAttractionId)
-    if (!attraction) return
-    const perspCamera = camera as THREE.PerspectiveCamera
-    const targetU = TOUR_STOP_U[tourIndexFor(attraction.id)]
-
-    if (!hasInitializedRef.current || reducedMotion) {
-      hasInitializedRef.current = true
-      currentURef.current = targetU
-      scrubState.currentU = targetU
-      driveRef.current = null
-      perspCamera.fov = targetFovFor(attraction.id)
-      perspCamera.updateProjectionMatrix()
-      snapTo(perspCamera, TOUR_CURVE.getPointAt(targetU), attraction)
-      return
-    }
-
-    const startU = currentURef.current
-    if (Math.abs(startU - targetU) < 1e-6) return // already here
-
-    const distance = Math.abs(targetU - startU) * TOUR_CURVE.getLength()
-    // Ease back onto the road from the previous parked pose.
-    const departureOffset = perspCamera.position.clone().sub(TOUR_CURVE.getPointAt(startU)).setY(0)
-    driveRef.current = {
-      startU,
-      departureOffset,
-      targetU,
-      distance,
-      startTime: performance.now(),
-      duration: totalTripTime(distance) * 1000,
-      attractionId: attraction.id,
-      startFov: perspCamera.fov,
-      targetFov: targetFovFor(attraction.id),
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeAttractionId, reducedMotion])
-
-  useFrame((_, delta) => {
-    const perspCamera = camera as THREE.PerspectiveCamera
-
-    // --- ExploreScrubBar dragging the slider takes priority over
-    // everything else this frame — same visual treatment as holding an
-    // arrow key (scrubFrame, no arrival-tilt blend), just driven by a
-    // pointer position instead of a ramping speed. See scrubState.ts. ---
-    if (scrubState.requestedU !== null) {
-      const dir: 1 | -1 = scrubState.requestedU >= currentURef.current ? 1 : -1
-      currentURef.current = THREE.MathUtils.clamp(scrubState.requestedU, 0, 1)
-      scrubState.currentU = currentURef.current
-      scrubLastDirRef.current = dir
-      wasScrubbingRef.current = true
-      driveRef.current = null
-      scrubFrame(perspCamera, TOUR_CURVE, currentURef.current, dir, delta)
-      return
-    }
-
-    const heldDir = scrubHeldDirRef.current
-
-    // --- Explore-yourself scrub owns the frame whenever it's active or
-    // still decelerating after a release. ---
-    if (heldDir !== 0 || scrubSpeedRef.current > 0.01) {
-      wasScrubbingRef.current = true
-      const targetSpeed = heldDir !== 0 ? MAX_SPEED : 0
-      const rampDelta = reducedMotion ? MAX_SPEED : ACCEL * delta
-      scrubSpeedRef.current = moveTowards(scrubSpeedRef.current, targetSpeed, rampDelta)
-
-      const dir = scrubLastDirRef.current
-      const deltaU = (dir * scrubSpeedRef.current * delta) / TOUR_CURVE.getLength()
-      currentURef.current = THREE.MathUtils.clamp(currentURef.current + deltaU, 0, 1)
-      scrubState.currentU = currentURef.current
-      scrubFrame(perspCamera, TOUR_CURVE, currentURef.current, dir, delta)
-
-      if (heldDir === 0 && scrubSpeedRef.current <= 0.01) {
-        // Fully coasted to a stop — settle onto the nearest named stop via a
-        // normal (usually very short) drive, reusing the same machinery
-        // rather than a bespoke "look-only" tween.
-        wasScrubbingRef.current = false
-        const nearest = TOUR_ORDER[nearestTourIndex(currentURef.current)]
-        navigate(`/${nearest.district}/${nearest.id}`)
-      }
-      return
-    }
-
-    const drive = driveRef.current
-    if (!drive) return
-
-    const elapsed = (performance.now() - drive.startTime) / 1000
-    const localProgress = tripProgress(drive.distance, drive.duration / 1000, elapsed)
-    const u = THREE.MathUtils.lerp(drive.startU, drive.targetU, localProgress)
-    const direction: 1 | -1 = drive.targetU >= drive.startU ? 1 : -1
-    currentURef.current = u // keep truthful every frame, not just at completion — a scrub key pressed mid-drive cancels driveRef and must resume from here, not from wherever the drive started
-    scrubState.currentU = u
-
-    const attraction = getAttraction(drive.attractionId)
-    if (!attraction) {
-      driveRef.current = null
-      return
-    }
-
-    driveFrame(perspCamera, TOUR_CURVE, u, direction, localProgress, attraction, delta, drive.departureOffset)
-    perspCamera.fov = THREE.MathUtils.lerp(drive.startFov, drive.targetFov, localProgress)
-    perspCamera.updateProjectionMatrix()
-
-    if (localProgress >= 1) {
-      driveRef.current = null
-      currentURef.current = drive.targetU
-      scrubState.currentU = drive.targetU
-      // Hard-correct the final frame — eliminates any residual slerp error
-      // so the parked framing is always exact, never "almost caught up."
-      snapTo(perspCamera, TOUR_CURVE.getPointAt(drive.targetU), attraction)
-    }
+  useFrame(() => {
+    const flight = move.current
+    if (!flight) return
+    const progress = Math.min(1, (performance.now() - flight.start) / (MOVE_SECONDS * 1000))
+    const pose = poseBetween(flight.from, flight.to, progress)
+    current.current = pose
+    camera.position.copy(pose.position)
+    camera.lookAt(pose.target)
+    if (progress < 1) invalidate()
+    else move.current = null
   })
 
   return null

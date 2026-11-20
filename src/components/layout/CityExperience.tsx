@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type CSSProperties } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
+import { TOUR_ORDER } from '../../content/tour'
 import { getAttraction } from '../../content/attractions'
 import { PROFILE_NAME } from '../../content/profile'
 import { HOME_ATTRACTION_ID } from '../../config'
@@ -10,11 +11,11 @@ import CityCanvas from '../scene/CityCanvas'
 import AccessibleNav from '../ui/AccessibleNav'
 import Breadcrumb from '../ui/Breadcrumb'
 import CityLoading from '../ui/CityLoading'
-import ExploreScrubBar from '../ui/ExploreScrubBar'
 import InfoPanel from '../ui/InfoPanel'
 import NoWebGLFallback from '../ui/NoWebGLFallback'
 import TourBar from '../ui/TourBar'
 import Header from './Header'
+import '../../styles/city.css'
 
 export default function CityExperience() {
   const { id } = useParams()
@@ -22,6 +23,7 @@ export default function CityExperience() {
   const setActive = useCityStore((s) => s.setActiveAttractionId)
   const webglSupported = useCityStore((s) => s.webglSupported)
   const [sceneReady, setSceneReady] = useState(false)
+  const [panelHeight, setPanelHeight] = useState<number>()
 
   useEffect(() => {
     const attraction = getAttraction(id ?? HOME_ATTRACTION_ID)
@@ -33,7 +35,18 @@ export default function CityExperience() {
   useEffect(() => {
     if (!webglSupported || !sceneReady) return
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') navigate('/city')
+      if (event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return
+      if (event.key === 'Escape') {
+        navigate('/city')
+      } else if (!event.repeat && (event.key === 'ArrowLeft' || event.key === 'ArrowRight')) {
+        const active = useCityStore.getState().activeAttractionId
+        const index = TOUR_ORDER.findIndex(stop => stop.id === active)
+        const stop = TOUR_ORDER[index + (event.key === 'ArrowRight' ? 1 : -1)]
+        if (stop) {
+          event.preventDefault()
+          navigate(stop.district === 'plaza' ? '/city' : `/${stop.district}/${stop.id}`)
+        }
+      }
     }
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
@@ -43,19 +56,18 @@ export default function CityExperience() {
 
   return (
     <CanvasErrorBoundary>
-      <div className="relative h-full w-full">
+      <div className="city-experience" style={panelHeight ? { '--city-panel-height': `${panelHeight}px` } as CSSProperties : undefined}>
         <h1 className="sr-only">{PROFILE_NAME}</h1>
-        <div className="absolute inset-0">
-          <CityCanvas onReady={setSceneReady}><City /></CityCanvas>
+        <div className="city-stage">
+          <CityCanvas initialStopId={id ?? HOME_ATTRACTION_ID} onReady={setSceneReady}><City /></CityCanvas>
         </div>
         {sceneReady ? (
           <>
             <Breadcrumb />
             <AccessibleNav />
             <Header />
-            <InfoPanel />
+            <InfoPanel onHeight={setPanelHeight} />
             <TourBar />
-            <ExploreScrubBar />
           </>
         ) : <CityLoading />}
       </div>
