@@ -11,7 +11,20 @@ export interface ModelPose {
   target: Vector3
 }
 
-export function stopPose(stop: Attraction, aspect: number): ModelPose {
+export function composition(width: number, height: number, panelHeight?: number) {
+  if (width >= 900) {
+    const panelWidth = width >= 1200 ? 380 : 330
+    // Keep the building centered within the left 60%, clear of the résumé.
+    const span = Math.min(width * .6, width - panelWidth - 28)
+    return { width, height, span, clearHeight: height - 110, offsetX: (width - span) / 2, offsetY: 0 }
+  }
+
+  const bottom = panelHeight ?? height * .49
+  const top = 62
+  return { width, height, span: width, clearHeight: height - top - bottom, offsetX: 0, offsetY: (bottom - top) / 2 }
+}
+
+export function stopPose(stop: Attraction, frame: ReturnType<typeof composition>): ModelPose {
   const bounds = new Box3().copy(SIGNATURES[stop.id as ResumeEntryId].boundingBox!)
   bounds.translate(new Vector3(...stop.position))
   const target = bounds.getCenter(new Vector3())
@@ -19,8 +32,9 @@ export function stopPose(stop: Attraction, aspect: number): ModelPose {
   const direction = new Vector3(overview ? .8 : .52, .83, 1).normalize()
   const right = new Vector3(direction.z, 0, -direction.x).normalize()
   const up = new Vector3().crossVectors(direction, right)
-  const halfVertical = Math.tan(MODEL_FOV * Math.PI / 360) * .68
-  const halfHorizontal = halfVertical * aspect
+  const halfHeight = Math.tan(MODEL_FOV * Math.PI / 360) * .72 / frame.height
+  const halfVertical = halfHeight * Math.max(30, frame.clearHeight)
+  const halfHorizontal = halfHeight * frame.span
   let distance = 0
 
   for (const x of [bounds.min.x, bounds.max.x]) {
@@ -34,7 +48,7 @@ export function stopPose(stop: Attraction, aspect: number): ModelPose {
     }
   }
 
-  const position = target.clone().addScaledVector(direction, distance * (overview ? 1.65 : 1.12))
+  const position = target.clone().addScaledVector(direction, distance * (overview ? 1.35 : 1.15))
   return { position, target }
 }
 

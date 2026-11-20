@@ -3,18 +3,19 @@
   --city-panel-width: 330px;
   position: relative;
   width: 100%;
-  height: 100%;
+  max-width: 100dvw;
+  height: 100dvh;
   overflow: hidden;
   background: #e6e3dc;
 }
 
 .city-stage {
   position: absolute;
-  inset: 3.35rem 0 var(--city-panel-height, 49dvh);
+  inset: 0;
 }
 
 .city-panel {
-  position: fixed;
+  position: absolute;
   z-index: 20;
   inset: auto 0 0;
   max-height: 49dvh;
@@ -27,9 +28,24 @@
 .city-panel .city-panel-overview,
 .city-desktop-tour { display: none; }
 
-@media (min-width: 900px) {
-  .city-stage { inset: 3.75rem calc(var(--city-panel-width) + 1.75rem) 4rem 0; }
+.city-all-stops {
+  position: absolute;
+  top: 1rem;
+  right: max(1rem, env(safe-area-inset-right));
+  max-width: calc(100% - 2rem);
+}
 
+.city-mobile-tour {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .375rem;
+  min-width: 0;
+}
+
+.city-mobile-download { margin-inline-start: auto; }
+
+@media (min-width: 900px) {
   .city-panel {
     inset: auto 1.25rem 1.25rem auto;
     width: var(--city-panel-width);
@@ -38,6 +54,8 @@
     border: 1px solid #d4d1c9;
     border-radius: .25rem;
   }
+
+  .city-mobile-tour { display: none; }
 
   .city-panel .city-panel-overview { display: inline-flex; }
 

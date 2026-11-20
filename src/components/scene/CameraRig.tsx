@@ -1,10 +1,11 @@
+import { PerspectiveCamera } from 'three'
 import { useLayoutEffect, useRef } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import { getAttraction } from '../../content/attractions'
 import { HOME_ATTRACTION_ID } from '../../config'
 import useReducedMotion from '../../hooks/useReducedMotion'
 import useCityStore from '../../store/useCityStore'
-import { MOVE_SECONDS, poseBetween, stopPose, type ModelPose } from './modelCamera'
+import { MOVE_SECONDS, composition, poseBetween, stopPose, type ModelPose } from './modelCamera'
 
 interface Move {
   from: ModelPose
@@ -12,7 +13,7 @@ interface Move {
   start: number
 }
 
-export default function CameraRig({ initialStopId }: { initialStopId: string }) {
+export default function CameraRig({ initialStopId, panelHeight }: { initialStopId: string; panelHeight?: number }) {
   const camera = useThree(state => state.camera)
   const { width, height } = useThree(state => state.size)
   const invalidate = useThree(state => state.invalidate)
@@ -24,8 +25,10 @@ export default function CameraRig({ initialStopId }: { initialStopId: string }) 
 
   useLayoutEffect(() => {
     const stop = getAttraction(current.current ? active ?? initialStopId : initialStopId) ?? getAttraction(HOME_ATTRACTION_ID)
-    if (!stop || width <= 0 || height <= 0) return
-    const next = stopPose(stop, width / height)
+    if (!stop || width <= 0 || height <= 0 || !(camera instanceof PerspectiveCamera)) return
+    const frame = composition(width, height, panelHeight)
+    camera.setViewOffset(width, height, frame.offsetX, frame.offsetY, width, height)
+    const next = stopPose(stop, frame)
     // The moving camera keeps its progress when the details panel changes height.
     if (move.current && !reducedMotion && lastStop.current === stop.id) {
       move.current.to = next
@@ -39,7 +42,7 @@ export default function CameraRig({ initialStopId }: { initialStopId: string }) 
     }
     lastStop.current = stop.id
     invalidate()
-  }, [active, camera, height, initialStopId, invalidate, reducedMotion, width])
+  }, [active, camera, height, initialStopId, invalidate, panelHeight, reducedMotion, width])
 
   useFrame(() => {
     const flight = move.current

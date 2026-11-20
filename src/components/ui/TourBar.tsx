@@ -16,7 +16,7 @@ export default function TourBar({ mobile = false }: TourBarProps) {
   const previous = TOUR_ORDER[index - 1]
   const next = TOUR_ORDER[index + 1]
   const classes = mobile
-    ? 'mt-2 flex flex-wrap items-center gap-1.5 min-[900px]:hidden'
+    ? 'city-mobile-tour mt-2'
     : 'city-desktop-tour'
 
   return (
@@ -36,12 +36,12 @@ export default function TourBar({ mobile = false }: TourBarProps) {
           <Button as="link" to={`/${next.district}/${next.id}`} variant="primary" aria-label="Next stop">
             Next <ArrowIcon direction="right" />
           </Button>
-          {mobile && <DownloadResumeButton className="ml-auto" />}
+          {mobile && <DownloadResumeButton className="city-mobile-download" />}
         </>
       ) : (
         <>
           <Button as="link" to="/city" variant="primary">Back to overview</Button>
-          {mobile && <DownloadResumeButton label="Download résumé" />}
+          {mobile && <DownloadResumeButton className="city-mobile-download" label="Download résumé" />}
         </>
       )}
     </nav>

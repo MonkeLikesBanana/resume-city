@@ -1,4 +1,4 @@
-import { useEffect, useState, type CSSProperties } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { TOUR_ORDER } from '../../content/tour'
 import { getAttraction } from '../../content/attractions'
@@ -56,10 +56,10 @@ export default function CityExperience() {
 
   return (
     <CanvasErrorBoundary>
-      <div className="city-experience" style={panelHeight ? { '--city-panel-height': `${panelHeight}px` } as CSSProperties : undefined}>
+      <div className="city-experience">
         <h1 className="sr-only">{PROFILE_NAME}</h1>
         <div className="city-stage">
-          <CityCanvas initialStopId={id ?? HOME_ATTRACTION_ID} onReady={setSceneReady}><City /></CityCanvas>
+          <CityCanvas initialStopId={id ?? HOME_ATTRACTION_ID} panelHeight={panelHeight} onReady={setSceneReady}><City /></CityCanvas>
         </div>
         {sceneReady ? (
           <>

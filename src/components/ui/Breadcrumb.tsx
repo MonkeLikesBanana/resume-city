@@ -8,7 +8,7 @@ export default function Breadcrumb() {
   const attraction = activeId ? getAttraction(activeId) : undefined
 
   return (
-    <nav aria-label="Breadcrumb" className="pointer-events-auto fixed top-4 left-4 z-20 flex max-w-[calc(100vw-6.5rem)] flex-wrap items-center gap-1.5 text-sm">
+    <nav aria-label="Breadcrumb" className="pointer-events-auto absolute top-4 left-4 z-20 flex max-w-[calc(100vw-6.5rem)] flex-wrap items-center gap-1.5 text-sm">
       <Button as="link" to="/">← Résumé</Button>
       <Button as="link" to="/city">City overview</Button>
       {attraction && attraction.district !== 'plaza' && (

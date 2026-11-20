@@ -11,11 +11,12 @@ import { MODEL_FOV } from './modelCamera'
 
 interface CityCanvasProps {
   initialStopId: string
+  panelHeight?: number
   children: ReactNode
   onReady: (ready: boolean) => void
 }
 
-export default function CityCanvas({ children, initialStopId, onReady }: CityCanvasProps) {
+export default function CityCanvas({ children, initialStopId, panelHeight, onReady }: CityCanvasProps) {
   const isMobile = useIsMobile()
   const [reducedDensity, setReducedDensity] = useState(false)
   const maxDpr = reducedDensity ? 1 : isMobile ? 1.25 : 1.5
@@ -41,14 +42,14 @@ export default function CityCanvas({ children, initialStopId, onReady }: CityCan
     >
       {!isMobile && !reducedDensity && <PerformanceMonitor onDecline={() => setReducedDensity(true)} />}
       <color attach="background" args={[MODEL_PALETTE.background]} />
-      <fog attach="fog" args={[MODEL_PALETTE.background, 66, 190]} />
-      <hemisphereLight args={['#ffffff', '#d8d4cc', .85]} />
+      <fog attach="fog" args={[MODEL_PALETTE.background, 55, 140]} />
+      <hemisphereLight args={['#ffffff', '#e3e0d9', 1.35]} />
       <primitive object={sunTarget} />
       <directionalLight
         position={[-52, 47, 54]}
         target={sunTarget}
         color="#fff9f0"
-        intensity={2.05}
+        intensity={1.65}
         castShadow
         shadow-mapSize={[2048, 2048]}
         shadow-camera-left={-62}
@@ -64,7 +65,7 @@ export default function CityCanvas({ children, initialStopId, onReady }: CityCan
 
       <HideCanvasFromAT />
       <WebGLContextLossWatcher />
-      <CameraRig initialStopId={initialStopId} />
+      <CameraRig initialStopId={initialStopId} panelHeight={panelHeight} />
       {children}
     </Canvas>
   )
