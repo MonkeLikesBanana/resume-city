@@ -59,7 +59,6 @@ export const ATTRACTIONS: Attraction[] = [
     curb: nearestPositionOnArm('foundry', [-21, 0, 0]),
     timeline: [
       {
-        // TODO(fact): Confirm Saints Robotics VP start year
         role: 'Vice President',
         dateRange: '2026–Present',
         description:
@@ -86,8 +85,7 @@ export const ATTRACTIONS: Attraction[] = [
     district: 'foundry',
     name: 'NEEMO',
     placeName: 'NEEMO HQ',
-    // TODO(fact): NEEMO start date
-    subtitle: 'Co-Founder',
+    subtitle: 'Co-Founder, 2026–Present',
     position: [-26, 0, 9],
     scale: 3,
     rotationY: Math.PI,
