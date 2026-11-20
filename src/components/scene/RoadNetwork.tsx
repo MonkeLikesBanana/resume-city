@@ -251,7 +251,10 @@ function crossStreetSigns() {
   return CROSS_STREETS_X.map((x) => (
     <group key={`sign-${x}`}>
       <Building model="/assets/models/road-sign-object-street.glb" position={[x - 1.5, 0, 4]} scale={6} />
-      <Building model="/assets/models/road-sign-stop.glb" position={[x + 1.5, 0, -4]} scale={4} rotationY={Math.PI} />
+      {/* Leave the near intersection clear in the Robotics arrival shot. */}
+      {x !== -26 && (
+        <Building model="/assets/models/road-sign-stop.glb" position={[x + 1.5, 0, -4]} scale={4} rotationY={Math.PI} />
+      )}
     </group>
   ))
 }

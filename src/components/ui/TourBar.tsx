@@ -41,7 +41,7 @@ export default function TourBar({ mobile = false }: TourBarProps) {
       ) : (
         <>
           <Button as="link" to="/" variant="primary">Back to overview</Button>
-          <DownloadResumeButton label="Download résumé" />
+          {mobile && <DownloadResumeButton label="Download résumé" />}
         </>
       )}
     </nav>

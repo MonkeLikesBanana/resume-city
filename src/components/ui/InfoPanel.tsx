@@ -2,6 +2,7 @@ import { useId, useState } from 'react'
 import { AnimatePresence, motion, useIsPresent } from 'framer-motion'
 import useCityStore from '../../store/useCityStore'
 import { getAttraction } from '../../content/attractions'
+import { TOUR_ORDER } from '../../content/tour'
 import { DISTRICTS } from '../../content/districts'
 import useReducedMotion from '../../hooks/useReducedMotion'
 import { ACCENT_FILL, ACCENT_TEXT } from '../../config'
@@ -15,7 +16,9 @@ import TourBar from './TourBar'
 function Panel({ attraction }: { attraction: Attraction }) {
   const isPresent = useIsPresent()
   const reducedMotion = useReducedMotion()
-  const [expanded, setExpanded] = useState(false)
+  const isPlaza = attraction.district === 'plaza'
+  const isLastStop = attraction.id === TOUR_ORDER.at(-1)?.id
+  const [expanded, setExpanded] = useState(isPlaza)
   const detailsId = useId()
 
   return (
@@ -26,7 +29,7 @@ function Panel({ attraction }: { attraction: Attraction }) {
       animate={{ opacity: 1, y: 0 }}
       exit={reducedMotion ? { opacity: 0 } : { opacity: 0, y: 24 }}
       transition={{ duration: reducedMotion ? 0.05 : 0.35, ease: 'easeOut' }}
-      className="pointer-events-auto fixed inset-x-0 bottom-0 z-20 max-h-[70vh] overflow-y-auto rounded-t-2xl border-t-4 bg-[var(--color-ground)] p-3 shadow-lg sm:inset-x-auto sm:right-4 sm:bottom-16 sm:w-[420px] sm:rounded-2xl sm:border-t-0 sm:border-l-4 sm:p-5 xl:bottom-4"
+      className="pointer-events-auto fixed inset-x-0 bottom-0 z-20 max-h-[70vh] overflow-y-auto rounded-t-2xl border-t-4 bg-[var(--color-ground)] p-3 shadow-lg sm:inset-x-auto sm:right-4 sm:bottom-16 sm:w-[360px] xl:w-[420px] sm:rounded-2xl sm:border-t-0 sm:border-l-4 sm:p-5 xl:bottom-4"
       style={{ borderColor: ACCENT_FILL[attraction.accentColor] }}
     >
       <header>
@@ -35,20 +38,18 @@ function Panel({ attraction }: { attraction: Attraction }) {
             <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: ACCENT_TEXT[attraction.accentColor] }}>
               {attraction.placeName ?? DISTRICTS[attraction.district].name}
             </p>
-            <h2>
-              <span className="hidden text-xl font-semibold sm:inline">{attraction.name}</span>
-              <Button
-                className="mt-1 w-full !justify-between text-left !text-base sm:hidden"
-                aria-expanded={expanded}
-                aria-controls={detailsId}
-                onClick={() => setExpanded((open) => !open)}
-              >
-                {attraction.name}
-                <Chevron className={expanded ? 'rotate-180' : ''} />
-              </Button>
-            </h2>
+            <h2 className="text-xl font-semibold">{attraction.name}</h2>
+            {attraction.subtitle && <p className="mt-1 text-sm text-[var(--color-ink)]/75">{attraction.subtitle}</p>}
           </div>
-          {attraction.district !== 'plaza' && (
+          <Button
+            className="shrink-0 !border-transparent !px-2 hover:underline sm:hidden"
+            aria-expanded={expanded}
+            aria-controls={detailsId}
+            onClick={() => setExpanded((open) => !open)}
+          >
+            Details <Chevron className={expanded ? 'rotate-180' : ''} />
+          </Button>
+          {!isPlaza && !isLastStop && (
             <Button as="link" to="/" className="hidden shrink-0 sm:inline-flex">Overview</Button>
           )}
         </div>
@@ -56,9 +57,8 @@ function Panel({ attraction }: { attraction: Attraction }) {
       </header>
 
       <div id={detailsId} className={expanded ? '' : 'hidden sm:block'}>
-        {attraction.subtitle && <p className="mt-1 text-sm text-[var(--color-ink)]/75">{attraction.subtitle}</p>}
         <AttractionContent attraction={attraction} />
-        {attraction.district === 'plaza' && <ProfileSkills />}
+        {isPlaza && <ProfileSkills />}
       </div>
     </motion.aside>
   )

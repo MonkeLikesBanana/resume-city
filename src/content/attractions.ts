@@ -71,11 +71,13 @@ export const ATTRACTIONS: Attraction[] = [
     name: 'NEEMO',
     placeName: 'NEEMO HQ',
     subtitle: 'Co-Founder, 2026–Present',
-    position: [-26, 0, 9],
+    // Set the lot west of the cross street and approach the facade from the east.
+    position: [-35, 0, 9],
     scale: 3,
     rotationY: Math.PI,
     model: '/assets/models/neemo-hq.glb',
     height: 3.9,
+    curb: nearestPositionOnArm('foundry', [-30, 0, 0]),
     description:
       'Co-founded a business focused on long-range RFID tracking of parts within robotics workshops. Generated $1,000+ in revenue in the first month. In charge of product technical development.',
     tags: ['Entrepreneurship', 'RFID', 'Hardware', 'Product Development'],
