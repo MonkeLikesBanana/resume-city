@@ -50,7 +50,7 @@ function Panel({ attraction }: { attraction: Attraction }) {
             Details <Chevron className={expanded ? 'rotate-180' : ''} />
           </Button>
           {!isPlaza && !isLastStop && (
-            <Button as="link" to="/" className="hidden shrink-0 sm:inline-flex">Overview</Button>
+            <Button as="link" to="/city" className="hidden shrink-0 sm:inline-flex">Overview</Button>
           )}
         </div>
         <TourBar mobile />

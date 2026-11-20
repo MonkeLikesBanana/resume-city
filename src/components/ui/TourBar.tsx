@@ -22,7 +22,7 @@ export default function TourBar({ mobile = false }: TourBarProps) {
   return (
     <nav aria-label="Tour navigation" className={classes}>
       {previous ? (
-        <Button as="link" to={index === 1 ? '/' : `/${previous.district}/${previous.id}`} aria-label="Previous stop">
+        <Button as="link" to={index === 1 ? '/city' : `/${previous.district}/${previous.id}`} aria-label="Previous stop">
           <ArrowIcon direction="left" /> Prev
         </Button>
       ) : (
@@ -40,7 +40,7 @@ export default function TourBar({ mobile = false }: TourBarProps) {
         </>
       ) : (
         <>
-          <Button as="link" to="/" variant="primary">Back to overview</Button>
+          <Button as="link" to="/city" variant="primary">Back to overview</Button>
           {mobile && <DownloadResumeButton label="Download résumé" />}
         </>
       )}

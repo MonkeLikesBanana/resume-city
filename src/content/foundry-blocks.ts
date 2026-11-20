@@ -9,7 +9,7 @@ const FRONT_MODELS = [
   '/assets/models/filler/building-g.glb', '/assets/models/filler/building-h.glb',
   '/assets/models/filler/building-i.glb', '/assets/models/filler/building-j.glb',
   '/assets/models/filler/building-k.glb', '/assets/models/filler/building-l.glb',
-  '/assets/models/filler/building-m.glb', '/assets/models/filler/building-n.glb',
+  '/assets/models/filler/building-m.glb', '/assets/models/filler/building-j.glb',
 ]
 const TOWER_MODELS = [
   '/assets/models/filler/building-skyscraper-a.glb', '/assets/models/filler/building-skyscraper-b.glb',

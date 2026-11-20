@@ -2,9 +2,7 @@
 
 > Student at Interlake High School (IB Diploma) · Robotics, electronics, entrepreneurship
 
-Vasnova City presents Aarav Vaswani's résumé as a small 3D city. Use Next,
-Prev, or All stops to navigate between entries. A full text version appears
-when WebGL is unavailable.
+Aarav Vaswani’s [online résumé](https://resume-city.vercel.app) includes an optional [3D portfolio](https://resume-city.vercel.app/city).
 
 [Download the résumé PDF](https://resume-city.vercel.app/resume-aarav-vaswani.pdf)
 
@@ -21,9 +19,6 @@ when WebGL is unavailable.
 - [DECA](https://resume-city.vercel.app/foundry/deca-center): Competitor in entrepreneurship-focused business events, advanced to the State competition.
 - [FIRST LEGO League](https://resume-city.vercel.app/foundry/fll-center): Mentor for two FIRST LEGO League teams.
 
-## Lakeside — personal interests
+## Outside work
 
-- [The Café](https://resume-city.vercel.app/lakeside/cafe): Coffee, sushi, Indian food, and cooking.
-- [Arcade / Game Room](https://resume-city.vercel.app/lakeside/arcade): Video games — Minecraft.
-- [Sports Field](https://resume-city.vercel.app/lakeside/sports-field): Plays a variety of sports recreationally.
-- [The Open Road](https://resume-city.vercel.app/lakeside/open-road): Driving.
+Cooking, coffee, sushi, Indian food, recreational sports, driving, and video games, especially Minecraft.

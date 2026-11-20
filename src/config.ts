@@ -1,5 +1,3 @@
-export const CITY_NAME = 'Vasnova City'
-
 export const DISTRICT_NAMES = {
   foundry: 'The Foundry District',
   lakeside: 'Lakeside',

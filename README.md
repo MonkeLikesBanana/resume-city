@@ -1,6 +1,6 @@
 # Vasnova City
 
-Aarav Vaswani’s résumé, presented as a small 3D city. Use Next, Prev, or All stops to explore school, robotics, business, and personal interests. A complete text version is available when WebGL is unavailable, and the résumé can be downloaded as a PDF.
+Aarav Vaswani’s one-page résumé covers experience, education, and skills. The optional 3D portfolio presents seven stops in a small city. A complete text version and a downloadable PDF are available.
 
 [Visit the résumé](https://resume-city.vercel.app)
 
