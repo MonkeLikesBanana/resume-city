@@ -1,3 +1,4 @@
+import ArrowIcon from './ArrowIcon'
 import { useNavigate } from 'react-router-dom'
 import useCityStore from '../../store/useCityStore'
 import { TOUR_ORDER } from '../../content/tour'
@@ -50,7 +51,7 @@ export default function TourBar() {
         aria-label="Previous stop"
         className="rounded-full px-2 py-1 hover:bg-white/10 disabled:pointer-events-none disabled:opacity-30 cursor-pointer"
       >
-        ← Prev
+        <ArrowIcon direction="left" /> Prev
       </button>
       <span className="px-1 text-xs text-[var(--color-ground)]/70 tabular-nums">
         {index + 1} / {TOUR_ORDER.length}
@@ -63,7 +64,7 @@ export default function TourBar() {
         className="rounded-full px-3 py-1 font-medium text-[var(--color-ink)] hover:opacity-90 disabled:pointer-events-none disabled:opacity-30 cursor-pointer"
         style={{ background: ACCENT_FILL[accentColor] }}
       >
-        Next →
+        Next <ArrowIcon direction="right" />
       </button>
     </div>
   )

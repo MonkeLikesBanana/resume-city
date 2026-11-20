@@ -1,5 +1,4 @@
 import Building from './Building'
-import StreetLamp from './StreetLamp'
 import Bench from './Bench'
 import TrashCan from './TrashCan'
 import { PALETTE } from '../../config'
@@ -47,7 +46,7 @@ export default function PlazaSquare() {
       <Building model="/assets/models/plaza-gate.glb" position={[GATE_X, 0, 0]} scale={1} />
       <Building model="/assets/models/planter.glb" position={[GATE_X + 0.8, 0, -2.8]} scale={2.5} />
       <Building model="/assets/models/planter.glb" position={[GATE_X - 0.8, 0, 2.8]} scale={2.5} rotationY={Math.PI} />
-      {/* PRD v6.0 §2 — scale bumped 2.5->5 (lampHeight 1.6->3 to match): a
+      {/* PRD v6.0 §2 — scale bumped 2.5->5: a
           direct model-dimension check found streetlamp.glb's native size is
           nearly identical to light-square.glb's (~0.6-0.68 tall), but every
           other streetlamp in the city uses scale=5 for that near-identical
@@ -76,10 +75,10 @@ export default function PlazaSquare() {
           arm has passed this same close distance at hundreds of placements
           across the whole city with zero reports — proven safe, not just
           assumed safe by bbox similarity like the v6.0 fix mistakenly was. */}
-      <StreetLamp model="/assets/models/light-square.glb" position={[GATE_X - 2, 0, -3]} scale={5} lampHeight={3} flickerSeed={0.1} />
-      <StreetLamp model="/assets/models/light-square.glb" position={[GATE_X - 2, 0, 3]} scale={5} rotationY={Math.PI} lampHeight={3} flickerSeed={0.4} />
-      <StreetLamp model="/assets/models/light-square.glb" position={[-1.5, 0, -3]} scale={5} lampHeight={3} flickerSeed={0.7} />
-      <StreetLamp model="/assets/models/light-square.glb" position={[-1.5, 0, 3]} scale={5} rotationY={Math.PI} lampHeight={3} flickerSeed={0.9} />
+      <Building model="/assets/models/light-square.glb" position={[GATE_X - 2, 0, -3]} scale={5} />
+      <Building model="/assets/models/light-square.glb" position={[GATE_X - 2, 0, 3]} scale={5} rotationY={Math.PI} />
+      <Building model="/assets/models/light-square.glb" position={[-1.5, 0, -3]} scale={5} />
+      <Building model="/assets/models/light-square.glb" position={[-1.5, 0, 3]} scale={5} rotationY={Math.PI} />
 
       {/* Lakeside transition — flanking trees/planters, no monument (§4.3) */}
       <Building model="/assets/models/planter.glb" position={[-2.8, 0, 7]} scale={2.5} rotationY={Math.PI / 2} />
@@ -103,7 +102,7 @@ export default function PlazaSquare() {
         <meshStandardMaterial color="#9d9689" roughness={0.9} />
       </mesh>
 
-      <StreetLamp model="/assets/models/light-square-double.glb" position={[18, 0, -18]} scale={5} rotationY={Math.PI * 1.25} lampHeight={2.8} flickerSeed={0.3} />
+      <Building model="/assets/models/light-square-double.glb" position={[18, 0, -18]} scale={5} rotationY={Math.PI * 1.25} />
 
       <Building model="/assets/models/detail-parasol-a.glb" position={[5, 0, -16]} scale={5} />
       <Building model="/assets/models/detail-parasol-b.glb" position={[17, 0, -4]} scale={5} rotationY={1.1} />

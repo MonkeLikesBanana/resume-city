@@ -1,32 +1,28 @@
-# React + TypeScript + Vite
+# Vasnova City
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+Aarav Vaswani’s résumé, presented as a small 3D city. Use Next, Prev, or All stops to explore school, robotics, business, and personal interests. A complete text version is available when WebGL is unavailable, and the résumé can be downloaded as a PDF.
 
-Currently, two official plugins are available:
+[Visit the résumé](https://resume-city.vercel.app)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Development
 
-## React Compiler
+The site uses Vite, React 19, TypeScript, React Three Fiber and Drei, and Tailwind CSS v4.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+```sh
+npm ci
+npm run dev
+npm run build
+npm run lint
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+To regenerate the 1200 × 630 link-preview card on macOS, run `python3 scripts/render-og-image.py` with Pillow installed.
+
+## Model credits
+
+Kenney model packs are licensed under Creative Commons CC0.
+
+- [City Kit (Roads)](https://kenney.nl/assets/city-kit-roads)
+- [City Kit (Commercial)](https://kenney.nl/assets/city-kit-commercial)
+- [City Kit (Suburban)](https://kenney.nl/assets/city-kit-suburban)
+- [Building Kit](https://kenney.nl/assets/building-kit)
+- [Nature Kit](https://kenney.nl/assets/nature-kit)

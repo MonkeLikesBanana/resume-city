@@ -1,14 +1,6 @@
 @import "tailwindcss";
 
 @font-face {
-  font-family: "Fredoka";
-  font-weight: 500 700;
-  font-style: normal;
-  font-display: swap;
-  src: url("/fonts/fredoka-variable.woff2") format("woff2");
-}
-
-@font-face {
   font-family: "Space Grotesk";
   font-weight: 400 700;
   font-style: normal;
@@ -29,8 +21,7 @@
   --color-lakeside: #c97b4a;
   --color-ink: #1f2a24;
 
-  --font-display: "Fredoka", ui-rounded, system-ui, sans-serif;
-  --font-body: "Space Grotesk", Inter, system-ui, sans-serif;
+  --font-body: "Space Grotesk", system-ui, sans-serif;
 }
 
 @layer base {
@@ -54,7 +45,7 @@
   }
 
   :focus-visible {
-    outline: 2px solid var(--color-foundry);
+    outline: 2px solid var(--color-ink);
     outline-offset: 2px;
   }
 }

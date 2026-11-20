@@ -2,6 +2,9 @@ import { AnimatePresence, motion } from 'framer-motion'
 import useCityStore from '../../store/useCityStore'
 import useReducedMotion from '../../hooks/useReducedMotion'
 import DownloadResumeButton from './DownloadResumeButton'
+import { useProgress } from '@react-three/drei'
+import { PROFILE_NAME, PROFILE_ROLE } from '../../content/profile'
+import ArrowIcon from './ArrowIcon'
 import { CITY_NAME } from '../../config'
 
 /** PRD §3/§13 Phase 5 — the landing gate. Deep links bypass this entirely
@@ -10,7 +13,9 @@ import { CITY_NAME } from '../../config'
  * separate "guided tour" to opt into anymore — the Welcome Plaza is already
  * selected and Next/Prev are always available, so "Enter the City" is the
  * only entry point needed now. */
-export default function WelcomeOverlay() {
+export default function WelcomeOverlay({ sceneReady }: { sceneReady: boolean }) {
+  const { active, progress } = useProgress()
+  const ready = sceneReady && !active
   const hasEntered = useCityStore((s) => s.hasEntered)
   const setHasEntered = useCityStore((s) => s.setHasEntered)
   const reducedMotion = useReducedMotion()
@@ -24,31 +29,23 @@ export default function WelcomeOverlay() {
           transition={{ duration: reducedMotion ? 0.05 : 0.5, ease: 'easeOut' }}
           className="pointer-events-auto fixed inset-0 z-30 flex flex-col items-center justify-center bg-[var(--color-ground)] px-6 text-center"
         >
-          <svg width="88" height="88" viewBox="0 0 108 108" aria-hidden="true" className="mb-4">
-            <polyline
-              points="14,78 14,60 24,60 24,50 34,50 34,66 44,66 44,40 56,40 56,66 66,66 66,52 78,52 78,64 94,64 94,78"
-              fill="none"
-              stroke="var(--color-evergreen)"
-              strokeWidth="3"
-              strokeLinejoin="round"
-              strokeLinecap="round"
-            />
-            <polygon points="20,50 26,38 32,50" fill="var(--color-foundry)" />
-            <polygon points="70,44 76,30 82,44" fill="var(--color-lakeside)" />
-            <line x1="14" y1="78" x2="94" y2="78" stroke="var(--color-mountain)" strokeWidth="2" />
-          </svg>
-
-          <h1 className="font-[Fredoka] text-5xl font-semibold text-[var(--color-ink)] sm:text-6xl">{CITY_NAME}</h1>
-          <p className="mt-3 max-w-md text-[var(--color-ink)]/70">
-            Aarav Vaswani's résumé, built as a small city — click a building, the camera drives you there.
+          <p className="mb-2 text-xs font-semibold uppercase tracking-wide">{CITY_NAME}</p>
+          <p aria-hidden="true" className="text-5xl font-semibold sm:text-6xl">{PROFILE_NAME}</p>
+          <p className="mt-3 max-w-md">{PROFILE_ROLE}</p>
+          <p className="mt-3 max-w-md text-sm text-[var(--color-ink)]/75">
+            Use Next, Prev, or All stops to move between résumé entries.
+          </p>
+          <p role="status" className="mt-5 min-h-5 text-sm tabular-nums text-[var(--color-ink)]/70">
+            {ready ? '' : `Loading city… ${Math.min(99, Math.floor(progress))}%`}
           </p>
 
           <button
             type="button"
+            disabled={!ready}
             onClick={() => setHasEntered(true)}
-            className="mt-8 rounded-full bg-[var(--color-foundry)] px-6 py-3 font-[Fredoka] text-lg font-semibold text-[var(--color-ink)] shadow-lg transition-transform hover:scale-105 cursor-pointer"
+            className="mt-3 rounded-full bg-[var(--color-foundry)] px-6 py-3 text-lg font-semibold text-[var(--color-ink)] shadow-lg enabled:cursor-pointer disabled:opacity-50"
           >
-            Enter the City →
+            Enter the City <ArrowIcon direction="right" />
           </button>
 
           <div className="mt-4 flex items-center gap-4 text-sm">

@@ -2,7 +2,6 @@ import { useMemo } from 'react'
 import { Instances, Instance } from '@react-three/drei'
 import * as THREE from 'three'
 import Building from './Building'
-import StreetLamp from './StreetLamp'
 import Bench from './Bench'
 import TrashCan from './TrashCan'
 import { SUBURB_HOUSES } from '../../content/suburb-houses'
@@ -192,14 +191,12 @@ function streetlamps() {
     lamps.push({ position: [side * 3, 0, z], rotationY: side > 0 ? -Math.PI / 2 : Math.PI / 2 })
   }
   return lamps.map((l, i) => (
-    <StreetLamp
+    <Building
       key={`lamp-${i}`}
       model="/assets/models/light-square.glb"
       position={l.position}
       scale={5}
       rotationY={l.rotationY}
-      lampHeight={2.8}
-      flickerSeed={(i * 0.37) % 1}
     />
   ))
 }

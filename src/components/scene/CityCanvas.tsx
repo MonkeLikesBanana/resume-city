@@ -1,41 +1,36 @@
-import { Suspense, useState, useRef, type ReactNode } from 'react'
+import { Suspense, useState, useEffect, type ReactNode } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { PerformanceMonitor } from '@react-three/drei'
-import type * as THREE from 'three'
 import { PALETTE, CAR_EYE_HEIGHT, DEFAULT_FOV } from '../../config'
 import useIsMobile from '../../hooks/useIsMobile'
 import Sky from './Sky'
 import Ground from './Ground'
 import CameraRig from './CameraRig'
-import DayNightCycle from './DayNightCycle'
 import Clouds from './Clouds'
 import HideCanvasFromAT from './HideCanvasFromAT'
 import WebGLContextLossWatcher from './WebGLContextLossWatcher'
 
 interface CityCanvasProps {
   children?: ReactNode
+  onReady: (ready: boolean) => void
 }
 
-/** PRD §7.2/§9/§11/§12 — Canvas root: perspective camera (§7.2 — not
- * orthographic), lighting, fog, and the adaptive quality ladder. Shadow map
- * resolution is capped lower on mobile from the start (§11 — "not just as a
- * PerformanceMonitor reaction"); PerformanceMonitor then downgrades further
- * — shadows off, then dpr to 1 — if FPS stays low on ANY device. This is a
- * one-way ratchet: it only ever downgrades, never re-enables mid-session,
- * to avoid visibly flickering quality up and down. PRD v4 §7.4 — sun/
- * hemisphere color+intensity are no longer fixed props: DayNightCycle
- * mutates them via refs every frame, so the initial values here are just a
- * starting pose (overwritten before the first visible frame). */
-export default function CityCanvas({ children }: CityCanvasProps) {
+function SceneReady({ onReady }: Pick<CityCanvasProps, 'onReady'>) {
+  useEffect(() => {
+    onReady(true)
+    return () => onReady(false)
+  }, [onReady])
+  return null
+}
+
+export default function CityCanvas({ children, onReady }: CityCanvasProps) {
   const isMobile = useIsMobile()
   const [shadowsEnabled, setShadowsEnabled] = useState(true)
   const [dpr, setDpr] = useState<[number, number]>(isMobile ? [1, 1.5] : [1, 2])
-  const sunRef = useRef<THREE.DirectionalLight>(null)
-  const hemisphereRef = useRef<THREE.HemisphereLight>(null)
 
   return (
     <Canvas
-      shadows={shadowsEnabled}
+      shadows={shadowsEnabled ? 'percentage' : false}
       dpr={dpr}
       camera={{
         // Placeholder pose only — CameraRig snaps this to the Plaza curb on
@@ -56,9 +51,9 @@ export default function CityCanvas({ children }: CityCanvasProps) {
       <color attach="background" args={[PALETTE.skyBottom]} />
       <fog attach="fog" args={[PALETTE.skyBottom, 40, 220]} />
 
-      <hemisphereLight ref={hemisphereRef} args={['#fff6e8', PALETTE.evergreen, 0.55]} />
+      <hemisphereLight args={['#fff6e8', PALETTE.evergreen, 0.85]} />
       <directionalLight
-        ref={sunRef}
+        color="#fff6e8"
         position={[30, 40, 20]}
         intensity={1.7}
         castShadow={shadowsEnabled}
@@ -69,16 +64,16 @@ export default function CityCanvas({ children }: CityCanvasProps) {
         shadow-camera-bottom={-40}
         shadow-camera-far={220}
       />
-      <DayNightCycle sunRef={sunRef} hemisphereRef={hemisphereRef} />
 
       <Sky />
-      <Clouds />
       <HideCanvasFromAT />
       <WebGLContextLossWatcher />
       <CameraRig />
       <Suspense fallback={null}>
+        <Clouds />
         <Ground />
         {children}
+        <SceneReady onReady={onReady} />
       </Suspense>
     </Canvas>
   )

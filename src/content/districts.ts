@@ -7,6 +7,10 @@ export interface DistrictMeta {
 }
 
 export const DISTRICTS: Record<District, DistrictMeta> = {
+  plaza: {
+    id: 'plaza',
+    name: DISTRICT_NAMES.plaza,
+  },
   foundry: {
     id: 'foundry',
     name: DISTRICT_NAMES.foundry,
@@ -14,9 +18,5 @@ export const DISTRICTS: Record<District, DistrictMeta> = {
   lakeside: {
     id: 'lakeside',
     name: DISTRICT_NAMES.lakeside,
-  },
-  plaza: {
-    id: 'plaza',
-    name: DISTRICT_NAMES.plaza,
   },
 }

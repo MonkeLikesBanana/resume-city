@@ -2,22 +2,30 @@ import { useEffect } from 'react'
 import { useThree } from '@react-three/fiber'
 import useCityStore from '../../store/useCityStore'
 
-/** PRD §10/§6 — "listen for the webglcontextlost event on the canvas."
- * Support existing at load time isn't the only failure mode — a GPU driver
- * crash mid-session fires this event too. Either way, the fallback is the
- * same: fall back to NoWebGLFallback rather than leave a dead black canvas. */
+const RESTORE_TIMEOUT_MS = 5_000
+
 export default function WebGLContextLossWatcher() {
   const gl = useThree((s) => s.gl)
   const setWebglSupported = useCityStore((s) => s.setWebglSupported)
 
   useEffect(() => {
     const canvas = gl.domElement
-    const onLost = (e: Event) => {
-      e.preventDefault()
-      setWebglSupported(false)
+    let timeout: number | undefined
+
+    const onRestored = () => window.clearTimeout(timeout)
+    const onLost = (event: Event) => {
+      event.preventDefault()
+      onRestored()
+      timeout = window.setTimeout(() => setWebglSupported(false), RESTORE_TIMEOUT_MS)
     }
-    canvas.addEventListener('webglcontextlost', onLost, false)
-    return () => canvas.removeEventListener('webglcontextlost', onLost)
+
+    canvas.addEventListener('webglcontextlost', onLost)
+    canvas.addEventListener('webglcontextrestored', onRestored)
+    return () => {
+      onRestored()
+      canvas.removeEventListener('webglcontextlost', onLost)
+      canvas.removeEventListener('webglcontextrestored', onRestored)
+    }
   }, [gl, setWebglSupported])
 
   return null

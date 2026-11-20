@@ -1,3 +1,4 @@
+import { CONTACT, PROFILE_NAME, PROFILE_ROLE } from './profile'
 import type { Attraction } from '../types/attraction'
 import { nearestPositionOnArm } from '../lib/roadGraph'
 
@@ -17,8 +18,9 @@ export const ATTRACTIONS: Attraction[] = [
   {
     id: 'welcome-plaza',
     district: 'plaza',
-    name: 'Welcome Plaza',
-    subtitle: 'Aarav Vaswani',
+    name: PROFILE_NAME,
+    placeName: 'Welcome Plaza',
+    subtitle: PROFILE_ROLE,
     position: [-6, 0, 4], // near the junction/gate corner — the tilt aims here
     // MUST be explicit: the Plaza's parked position is the far end of its own
     // short spur arm (PRD v3 §7.1), not "nearest point on my own arm to my
@@ -27,8 +29,9 @@ export const ATTRACTIONS: Attraction[] = [
     curb: { arm: 'plaza', t: 1 },
     height: 6.5, // the welcome arch (PRD v2 §4.3): 2 columns + beam + cap
     description:
-      "Aarav is a driven student interested in robotics, electronics, and business. Throughout his two years in high school, he's been part of the Saints Robotics FRC team, mentored FLL teams, taken the most rigorous academic courseload available to him, and competed in business events. His ultimate goal is to have a positive impact on the world through innovation and entrepreneurship.",
-    facts: ['Bellevue, Washington', '(425) 531-2273', 'aarav.vaswani@gmail.com'],
+      'I am pursuing the IB Diploma at Interlake High School and have a 4.0 GPA. As vice president of Saints Robotics I help lead a team of 80+ members with a $40,000 annual budget, and I co-founded NEEMO to develop RFID tracking for robotics workshops.',
+    facts: ['Bellevue, Washington'],
+    links: CONTACT,
     tags: [],
     accentColor: 'foundry',
   },
@@ -40,8 +43,9 @@ export const ATTRACTIONS: Attraction[] = [
   {
     id: 'robotics-workshop',
     district: 'foundry',
-    name: 'Robotics Workshop',
-    subtitle: 'Saints Robotics — FRC Team',
+    name: 'Saints Robotics (FRC)',
+    placeName: 'Robotics Workshop',
+    subtitle: '',
     position: [-16, 0, -9],
     scale: 2.1,
     rotationY: 0,
@@ -55,16 +59,11 @@ export const ATTRACTIONS: Attraction[] = [
     curb: nearestPositionOnArm('foundry', [-21, 0, 0]),
     timeline: [
       {
+        // TODO(fact): Confirm Saints Robotics VP start year
         role: 'Vice President',
         dateRange: '2026–Present',
         description:
           'Co-leading and managing an 80+ member team with a $40,000 annual budget across mechanical, programming, and outreach sub-teams. Supporting strategic planning and team operations for the current competition season.',
-      },
-      {
-        role: 'Control Systems Officer — Electrical',
-        dateRange: '2025–2026',
-        description:
-          "Responsible for the design, wiring, and maintenance of the robot's electrical control systems. Taught and managed 10+ members, working with one co-officer and other sub-teams.",
       },
       {
         role: 'Technician — Competition',
@@ -72,14 +71,22 @@ export const ATTRACTIONS: Attraction[] = [
         description:
           'Quick thinking and decision-making to fix the robot between matches — both mechanical and electrical — while managing team resources in real time.',
       },
+      {
+        role: 'Control Systems Officer — Electrical',
+        dateRange: '2025–2026',
+        description:
+          "Responsible for the design, wiring, and maintenance of the robot's electrical control systems. Taught and managed 10+ members, working with one co-officer and other sub-teams.",
+      },
     ],
-    tags: ['Electronics', 'Leadership', 'Team Management', 'Control Systems', 'Budget ($40k)'],
+    tags: ['Electronics', 'Leadership', 'Team Management', 'Control Systems'],
     accentColor: 'foundry',
   },
   {
     id: 'neemo-hq',
     district: 'foundry',
-    name: 'NEEMO HQ',
+    name: 'NEEMO',
+    placeName: 'NEEMO HQ',
+    // TODO(fact): NEEMO start date
     subtitle: 'Co-Founder',
     position: [-26, 0, 9],
     scale: 3,
@@ -94,7 +101,8 @@ export const ATTRACTIONS: Attraction[] = [
   {
     id: 'academic-hall',
     district: 'foundry',
-    name: 'Interlake High School — Academic Hall',
+    name: 'Interlake High School',
+    placeName: 'Interlake High School — Academic Hall',
     subtitle: 'IB Diploma Candidate, 2025–Present',
     position: [-36, 0, -9],
     scale: 3.4,
@@ -106,13 +114,14 @@ export const ATTRACTIONS: Attraction[] = [
       'AP Exams: World History (5), Calculus AB (5), Physics C: Mechanics (5), United States History (5)',
       'IB Higher Level: Physics, Business Management, Analysis & Approaches',
     ],
-    tags: ['Academics', 'IB Diploma', '4.0 GPA'],
+    tags: ['Academics', 'IB Diploma'],
     accentColor: 'foundry',
   },
   {
     id: 'makers-club',
     district: 'foundry',
-    name: 'Makers Club Workshop (3D Printing)',
+    name: 'Makers Club',
+    placeName: 'Makers Club Workshop (3D Printing)',
     subtitle: 'Co-Founder & Officer, 2025–Present',
     position: [-46, 0, 9],
     scale: 3,
@@ -127,7 +136,8 @@ export const ATTRACTIONS: Attraction[] = [
   {
     id: 'deca-center',
     district: 'foundry',
-    name: 'DECA Business Center',
+    name: 'DECA',
+    placeName: 'DECA Business Center',
     subtitle: 'Competitor, 2025–Present',
     position: [-58, 0, -9],
     scale: 3,
@@ -141,7 +151,8 @@ export const ATTRACTIONS: Attraction[] = [
   {
     id: 'fll-center',
     district: 'foundry',
-    name: 'FLL Mentorship Center',
+    name: 'FIRST LEGO League',
+    placeName: 'FLL Mentorship Center',
     subtitle: 'Mentor, 2024–2026',
     position: [-66, 0, 9],
     scale: 3,
@@ -164,13 +175,13 @@ export const ATTRACTIONS: Attraction[] = [
     id: 'cafe',
     district: 'lakeside',
     name: 'The Café',
-    subtitle: 'Coffee, sushi, Indian food — and cooking (self-rated: not great at it)',
+    subtitle: '',
     position: [-9, 0, 16],
     scale: 3,
     rotationY: -Math.PI / 2, // west-side lot, faces east toward the street
     model: '/assets/models/cafe.glb',
     height: 2.5,
-    description: "He runs on coffee, and he's always down for sushi or Indian food. He enjoys cooking too — even if the results are hit or miss.",
+    description: 'Coffee, sushi, Indian food, and cooking.',
     tags: [],
     accentColor: 'lakeside',
   },
@@ -178,13 +189,13 @@ export const ATTRACTIONS: Attraction[] = [
     id: 'arcade',
     district: 'lakeside',
     name: 'Arcade / Game Room',
-    subtitle: 'Video games — favorite is Minecraft',
+    subtitle: '',
     position: [9, 0, 26],
     scale: 3,
     rotationY: Math.PI / 2, // east-side lot, faces west toward the street
     model: '/assets/models/arcade.glb',
     height: 3.4,
-    description: "He's been playing video games for as long as he can remember — Minecraft is the all-time favorite.",
+    description: 'Video games, especially Minecraft.',
     tags: [],
     accentColor: 'lakeside',
   },
@@ -192,13 +203,13 @@ export const ATTRACTIONS: Attraction[] = [
     id: 'sports-field',
     district: 'lakeside',
     name: 'Sports Field',
-    subtitle: 'Plays a bit of everything, recreationally',
+    subtitle: '',
     position: [-9, 0, 38],
     scale: 3,
     rotationY: -Math.PI / 2,
     model: '/assets/models/sports-field.glb',
     height: 3.1,
-    description: "He's into pretty much any sport — not amazing at any one of them, but always up for playing.",
+    description: 'Plays a variety of sports recreationally.',
     tags: [],
     accentColor: 'lakeside',
   },
@@ -206,25 +217,13 @@ export const ATTRACTIONS: Attraction[] = [
     id: 'open-road',
     district: 'lakeside',
     name: 'The Open Road',
-    subtitle: 'Driving',
+    subtitle: '',
     position: [9, 0, 48],
     scale: 3,
     rotationY: Math.PI / 2,
     model: '/assets/models/open-road.glb',
     height: 3.7,
-    description: 'He loves driving — any excuse to be behind the wheel.',
-    tags: [],
-    accentColor: 'lakeside',
-  },
-  {
-    id: 'coming-soon',
-    district: 'lakeside',
-    name: 'More Coming Soon',
-    subtitle: 'An empty lot',
-    position: [-9, 0, 58],
-    scale: 2.5,
-    height: 2,
-    description: "This lot's still under construction — more interests are on the way. See PRD §16 for exactly how a new stop gets built here.",
+    description: 'Enjoys driving.',
     tags: [],
     accentColor: 'lakeside',
   },

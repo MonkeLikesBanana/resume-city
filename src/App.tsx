@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Routes, Route, useParams, useNavigate } from 'react-router-dom'
 import CityCanvas from './components/scene/CityCanvas'
 import CanvasErrorBoundary from './components/scene/CanvasErrorBoundary'
@@ -13,7 +13,8 @@ import Header from './components/layout/Header'
 import NoWebGLFallback from './components/ui/NoWebGLFallback'
 import useCityStore from './store/useCityStore'
 import { getAttraction } from './content/attractions'
-import { CITY_NAME, HOME_ATTRACTION_ID } from './config'
+import { PROFILE_NAME } from './content/profile'
+import { HOME_ATTRACTION_ID } from './config'
 
 /** PRD §3/§10 — the URL is the source of truth for "which attraction is
  * active"; this is the only place that writes activeAttractionId on a real
@@ -33,7 +34,8 @@ function RouteSync() {
   useEffect(() => {
     const attraction = getAttraction(id ?? HOME_ATTRACTION_ID)
     setActive(attraction?.id ?? HOME_ATTRACTION_ID)
-    document.title = attraction ? `${attraction.name} — ${CITY_NAME}` : `${CITY_NAME} — Aarav Vaswani`
+    const stopName = attraction?.district === 'plaza' ? attraction.placeName : attraction?.name
+    document.title = id && stopName ? `${stopName} — ${PROFILE_NAME}` : `${PROFILE_NAME} — Résumé`
 
     if (isFirstRun.current) {
       isFirstRun.current = false
@@ -73,38 +75,36 @@ function Experience() {
   const webglSupported = useCityStore((s) => s.webglSupported)
   const hasEntered = useCityStore((s) => s.hasEntered)
 
-  if (!webglSupported) return <NoWebGLFallback />
+  const [sceneReady, setSceneReady] = useState(false)
 
   return (
-    <div className="relative h-full w-full">
+    <>
       <RouteSync />
-      <EscapeToOverview />
-      {/* inert while the welcome overlay covers the screen: without this, a
-          keyboard user tabs through a dozen visually-hidden hotspot buttons
-          before ever reaching "Enter the City" — inert removes the whole
-          subtree from both the tab order and the accessibility tree until
-          it's actually visible. */}
-      <div inert={!hasEntered}>
-        {/* isolate: drei's <Html> markers set very high inline z-indices for
-            depth-sorting between themselves; without a stacking context here
-            those values escape this wrapper and paint over siblings below
-            (Welcome overlay, InfoPanel) regardless of this div's own z-index. */}
-        <div className="absolute inset-0 isolate">
-          <CanvasErrorBoundary>
-            <CityCanvas>
-              <City />
-            </CityCanvas>
-          </CanvasErrorBoundary>
-        </div>
-        <Breadcrumb />
-        <AccessibleNav />
-        <Header />
-        <InfoPanel />
-        <TourBar />
-        <ExploreScrubBar />
-      </div>
-      <WelcomeOverlay />
-    </div>
+      {webglSupported ? (
+        <CanvasErrorBoundary>
+          <div className="relative h-full w-full">
+            <h1 className="sr-only">{PROFILE_NAME}</h1>
+            <EscapeToOverview />
+            <div inert={!hasEntered}>
+              <div className="absolute inset-0">
+                <CityCanvas onReady={setSceneReady}>
+                  <City />
+                </CityCanvas>
+              </div>
+              <Breadcrumb />
+              <AccessibleNav />
+              <Header />
+              <InfoPanel />
+              <TourBar />
+              <ExploreScrubBar />
+            </div>
+            <WelcomeOverlay sceneReady={sceneReady} />
+          </div>
+        </CanvasErrorBoundary>
+      ) : (
+        <NoWebGLFallback />
+      )}
+    </>
   )
 }
 

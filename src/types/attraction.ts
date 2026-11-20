@@ -26,6 +26,7 @@ export interface Attraction {
   id: string
   district: District
   name: string
+  placeName?: string
   subtitle: string
   /** world placement, y is almost always 0 */
   position: Vec3
@@ -49,6 +50,7 @@ export interface Attraction {
   description?: string
   /** freeform bullets (GPA, AP scores, etc.) */
   facts?: string[]
+  links?: { label: string; href: string }[]
   tags: string[]
   accentColor: 'foundry' | 'lakeside'
 }

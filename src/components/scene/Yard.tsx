@@ -66,14 +66,7 @@ function yardsAndFences() {
   const lawns: Lawn[] = []
   const panels: FencePanel[] = []
 
-  // The five real Lakeside attractions that are actual houses (cafe, arcade,
-  // sports-field, open-road — `coming-soon` has no model, it's meant to
-  // read as a bare undeveloped lot) get the same yard treatment as the
-  // generated filler houses — without this, "The Open Road"/"Sports Field"
-  // still showed bare ground right around the building itself even after
-  // the filler houses on either side had fenced lawns (confirmed via
-  // screenshot: the named attraction in the middle of the frame was the
-  // one visibly bare spot).
+  // Lakeside stops share the yard treatment used by the surrounding houses.
   const houses = [...SUBURB_HOUSES, ...ATTRACTIONS.filter((a) => a.district === 'lakeside' && a.model).map((a) => ({ position: a.position }))]
 
   for (const house of houses) {

@@ -1,24 +1,6 @@
 import { Cloud, Clouds as CloudGroup } from '@react-three/drei'
 import { MeshBasicMaterial } from 'three'
 
-// PRD v7.0 round 8 — round 3's MeshBasicMaterial swap stopped the scene's
-// directional/hemisphere LIGHTS from darkening the clouds, but missed a
-// second, independent darkening path: DayNightCycle.tsx sets
-// `scene.fog.color` to the sky's current horizon color every frame
-// (`skyBottom` in dayNight.ts, which ranges from a warm dusk orange down to
-// a dark navy `#1a2744` at night), and `MeshBasicMaterial.fog` defaults to
-// `true` in three.js — so distant clouds still blended toward that dark
-// fog color regardless of the lighting fix, reproducing a fainter version
-// of the same "dark shape" symptom (confirmed: a scrub sweep after the
-// round-3 fix still showed two small dark blobs near the treeline at a
-// dusk-transitioning sky, at a position/scale matching two of the three
-// PLACEMENTS entries below). A plain subclass with `this.fog = false` set
-// in its own constructor, passed as the `material` prop, survives drei's
-// own `class extends material` wrapping (its constructor's `super()` call
-// runs this one), removing the fog contribution the same way the round-3
-// fix removed the lighting one — clouds are a flat, distance-independent
-// atmospheric decoration, not something that should fade toward the fog
-// color like fog-shrouded geometry would.
 class UnlitCloudMaterial extends MeshBasicMaterial {
   constructor(parameters?: ConstructorParameters<typeof MeshBasicMaterial>[0]) {
     super(parameters)
@@ -26,65 +8,8 @@ class UnlitCloudMaterial extends MeshBasicMaterial {
   }
 }
 
-// PRD v4 §4.4/§7.4 — a handful of drifting clouds using drei's built-in
-// procedural <Cloud> (already ships with @react-three/drei, §4.5/§6).
-// Positions are hand-placed rather than randomized: only a handful of
-// clouds exist, and this keeps them spread out over the whole city rather
-// than risking a random cluster.
-//
-// PRD v7.0 round 2 — the original comment here claimed "no texture/model
-// download at all," which turned out to be false and never actually
-// verified: drei's <Cloud> defaults its `texture` prop to a hardcoded
-// THIRD-PARTY CDN URL (rawcdn.githack.com), fetched at runtime for every
-// visitor. Confirmed the failure mode directly: when that fetch fails
-// (network hiccup, CDN outage, a firewall/ad-blocker blocking a
-// third-party host — this sandbox's own network reproduced it on demand),
-// three.js's TextureLoader throws, React has no error boundary around the
-// Canvas to catch it, and the ENTIRE app unmounts to a blank white page —
-// not just the clouds. `cloud-puff.png` (public/assets/) is a small
-// self-generated soft radial-puff sprite (Python/PIL, no external source)
-// that removes the dependency entirely — same-origin, ships in the build,
-// works offline. `texture` is a prop of the <Clouds> group wrapper, not
-// individual <Cloud> elements (confirmed against drei's own Cloud.d.ts —
-// CloudProps has no `texture` field, only CloudsProps does), so it's set
-// once below rather than per-placement. `CityCanvas.tsx` also gained an
-// error boundary around the Canvas as defense-in-depth, so a future
-// failure anywhere in the 3D scene degrades to a message instead of a
-// silent blank page.
 const CLOUD_TEXTURE = '/assets/cloud-puff.png'
-//
-// Kept deliberately low-poly: drei's default segment/volume settings
-// generate enough procedural geometry per cloud to measurably block the
-// main thread on mount (found via Lighthouse — Total Blocking Time jumped
-// from ~190ms to ~980ms with the defaults, dropping back under 100ms with
-// this reduced version). Three sparse, simple clouds read as "the sky has
-// motion" just as well as five dense ones for a background atmosphere
-// effect that's never the subject of a shot.
-//
-// PRD v7.0 round 3 — this is the real identity of the "dark curved
-// tentacle shapes hanging in the sky" the user spotted in a screenshot
-// (round 7's original /goal): drei's <Cloud> defaults to a LIT material
-// (MeshLambertMaterial, confirmed by reading Cloud.js directly), so every
-// puff is shaded by the scene's actual hemisphere/directional light like
-// any other object in the city. That's correct behavior for a building,
-// wrong for a stylized background cloud — as the day/night cycle dims
-// toward dusk/night, the clouds dim right along with it, and a
-// dark-grey-to-black Lambert-shaded blob, seen edge-on with a few
-// overlapping puffs, silhouettes into exactly the "weird dark tentacle"
-// shape reported. Confirmed by reproducing it: scrubbing through dusk
-// lighting reliably reproduces two dark hanging shapes over the road, not
-// an occasional glitch. Fixed by swapping in an unlit MeshBasicMaterial —
-// clouds are a flat atmospheric decoration, not a physically-lit object,
-// so they should read the same soft off-white at any time of day, the way
-// real clouds still read as bright against a darkening sky right up until
-// full night (they're never the darkest thing in frame in reality either).
-//
-// PRD v4 polish round 4 — raised from y=55-60 to y=145-155: the mountain
-// range's tallest peaks reach apex y≈106 (Ground.tsx's Mountains, height up
-// to 110), so clouds sitting at 55-60 floated *inside* the mountain
-// silhouette rather than above it — at a distance, a flat grey-white puff
-// parked next to/below a peak reads as smoke coming off the mountain, not
-// a cloud in open sky. Well clear of every peak now.
+
 const PLACEMENTS: Array<{ position: [number, number, number]; scale: number; speed: number; opacity: number }> = [
   { position: [-40, 145, -20], scale: 8, speed: 0.15, opacity: 0.7 },
   { position: [20, 155, 40], scale: 9, speed: 0.1, opacity: 0.65 },

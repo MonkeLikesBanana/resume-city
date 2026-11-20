@@ -8,9 +8,8 @@ import useReducedMotion from '../../hooks/useReducedMotion'
 import { ACCENT_FILL, ACCENT_TEXT } from '../../config'
 import DownloadResumeButton from './DownloadResumeButton'
 
-// PRD §5.1 — "Skills are not their own building — they render as a
-// persistent tag strip pinned to the bottom of every Foundry District panel."
-const FOUNDRY_SKILLS = ['Electronics', 'CAD / Onshape', '3D Printing / Additive Mfg.']
+import AttractionContent from './AttractionContent'
+import ArrowIcon from './ArrowIcon'
 
 /** PRD §8/§9 — plain DOM overlay, NOT an in-canvas <Html> panel: real,
  * independent HTML so screen readers/crawlers get the actual resume content
@@ -40,19 +39,20 @@ export default function InfoPanel() {
           <div className="flex items-start justify-between gap-3">
             <div>
               <p className="text-xs font-semibold tracking-wide uppercase" style={{ color: ACCENT_TEXT[attraction.accentColor] }}>
-                {DISTRICTS[attraction.district].name}
+                {attraction.placeName ?? DISTRICTS[attraction.district].name}
               </p>
-              <h2 className="font-[Fredoka] text-xl font-semibold text-[var(--color-ink)]">{attraction.name}</h2>
+              <h2 className="text-xl font-semibold text-[var(--color-ink)]">{attraction.name}</h2>
               {attraction.subtitle && <p className="mt-0.5 text-sm text-[var(--color-ink)]/70">{attraction.subtitle}</p>}
             </div>
-            <button
-              type="button"
-              onClick={() => navigate('/')}
-              aria-label="Back to the city"
-              className="shrink-0 rounded-full border border-[var(--color-ink)]/20 px-3 py-1.5 text-xs font-medium text-[var(--color-ink)] hover:bg-[var(--color-ink)]/5 cursor-pointer"
-            >
-              ← Back to city
-            </button>
+            {attraction.district !== 'plaza' && (
+              <button
+                type="button"
+                onClick={() => navigate('/')}
+                className="shrink-0 rounded-full border border-[var(--color-ink)]/20 px-3 py-1.5 text-xs font-medium text-[var(--color-ink)] hover:bg-[var(--color-ink)]/5 cursor-pointer"
+              >
+                <ArrowIcon direction="left" /> Overview
+              </button>
+            )}
           </div>
 
           {/* PRD v7.0 round 4 — mobile-only: TourBar's Prev/Next and
@@ -72,7 +72,7 @@ export default function InfoPanel() {
                 aria-label="Previous stop"
                 className="rounded-full border border-[var(--color-ink)]/15 px-2.5 py-1 text-xs font-medium text-[var(--color-ink)] disabled:pointer-events-none disabled:opacity-30"
               >
-                ← Prev
+                <ArrowIcon direction="left" /> Prev
               </button>
               <span className="text-xs text-[var(--color-ink)]/60 tabular-nums">
                 {tourIndex + 1} / {TOUR_ORDER.length}
@@ -85,69 +85,13 @@ export default function InfoPanel() {
                 className="rounded-full px-2.5 py-1 text-xs font-medium text-[var(--color-ink)] disabled:pointer-events-none disabled:opacity-30"
                 style={{ background: ACCENT_FILL[attraction.accentColor] }}
               >
-                Next →
+                Next <ArrowIcon direction="right" />
               </button>
               <DownloadResumeButton className="ml-auto" />
             </div>
           )}
 
-          {attraction.description && <p className="mt-4 text-sm leading-relaxed text-[var(--color-ink)]">{attraction.description}</p>}
-
-          {attraction.timeline && (
-            <ol className="mt-4 space-y-3 border-l-2 border-[var(--color-ink)]/15 pl-4">
-              {attraction.timeline.map((entry) => (
-                <li key={entry.role} className="relative">
-                  <span
-                    className="absolute -left-[21px] top-1.5 h-2.5 w-2.5 rounded-full border-2 border-[var(--color-ground)]"
-                    style={{ background: ACCENT_FILL[attraction.accentColor] }}
-                  />
-                  <p className="text-[11px] font-medium tracking-wide text-[var(--color-ink)]/70 uppercase">{entry.dateRange}</p>
-                  <p className="text-sm font-semibold text-[var(--color-ink)]">{entry.role}</p>
-                  <p className="mt-0.5 text-sm leading-relaxed text-[var(--color-ink)]/85">{entry.description}</p>
-                </li>
-              ))}
-            </ol>
-          )}
-
-          {attraction.facts && (
-            <ul className="mt-4 space-y-1.5 text-sm text-[var(--color-ink)]/90">
-              {attraction.facts.map((fact) => (
-                <li key={fact} className="flex gap-2">
-                  <span aria-hidden="true" style={{ color: ACCENT_TEXT[attraction.accentColor] }}>
-                    ·
-                  </span>
-                  {fact}
-                </li>
-              ))}
-            </ul>
-          )}
-
-          {attraction.tags.length > 0 && (
-            <div className="mt-4 flex flex-wrap gap-1.5">
-              {attraction.tags.map((tag) => (
-                <span key={tag} className="rounded-full border border-[var(--color-ink)]/15 px-2.5 py-1 text-xs text-[var(--color-ink)]/80">
-                  {tag}
-                </span>
-              ))}
-            </div>
-          )}
-
-          {attraction.district === 'foundry' && (
-            <div className="mt-5 border-t border-[var(--color-ink)]/10 pt-3">
-              <p className="text-[11px] font-medium tracking-wide text-[var(--color-ink)]/70 uppercase">Skills</p>
-              <div className="mt-1.5 flex flex-wrap gap-1.5">
-                {FOUNDRY_SKILLS.map((skill) => (
-                  <span
-                    key={skill}
-                    className="rounded-full px-2.5 py-1 text-xs font-medium text-[var(--color-ink)]"
-                    style={{ background: ACCENT_FILL.foundry }}
-                  >
-                    {skill}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
+          <AttractionContent attraction={attraction} />
         </motion.aside>
       )}
     </AnimatePresence>

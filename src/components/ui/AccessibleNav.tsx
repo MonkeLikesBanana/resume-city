@@ -6,26 +6,29 @@ import type { District } from '../../types/attraction'
 
 const ORDER: District[] = ['plaza', 'foundry', 'lakeside']
 
-function StopsList() {
+function StopsList({ inline = false }: { inline?: boolean }) {
   return (
-    <nav aria-label="All stops in the city" className="max-h-[70vh] w-64 overflow-y-auto rounded-xl bg-[var(--color-ground)]/97 p-3 shadow-xl">
+    <nav aria-label="All stops in the city" className={inline ? "mt-6 text-sm" : "max-h-[70vh] w-64 overflow-y-auto rounded-xl bg-[var(--color-ground)]/97 p-3 shadow-xl"}>
       {ORDER.map((districtId) => (
         <div key={districtId} className="mb-3 last:mb-0">
           <p className="px-1 text-[11px] font-semibold tracking-wide text-[var(--color-ink)]/70 uppercase">{DISTRICTS[districtId].name}</p>
           <ul>
             {ATTRACTIONS.filter((a) => a.district === districtId).map((a) => (
               <li key={a.id}>
-                <Link to={`/${a.district}/${a.id}`} className="block rounded-lg px-2 py-1.5 text-[var(--color-ink)] hover:bg-[var(--color-ink)]/5">
-                  {a.name}
-                </Link>
+                {inline ? (
+                  <a className="block py-1 underline underline-offset-2" href={`#${a.id}`}>
+                    {a.district === 'plaza' ? 'Welcome Plaza' : a.name}
+                  </a>
+                ) : (
+                  <Link to={a.district === 'plaza' ? '/' : `/${a.district}/${a.id}`} className="block rounded-lg px-2 py-1.5 text-[var(--color-ink)] hover:bg-[var(--color-ink)]/5">
+                    {a.district === 'plaza' ? 'Overview' : a.name}
+                  </Link>
+                )}
               </li>
             ))}
           </ul>
         </div>
       ))}
-      <Link to="/" className="mt-1 block rounded-lg px-2 py-1.5 font-medium text-[var(--color-ink)] hover:bg-[var(--color-ink)]/5">
-        ← Back to Welcome Plaza
-      </Link>
     </nav>
   )
 }
@@ -45,7 +48,7 @@ interface AccessibleNavProps {
 export default function AccessibleNav({ forceOpen = false }: AccessibleNavProps) {
   const detailsRef = useRef<HTMLDetailsElement>(null)
 
-  if (forceOpen) return <StopsList />
+  if (forceOpen) return <StopsList inline />
 
   return (
     <details

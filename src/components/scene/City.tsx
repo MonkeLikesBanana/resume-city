@@ -1,5 +1,5 @@
 import { ATTRACTIONS } from '../../content/attractions'
-import Hotspot from './Hotspot'
+import Building from './Building'
 import FillerBuildings from './FillerBuildings'
 import RoadNetwork from './RoadNetwork'
 
@@ -8,8 +8,8 @@ import RoadNetwork from './RoadNetwork'
 export default function City() {
   return (
     <group>
-      {ATTRACTIONS.map((attraction) => (
-        <Hotspot key={attraction.id} attraction={attraction} />
+      {ATTRACTIONS.map(({ id, model, position, rotationY, scale }) => model && (
+        <Building key={id} model={model} position={position} rotationY={rotationY} scale={scale} />
       ))}
       <FillerBuildings />
       <RoadNetwork />
