@@ -1,27 +1,25 @@
-import { useRef } from 'react'
 import { Link } from 'react-router-dom'
-import { ATTRACTIONS } from '../../content/attractions'
+import { attractionsByDistrict } from '../../content/attractions'
 import { DISTRICTS } from '../../content/districts'
-import type { District } from '../../types/attraction'
-
-const ORDER: District[] = ['plaza', 'foundry', 'lakeside']
+import Button from './Button'
+import Chevron from './Chevron'
 
 function StopsList({ inline = false }: { inline?: boolean }) {
+  const districts = Object.values(DISTRICTS).filter(({ id }) => !inline || id !== 'plaza')
+
   return (
-    <nav aria-label="All stops in the city" className={inline ? "mt-6 text-sm" : "max-h-[70vh] w-64 overflow-y-auto rounded-xl bg-[var(--color-ground)]/97 p-3 shadow-xl"}>
-      {ORDER.map((districtId) => (
-        <div key={districtId} className="mb-3 last:mb-0">
-          <p className="px-1 text-[11px] font-semibold tracking-wide text-[var(--color-ink)]/70 uppercase">{DISTRICTS[districtId].name}</p>
+    <nav aria-label="All stops" className={inline ? 'mt-6 text-sm' : 'max-h-[70vh] w-64 overflow-y-auto rounded-xl bg-[var(--color-ground)] p-3 shadow-xl'}>
+      {districts.map((district) => (
+        <div key={district.id} className="mb-3 last:mb-0">
+          <p className="text-xs font-semibold uppercase tracking-wide">{district.name}</p>
           <ul>
-            {ATTRACTIONS.filter((a) => a.district === districtId).map((a) => (
-              <li key={a.id}>
+            {attractionsByDistrict(district.id).map((stop) => (
+              <li key={stop.id}>
                 {inline ? (
-                  <a className="block py-1 underline underline-offset-2" href={`#${a.id}`}>
-                    {a.district === 'plaza' ? 'Welcome Plaza' : a.name}
-                  </a>
+                  <a className="block py-1 underline underline-offset-2" href={`#${stop.id}`}>{stop.name}</a>
                 ) : (
-                  <Link to={a.district === 'plaza' ? '/' : `/${a.district}/${a.id}`} className="block rounded-lg px-2 py-1.5 text-[var(--color-ink)] hover:bg-[var(--color-ink)]/5">
-                    {a.district === 'plaza' ? 'Overview' : a.name}
+                  <Link to={stop.district === 'plaza' ? '/' : `/${stop.district}/${stop.id}`} className="block rounded-lg px-2 py-1.5 hover:bg-[var(--color-ink)]/5">
+                    {stop.district === 'plaza' ? 'Overview' : stop.name}
                   </Link>
                 )}
               </li>
@@ -33,42 +31,19 @@ function StopsList({ inline = false }: { inline?: boolean }) {
   )
 }
 
-interface AccessibleNavProps {
-  /** Used by NoWebGLFallback (§6/§10) — render the list inline, always
-   * expanded, without the fixed-position toggle chrome meant for floating
-   * over the 3D scene. */
-  forceOpen?: boolean
-}
-
-/** PRD §10 — a real, always-present list of every stop, each a real link to
- * its deep-link route. This is NOT a screen-reader-only fallback bolted on
- * at the end: a <canvas> has no semantic content at all, so for a visitor
- * on a screen reader (or a browser where WebGL fails, §6) this list *is*
- * the site. Built alongside routing per §13 Phase 4, not deferred. */
-export default function AccessibleNav({ forceOpen = false }: AccessibleNavProps) {
-  const detailsRef = useRef<HTMLDetailsElement>(null)
-
+export default function AccessibleNav({ forceOpen = false }: { forceOpen?: boolean }) {
   if (forceOpen) return <StopsList inline />
 
   return (
     <details
-      ref={detailsRef}
-      // z-[25]: above InfoPanel's z-20 (with a long attraction list and a
-      // tall InfoPanel both on screen, they can geometrically overlap — found
-      // via testing, a nav link near the bottom of a long "All stops" list
-      // was silently swallowed by the InfoPanel sitting at the same z-index
-      // underneath it), but deliberately still below WelcomeOverlay's z-30
-      // so the "Enter the City" gate can't be bypassed by a same-z-index tie.
-      className="pointer-events-auto fixed top-4 right-4 z-[25] text-sm"
-      // Close the dropdown once a stop is picked — otherwise it sits open,
-      // covering the scene, for the whole drive to the new stop.
-      onClick={(e) => {
-        if ((e.target as HTMLElement).closest('a')) detailsRef.current!.open = false
+      className="group pointer-events-auto fixed top-4 right-4 z-[25] text-sm"
+      onClick={(event) => {
+        if ((event.target as Element).closest('a')) event.currentTarget.open = false
       }}
     >
-      <summary className="cursor-pointer list-none rounded-full bg-[var(--color-ground)]/90 px-3 py-1.5 font-medium text-[var(--color-ink)] shadow-sm select-none">
-        All stops
-      </summary>
+      <Button as="summary" className="ml-auto !flex w-28 list-none select-none [&::-webkit-details-marker]:hidden">
+        All stops <Chevron className="group-open:rotate-180" />
+      </Button>
       <div className="mt-2">
         <StopsList />
       </div>

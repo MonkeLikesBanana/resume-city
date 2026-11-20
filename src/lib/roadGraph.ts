@@ -34,9 +34,7 @@ const ARM_LENGTHS: Record<Arm, number> = {
   plaza: ARM_CURVES.plaza.getLength(),
 }
 
-/** PRD §7.2 — an attraction's default curb point: the nearest point on its
- * OWN district's arm to its `position`. Cheap exhaustive scan, same
- * scale/approach as v2. */
+/** Project the building onto its own road arm to choose the default parking point. */
 export function nearestPositionOnArm(arm: Arm, position: Vec3, samples = 400): RoadPosition {
   const target = new THREE.Vector3(...position)
   const curve = ARM_CURVES[arm]
@@ -57,8 +55,7 @@ function clamp(v: number, min: number, max: number) {
   return Math.min(max, Math.max(min, v))
 }
 
-/** PRD v4 §8 — shared by src/lib/tourCurve.ts and CameraRig.tsx so both
- * resolve an attraction's parking spot identically. */
+/** Share curb resolution between camera parking and tour curve construction. */
 export function curbFor(attraction: Attraction): RoadPosition {
   return attraction.curb ?? nearestPositionOnArm(attraction.district, attraction.position)
 }
@@ -105,19 +102,10 @@ export function joinTripCurves(pieces: TripCurve[]): TripCurve {
   }
 }
 
-// PRD §7.1 — how far, in meters, on either side of the junction the corner
-// gets rounded into a smooth arc instead of a sharp point. This is the fix
-// for the "jerky at the Plaza corner" complaint: a geometrically sharp 90°
-// vertex is jerky no matter how well rotation is damped on top of it (§7.3
-// damps rotation too, for the OTHER source of jerkiness — general per-frame
-// heading noise on straight stretches).
+// Limit the turn radius so the curved segment stays inside the junction.
 const JUNCTION_BLEND_RADIUS = 10
 
-/** Builds the full drivable curve for one trip, from any curb point to any
- * other. Same-arm trips are a single straight sub-range. Cross-arm trips
- * (including any trip to/from the Plaza, since it's modeled as its own arm)
- * get a Catmull-Rom-smoothed corner spliced between two straight run/depart
- * legs — see PRD §7.1. */
+/** Round only the junction turn to keep straight road segments steady. */
 export function buildTripCurve(from: RoadPosition, to: RoadPosition): TripCurve {
   if (from.arm === to.arm) return makeSubCurve(from.arm, from.t, to.t)
 

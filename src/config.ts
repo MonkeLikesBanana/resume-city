@@ -6,9 +6,7 @@ export const DISTRICT_NAMES = {
   plaza: 'Welcome Plaza',
 } as const
 
-/** Pacific NW Tech City palette — PRD §4. Mirrors the Tailwind @theme tokens in
- * globals.css; kept here too because three.js scene code needs real color
- * values, not CSS custom properties. */
+/** Mirror the CSS palette with literal colors for Three.js materials and shaders. */
 export const PALETTE = {
   skyTop: '#B8D4E3',
   skyBottom: '#F0E6D2',
@@ -49,39 +47,23 @@ export const ACCENT_FILL = {
 /** Accent color as TEXT directly on the cream ground color (e.g. the
  * district eyebrow label in InfoPanel). The bright ACCENT_FILL hexes above
  * fail WCAG AA as text on this light a background (~2:1) — these are
- * darkened versions of the same hues that clear 4.5:1 (§10). */
+ * darkened versions of the same hues that clear 4.5:1. */
 export const ACCENT_TEXT = {
   foundry: '#0E6E63',
   lakeside: '#8A4B26',
 } as const
 
-/** PRD v3 §7.7 — every attraction uses DEFAULT_FOV; the Welcome Plaza alone
- * uses the wider HOME_FOV, since it's the one shot that needs to hold both
- * 90°-apart districts in frame at once. CameraRig lerps between the two over
- * the course of a trip (§7.3), the same eased progress that drives position. */
+/** Use a wider Plaza field of view so both roads fit from the home curb. */
 export const DEFAULT_FOV = 55
 export const HOME_FOV = 75
 
-/** PRD v2 §7.2 — fixed camera height above the road surface, every stop, while
- * driving and while parked. Replaces v1's per-building camera positioning. */
 export const CAR_EYE_HEIGHT = 2
 
-/** PRD v2 §7.3 — how far up a building's height the arrival tilt looks (0.6 =
- * roughly two-thirds up the facade). One constant, not a per-building value —
- * that's the whole point of retiring v1's hand-tuned camera overrides. */
+/** Aim up the building by a fraction of its height so arrival framing scales with the facade. */
 export const ARRIVAL_TILT_FRACTION = 0.6
 
-/** PRD v4 §7.2 — a real accelerate/cruise/decelerate velocity profile
- * (src/lib/motion.ts), replacing v3's flat DRIVE_SPEED constant fed through
- * one easeInOutCubic. MAX_SPEED is deliberately much slower than v3's
- * effective ~26 units/sec — at that speed most trips completed in well
- * under a second, too fast to read as anything but a snap no matter how
- * smooth the underlying easing math was. ACCEL also governs the
- * explore-yourself scrub's ramp up/down (§7.5) — the same "feels like one
- * car" constant in both places. */
+/** Share acceleration and speed settings between automatic drives and manual scrubbing. */
 export const MAX_SPEED = 10 // units/sec
 export const ACCEL = 6 // units/sec²
 
-/** PRD v2 §7.4 — the Plaza is the home state (v1's free aerial OVERVIEW_SHOT
- * is retired). This is the id CameraRig drives to for "/" and "back to city". */
 export const HOME_ATTRACTION_ID = 'welcome-plaza'

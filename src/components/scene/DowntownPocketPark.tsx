@@ -3,24 +3,7 @@ import Bench from './Bench'
 import TrashCan from './TrashCan'
 import { PALETTE } from '../../config'
 
-/** PRD v6.0 §1 — "there is still a large amount of open space" specifically
- * meant downtown's back edge: foundry-blocks.ts's filler rows stop at
- * z=±47, Ground.tsx's DOWNTOWN_GROUND paving reaches to z=±56, and
- * Forest.tsx's regions don't start until z<=-54/z>=54 — a real, ~7-unit-deep
- * strip of bare paved nothing the whole length of downtown, on both sides.
- * A real city puts *something* in a leftover strip like that — small green
- * space, a bench, street trees — rather than leaving it as unused pavement.
- * A patch of moss (matching the suburb's grass tone, not downtown's own
- * pavement, so it actually reads as a deliberate green break) plus street
- * trees and a couple of benches, not a full park (there's already a real
- * one in Park.tsx) — this is meant to feel incidental, the way a
- * downtown pocket park between two blocks usually is.
- *
- * X_RANGE kept west of -45: blocks.ts's WEDGE_EXCLUSION_ZONE (x:[-42,-13],
- * z:[8,50]) and Forest.tsx's own far wedge region (x:[-92,-46], z:[54,100])
- * both sit close to this strip's z-band — checked both against this park's
- * actual bounds rather than assumed clear, since that exact kind of
- * unchecked overlap is what caused the z-fighting bug fixed in PRD v5.0. */
+/** Keep the pocket park clear of the adjoining road and sidewalks to avoid overlapping surfaces. */
 const CENTER_Z = 50.5
 const X_RANGE: [number, number] = [-80, -45]
 

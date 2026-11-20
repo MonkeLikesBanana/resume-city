@@ -16,19 +16,7 @@ function mulberry32(seed: number) {
   }
 }
 
-/** PRD v4 §4.3 — a small tree/bush near every house, not just concentrated
- * at the Park (§4.4 in v3) — a real yard has *something* growing in it.
- *
- * PRD v4 polish round 5 — rendered via InstancedBuildings (2 unique models,
- * shared across however many yards exist), not a <Building> per item. That
- * per-item version was fine at the original house count, but round 5's
- * "fill out the map" expansion pushed mobile AND desktop Lighthouse Total
- * Blocking Time up substantially even though the houses themselves were
- * already properly instanced — this was the actual, unnoticed cost:
- * driveways() in RoadNetwork.tsx has the identical pattern and got the
- * same fix, for the same reason. More houses means more yards/driveways
- * 1:1, so anything scaling with house count needs to be instanced too, not
- * just the houses themselves. */
+/** Instance vegetation around the houses so each lot can have landscaping without extra draw calls per plant. */
 function yardGreeneryItems(): FillerBuilding[] {
   const rand = mulberry32(20260914)
   const houses = [

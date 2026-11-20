@@ -2,18 +2,7 @@ import { MAX_SPEED, ACCEL } from '../config'
 
 const MIN_DURATION = 0.35 // seconds — floor for a near-zero-distance hop
 
-/** PRD v4 §7.2 — a real trapezoidal (accelerate/cruise/decelerate) velocity
- * profile, replacing v3's single easeInOutCubic over the whole trip. That
- * eased curve *looked* smooth on paper, but at v3's speed most trips (many
- * stops are 8-20 units apart) completed in well under a second — too fast
- * for the eye to read as anything but a snap, regardless of how smooth the
- * underlying math was. Slower overall, and shaped like an actual car: ramp
- * up, hold a cruising speed, ramp down — not an instant snap to a cruise
- * that's over before it's perceived.
- *
- * If the trip is too short to ever reach MAX_SPEED, it's a triangle profile
- * instead (accelerate to a lower peak, then immediately decelerate) rather
- * than a trapezoid — the standard motion-planning distinction. */
+/** Use a triangular speed profile for trips too short to reach cruising speed. */
 function distanceAtTime(D: number, elapsed: number): number {
   if (D <= 0) return 0
   const dAccelFull = MAX_SPEED ** 2 / (2 * ACCEL)

@@ -1,8 +1,6 @@
 import type { Vec3 } from '../../types/attraction'
 
-/** PRD v6.0 §4 — same reasoning as Bench.tsx: no Kenney pack on disk has a
- * trash can, built from primitives instead. A real city sidewalk has one
- * roughly every block; this fills that specific "no empty space" gap. */
+/** Build bins from primitives to match the scale of the sidewalk furniture. */
 const BODY_COLOR = '#4a5a4a'
 const LID_COLOR = '#3a3a3f'
 

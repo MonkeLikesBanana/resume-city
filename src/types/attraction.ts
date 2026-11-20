@@ -1,14 +1,8 @@
-// PRD §8 — Data Model. Single source of truth for every attraction lives in
-// src/content/attractions.ts; every other part of the app (hotspots, panels,
-// breadcrumb, routes, tour order, accessible nav) is generated from that array.
 
 export type District = 'foundry' | 'lakeside' | 'plaza'
 export type Vec3 = [number, number, number]
 
-// PRD v3 §7.1 — the road is a 3-arm junction (Foundry west, Lakeside south,
-// a short Plaza spur into the home vantage), not one linear path. Arm and
-// District are the same union deliberately — every attraction's own district
-// is also the name of the arm its curb point defaults onto (src/lib/roadGraph.ts).
+// Each district has a corresponding road arm for parking.
 export type Arm = District
 export interface RoadPosition {
   arm: Arm
@@ -30,14 +24,9 @@ export interface Attraction {
   subtitle: string
   /** world placement, y is almost always 0 */
   position: Vec3
-  /** meters, post-scale. Drives the arrival tilt angle (PRD v2 §7.3) —
-   * replaces v1's footprint-based camera-distance formula. */
+  /** Model height in meters after scaling. Used to frame the stop on arrival. */
   height: number
-  /** optional override: where the car parks. Default: nearest point on this
-   * attraction's own district's arm to `position` (PRD v3 §7.2). Only set
-   * this if the automatic nearest-point pick looks wrong — the Welcome
-   * Plaza's `curb` MUST be set explicitly (its `position` sits near the
-   * junction for tilt-target purposes, not out at the parked vantage point). */
+  /** Override the nearest point on the district road when a stop needs a specific view. */
   curb?: RoadPosition
   rotationY?: number
   scale?: number
@@ -55,8 +44,7 @@ export interface Attraction {
   accentColor: 'foundry' | 'lakeside'
 }
 
-/** PRD v2 §4.1/§8 — purely decorative downtown filler: no content, no
- * hotspot, no route entry, never appears in AccessibleNav. */
+/** Scene decoration with no corresponding résumé entry. */
 export interface FillerBuilding {
   model: string
   position: Vec3

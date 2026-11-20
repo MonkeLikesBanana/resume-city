@@ -4,15 +4,7 @@ import PicnicTable from './PicnicTable'
 import TrashCan from './TrashCan'
 import { PALETTE } from '../../config'
 
-/** PRD v3 §4.4 — a real park lot along the Lakeside street: a grass patch,
- * a winding path, a small pond with a decorative footbridge (the relocated
- * "Lakeside should have a lake" feature, §4.2), park-style deciduous trees
- * (visibly different from the forest's pine silhouette — that's deliberate,
- * a park should read differently from the wild forest belt behind it),
- * flowers, and rustic tree-stump seating alongside real benches/a picnic
- * table (PRD v6.0 §1 — Bench.tsx/PicnicTable.tsx, built from primitives
- * the same way BasketballCourt.tsx's hoop was, since no pack on disk has
- * park furniture — the stumps were the only seating option before that). */
+/** Reserve a park lot between the Lakeside housing rows. */
 const CENTER: [number, number] = [32, 45]
 const [cx, cz] = CENTER
 

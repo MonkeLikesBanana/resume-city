@@ -1,3 +1,4 @@
+import Button from './Button'
 import { AnimatePresence, motion } from 'framer-motion'
 import useCityStore from '../../store/useCityStore'
 import useReducedMotion from '../../hooks/useReducedMotion'
@@ -7,12 +8,6 @@ import { PROFILE_NAME, PROFILE_ROLE } from '../../content/profile'
 import ArrowIcon from './ArrowIcon'
 import { CITY_NAME } from '../../config'
 
-/** PRD §3/§13 Phase 5 — the landing gate. Deep links bypass this entirely
- * (App.tsx sets hasEntered=true on mount if the URL already names a stop);
- * visiting "/" fresh shows it once per session. PRD v4 §3: there's no
- * separate "guided tour" to opt into anymore — the Welcome Plaza is already
- * selected and Next/Prev are always available, so "Enter the City" is the
- * only entry point needed now. */
 export default function WelcomeOverlay({ sceneReady }: { sceneReady: boolean }) {
   const { active, progress } = useProgress()
   const ready = sceneReady && !active
@@ -39,14 +34,14 @@ export default function WelcomeOverlay({ sceneReady }: { sceneReady: boolean }) 
             {ready ? '' : `Loading city… ${Math.min(99, Math.floor(progress))}%`}
           </p>
 
-          <button
-            type="button"
+          <Button
+            variant="primary"
             disabled={!ready}
             onClick={() => setHasEntered(true)}
-            className="mt-3 rounded-full bg-[var(--color-foundry)] px-6 py-3 text-lg font-semibold text-[var(--color-ink)] shadow-lg enabled:cursor-pointer disabled:opacity-50"
+            className="mt-3 !px-6 !py-3 !text-lg"
           >
             Enter the City <ArrowIcon direction="right" />
-          </button>
+          </Button>
 
           <div className="mt-4 flex items-center gap-4 text-sm">
             <DownloadResumeButton />

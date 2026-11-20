@@ -1,6 +1,4 @@
-/** PRD §10/§6 — detect WebGL2 support before ever mounting the R3F
- * <Canvas>. If this is false, the 3D scene never attempts to render at all
- * — NoWebGLFallback takes over instead. */
+/** Check WebGL2 before mounting the canvas so unsupported devices get the text résumé. */
 export function isWebGL2Supported(): boolean {
   try {
     const canvas = document.createElement('canvas')

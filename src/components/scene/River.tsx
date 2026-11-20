@@ -1,22 +1,7 @@
 import Building from './Building'
 import { PALETTE } from '../../config'
 
-// PRD v7.0 — replaces the wedge Forest region that used to sit between
-// Lakeside and the Foundry district (Forest.tsx's old REGIONS entry at
-// x:[-42,-13], z:[8,50], matching blocks.ts's WEDGE_EXCLUSION_ZONE): a
-// forest directly between two built-up districts doesn't read as
-// realistic, a river does. Built as a chain of overlapping circles (the
-// same technique Park.tsx's pond already uses, just repeated and drifted)
-// rather than a single rectangle — a river should meander, and overlapping
-// circles guarantee no gaps without needing a custom path/spline mesh.
-//
-// Every segment is kept inside a conservative band (x roughly -41..-30)
-// checked against everything else that can reach this quadrant: NEEMO HQ
-// (attractions.ts, position [-26,0,9]) sits well east of it, the x=-26
-// cross street's road bed (CROSS_STREET_WIDTH=5, centered -26 in
-// RoadNetwork.tsx) stays clear by 2m+ at every segment, and
-// DowntownPocketPark's X_RANGE ([-80,-45]) stays clear by 3.5m+ on the west
-// side — computed from each segment's actual center+radius, not assumed.
+// Keep the river segments inside the gap between the districts to clear the surrounding lots.
 const SEGMENTS: Array<{ x: number; z: number; r: number }> = [
   { x: -35, z: 10, r: 4.5 },
   { x: -36, z: 18, r: 4.5 },

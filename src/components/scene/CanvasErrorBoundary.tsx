@@ -9,18 +9,7 @@ interface State {
   hasError: boolean
 }
 
-/** PRD v7.0 round 2 — defense-in-depth after a real, confirmed failure
- * mode: an uncaught error anywhere inside <Canvas> (React Three Fiber
- * renders the whole tree outside React's normal DOM reconciliation, so a
- * thrown error there unmounts the entire app, not just the 3D scene) left
- * visitors looking at a blank white page with no indication anything went
- * wrong. The actual trigger found this round was Clouds.tsx's third-party
- * CDN texture fetch failing (now fixed at the source, a self-hosted
- * texture) — but a boundary here means ANY future WebGL/asset failure
- * degrades the same way NoWebGLFallback already handles "this
- * device/browser can't run the 3D scene at all" (§10/§13 Phase 6): full
- * resume content still reachable, not just an apology. React error
- * boundaries must be class components — no hook equivalent exists. */
+/** Replace the full experience on a rendering failure so its controls do not cover the text résumé. */
 export default class CanvasErrorBoundary extends Component<Props, State> {
   state: State = { hasError: false }
 

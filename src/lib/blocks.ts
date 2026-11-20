@@ -1,9 +1,6 @@
 import type { FillerBuilding } from '../types/attraction'
 
-// PRD v3 §4.1/§4.4/§8 — a small seeded grid generator shared by the Foundry
-// downtown blocks (denser: smaller spacing, more rows) and the Lakeside
-// suburb blocks (sparser: larger spacing, fewer rows) — one generator, two
-// parameter sets, rather than ~86 hand-placed entries.
+// Seed the lot layout so building positions are stable across renders.
 function mulberry32(seed: number) {
   return () => {
     seed |= 0
@@ -14,19 +11,7 @@ function mulberry32(seed: number) {
   }
 }
 
-// PRD v5.0 §4.6 — Foundry's downtown blocks place buildings on both sides
-// of Main Street (including its north/+Z side) and the Lakeside suburb's
-// blocks place houses on both sides of the Lakeside street (including its
-// west/-X side) — and those two "far" sides independently claim the same
-// map quadrant near the junction, each with no knowledge of the other.
-// Round 5's footprint expansion (foundry-blocks.ts's rows now reach z=47,
-// suburb-houses.ts's reach x=-37) made an actual building-placement overlap
-// there a real risk, not just a theoretical one — this zone comfortably
-// contains where both districts' claims can reach. Both foundry-blocks.ts
-// and suburb-houses.ts filter their generated buildings against it, and
-// Forest.tsx's own "neutral wedge" region was widened to include it, so the
-// result reads as "the forest comes in a little closer here" rather than a
-// bare gap where each district stopped just short of the other.
+// Reserve the space near the junction where the Foundry and Lakeside rows would otherwise overlap.
 export const WEDGE_EXCLUSION_ZONE = { x: [-42, -13] as [number, number], z: [8, 50] as [number, number] }
 
 export function clearsWedge(position: [number, number, number]): boolean {

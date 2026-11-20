@@ -16,15 +16,7 @@ import { getAttraction } from './content/attractions'
 import { PROFILE_NAME } from './content/profile'
 import { HOME_ATTRACTION_ID } from './config'
 
-/** PRD §3/§10 — the URL is the source of truth for "which attraction is
- * active"; this is the only place that writes activeAttractionId on a real
- * navigation (the explore-yourself scrub, PRD v4 §7.5, sets it directly and
- * transiently while gliding — that's the one exception). Landing directly on
- * a deep link (or navigating browser back/forward) reaches the right stop
- * with no extra click. Also bypasses the welcome overlay on the very first
- * render if the URL already names a stop (§3: "deep links skip the welcome
- * overlay"). PRD v4 §3/§8: bare "/" now resolves to the Welcome Plaza's own
- * id, not null — it's selected from the start, not a neutral home state. */
+/** Keep the active stop in sync with the URL so deep links and browser history land at the right stop. */
 function RouteSync() {
   const { id } = useParams<{ district: string; id: string }>()
   const setActive = useCityStore((s) => s.setActiveAttractionId)
@@ -39,10 +31,7 @@ function RouteSync() {
 
     if (isFirstRun.current) {
       isFirstRun.current = false
-      // Skip the welcome overlay only for a REAL deep link — `attraction` is
-      // truthy even on bare "/" now (it resolves to the Welcome Plaza, §3),
-      // so the gate has to check that the URL actually named a stop, not
-      // just that an attraction was found.
+      // Open valid deep links directly. The home route shows the welcome screen on a fresh visit.
       if (id && attraction) setHasEntered(true)
     }
   }, [id, setActive, setHasEntered])
@@ -50,9 +39,6 @@ function RouteSync() {
   return null
 }
 
-/** PRD §10 — "Escape closes the panel and drives back to the Welcome Plaza"
- * (PRD v2 §7: the Plaza is the city's home state — there's no more free-roam
- * overview shot to fall back to). */
 function EscapeToOverview() {
   const navigate = useNavigate()
   const activeId = useCityStore((s) => s.activeAttractionId)

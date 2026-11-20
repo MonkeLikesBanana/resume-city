@@ -1,8 +1,6 @@
 import type { Vec3 } from '../../types/attraction'
 
-/** PRD v6.0 §4 — same reasoning as Bench.tsx: a picnic table for the Park,
- * built from primitives (a tabletop plus two bench seats, A-frame legs
- * shared between them, the classic single-piece park picnic table shape). */
+/** Use one primitive assembly for the table and seats so they scale together. */
 const WOOD_COLOR = '#8a6a4a'
 const FRAME_COLOR = '#5a4632'
 const LENGTH = 1.6

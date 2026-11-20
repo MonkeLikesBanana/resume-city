@@ -3,27 +3,8 @@ import Bench from './Bench'
 import TrashCan from './TrashCan'
 import { PALETTE } from '../../config'
 
-/** PRD v3 §4.3 — the Welcome Plaza is now an open paved square occupying the
- * "outside" corner of the junction (+X,-Z — the quadrant neither arm claims),
- * not a gate spanning a bridge. The existing kitbashed arch moves to mark
- * the Foundry arm's entrance specifically (a monumental downtown gateway
- * makes sense where downtown starts); the Lakeside arm gets a lighter,
- * residential-appropriate transition instead of a matching monument. */
-// PRD v4 polish round 5 — shrunk again (was [28,28], round 4's cut from the
-// original [40,40]): round 4 shrunk the pavement and scaled every prop's
-// *position* toward SQUARE_CENTER, but left every prop at its normal size
-// and — more importantly — left the camera's own parked spot
-// (road.ts's PLAZA_ARM) at its original far-corner distance, so the plaza
-// didn't actually feel smaller from where you experience it (you still
-// parked just as far out). This round shrinks the square, the parked
-// distance (PLAZA_ARM, moved together with this), AND hand-replaces every
-// decoration at a fresh position sized for the smaller footprint — not
-// more proportional-scaling-toward-center math, which is exactly what
-// produced round 4's parasol-on-top-of-the-camera bug when a prop's offset
-// direction happened to be colinear with the camera's own fixed offset.
-// Every position below was checked against the parked camera point
-// (road.ts's PLAZA_ARM endpoint, [14,-14]) for real clearance before
-// being written down, not assumed safe from proportional math.
+/** Keep the Plaza open around the junction so the home camera can see both districts. */
+// Keep the square and the home road spur sized together so the camera parks within the Plaza.
 const SQUARE_SIZE: [number, number] = [20, 20]
 const SQUARE_CENTER: [number, number] = [10, -10] // +X,-Z quadrant
 
@@ -46,53 +27,19 @@ export default function PlazaSquare() {
       <Building model="/assets/models/plaza-gate.glb" position={[GATE_X, 0, 0]} scale={1} />
       <Building model="/assets/models/planter.glb" position={[GATE_X + 0.8, 0, -2.8]} scale={2.5} />
       <Building model="/assets/models/planter.glb" position={[GATE_X - 0.8, 0, 2.8]} scale={2.5} rotationY={Math.PI} />
-      {/* PRD v6.0 §2 — scale bumped 2.5->5: a
-          direct model-dimension check found streetlamp.glb's native size is
-          nearly identical to light-square.glb's (~0.6-0.68 tall), but every
-          other streetlamp in the city uses scale=5 for that near-identical
-          model — these four, gate-only, were rendering at roughly half the
-          height of every other lamp in the city, a real, measurable
-          inconsistency and not a deliberate "shorter gate lamp" choice
-          (nothing else about the gate calls for shorter fixtures). Found via
-          a temporary isolated model-comparison render, not a guess from a
-          screenshot.
-          PRD v7.0 round 7 — model itself swapped from streetlamp.glb to
-          light-square.glb (same model every other streetlamp in the city
-          uses), replacing the OTHER real bug the v6.0 investigation missed:
-          streetlamp.glb's internal mesh is named "light-curved" for a
-          reason — it has a smooth, thick, curved swan-neck arm, not
-          light-square.glb's sharp right-angle one (confirmed with a direct
-          side-by-side isolated render of both). At the ~3-4m lateral
-          distance the car passes every streetlamp in the city (an
-          unavoidable, universal distance — every lamp in RoadNetwork.tsx
-          uses the identical ±3 offset), the curved arm's smooth silhouette
-          loses its "obviously a lamp" read and appears as a large dark
-          curved shape hanging into frame — this is the actual identity of
-          the "dark tentacle" shapes originally spotted in a screenshot at
-          the very start of this PRD round, finally reproduced on purpose
-          (scene-graph proximity query pinpointed these exact fixtures) and
-          root-caused, not just patched by scale. light-square.glb's angular
-          arm has passed this same close distance at hundreds of placements
-          across the whole city with zero reports — proven safe, not just
-          assumed safe by bbox similarity like the v6.0 fix mistakenly was. */}
+      {/* Use the square lamp model at the gate so visible fixture geometry stays clear of the road. */}
       <Building model="/assets/models/light-square.glb" position={[GATE_X - 2, 0, -3]} scale={5} />
       <Building model="/assets/models/light-square.glb" position={[GATE_X - 2, 0, 3]} scale={5} rotationY={Math.PI} />
       <Building model="/assets/models/light-square.glb" position={[-1.5, 0, -3]} scale={5} />
       <Building model="/assets/models/light-square.glb" position={[-1.5, 0, 3]} scale={5} rotationY={Math.PI} />
 
-      {/* Lakeside transition — flanking trees/planters, no monument (§4.3) */}
+      {/* Flank the Lakeside entrance with trees and planters. */}
       <Building model="/assets/models/planter.glb" position={[-2.8, 0, 7]} scale={2.5} rotationY={Math.PI / 2} />
       <Building model="/assets/models/planter.glb" position={[2.8, 0, 9]} scale={2.5} rotationY={-Math.PI / 2} />
       <Building model="/assets/models/tree-large.glb" position={[-4, 0, 10]} scale={3} />
       <Building model="/assets/models/tree-small.glb" position={[4.5, 0, 13]} scale={3} />
 
-      {/* PRD v4 §4.1, resized round 5 — a paved medallion in the square
-          floor, a streetlamp at the far corner, a café-seating parasol
-          cluster, and planters/trees so the smaller square still doesn't
-          read as bare. Every position here checked against the parked
-          camera point [14,-14] (road.ts's PLAZA_ARM) for real clearance —
-          minimum 5.66 units, comfortably outside any prop's own footprint
-          — not proportional math trusted to land somewhere safe. */}
+      {/* Center the paving detail within the open square. */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[SQUARE_CENTER[0], 0.015, SQUARE_CENTER[1]]}>
         <ringGeometry args={[3.0, 3.3, 48]} />
         <meshStandardMaterial color="#9d9689" roughness={0.9} />
@@ -112,10 +59,7 @@ export default function PlazaSquare() {
       <Building model="/assets/models/tree-large.glb" position={[16, 0, -6]} scale={3.4} rotationY={0.6} />
       <Building model="/assets/models/tree-small.glb" position={[3, 0, -12]} scale={3.2} rotationY={1.8} />
 
-      {/* PRD v6.0 §1 — the medallion itself was the only thing anchoring the
-          square's open pavement; nothing invited you to actually stop there.
-          Two benches facing it plus a trash can, the same "give the open
-          paving a reason to exist" fix applied to the sidewalks/Park below. */}
+      {/* Anchor the seating on paved pads so it reads as part of the square. */}
       <Bench position={[SQUARE_CENTER[0] - 5, 0, SQUARE_CENTER[1]]} rotationY={-Math.PI / 2} />
       <Bench position={[SQUARE_CENTER[0], 0, SQUARE_CENTER[1] - 5]} rotationY={0} />
       <TrashCan position={[SQUARE_CENTER[0] - 4, 0, SQUARE_CENTER[1] - 4]} />

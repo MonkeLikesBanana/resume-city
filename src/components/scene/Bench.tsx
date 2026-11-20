@@ -1,10 +1,6 @@
 import type { Vec3 } from '../../types/attraction'
 
-/** PRD v6.0 §4 — no Kenney pack on disk has a park bench (same situation
- * BasketballCourt.tsx already solved for a hoop/court), so this is built
- * from primitive geometry: a seat, a backrest, and two A-frame legs. Real
- * proportions (seat ~0.45m high, ~1.4m long) at the low-poly, slightly
- * blocky scale the rest of the city uses. */
+/** Use low-poly primitives for park seating that matches the model kits. */
 const SEAT_COLOR = '#8a6a4a'
 const FRAME_COLOR = '#3a3a3f'
 const LENGTH = 1.4

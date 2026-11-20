@@ -11,25 +11,10 @@ import DowntownPocketPark from './DowntownPocketPark'
 import Yard from './Yard'
 import River from './River'
 
-// PRD v3 §4.1/§4.3/§4.4/§7.1 — the world is now an L-shape (Foundry west,
-// Lakeside south) plus the Plaza's open square in the +X,-Z quadrant, not a
-// single symmetric east-west corridor. A single large square ground plane
-// centered on the junction comfortably covers all three arms plus the
-// square; v2's separate lake+bridge is retired (§4.3) — Lakeside gets its
-// own small pond instead (Park.tsx), since the two districts no longer share
-// a water crossing between them.
+// One base plane covers the Foundry, Lakeside, and Plaza arms.
 const GROUND_SIZE: [number, number] = [260, 260]
 
-// PRD v4 §4.4/§7.4 — two depth layers (distant peaks + closer foothills)
-// with varied silhouettes, replacing v3's single ring of identical 4-sided
-// cones — a real mountain range doesn't look like one shape repeated on a
-// perfect circle. Properly instanced by bucketing peaks into a handful of
-// side-count groups (one drei <Instances> draw call per bucket, §12) rather
-// than the first pass's fix of just cutting the peak count in half to claw
-// back Lighthouse's mobile Total Blocking Time — that was treating the
-// symptom (too many individually-meshed objects) instead of the actual
-// cause (not instanced at all). Fixing the root cause instead means the
-// count can go back up, not just recover to where it started.
+// Bucket peaks by side count to vary silhouettes while keeping draw calls low.
 const PEAK_RING_RADIUS = 190
 const PEAK_COUNT = 34
 const FOOTHILL_RING_RADIUS = 150
@@ -46,61 +31,14 @@ function mulberry32(seed: number) {
   }
 }
 
-// PRD v4 §4.3 — a green grass patch covering the Lakeside arm's footprint,
-// layered just above the base ground plane. This is the single biggest
-// reason the suburb didn't yet read as a suburb from a still frame — same
-// cream/tan ground as downtown everywhere, regardless of building density.
-// Widened to the suburb's full outer-row extent (±23) after checking actual
-// building footprints, not just lot-center coordinates: Foundry's nearest
-// lot (x=-20, z=16) is only ~3m wide at its placement scale, so its
-// footprint (~-21.5 to -18.5) doesn't reach the suburb's own outer edge —
-// an earlier, more conservative pass narrowed this to ±17 assuming lot
-// centers alone were close enough to collide, which overstated the risk.
-// PRD v4 polish round 5 §4 — widened from [48,94]: suburb-houses.ts grew two
-// more depth rows (to ±37, up from ±23), so the grass patch's old ±24
-// half-width left the two new outer rows sitting on the base cream ground
-// color instead of grass (exactly the "many suburbs still don't have
-// grass" report — those houses were simply outside the patch, not a
-// missing-material bug).
-// PRD v7.0 — widened again (x half-width 48->50): suburb-houses.ts now
-// reaches ±43 (six rows, up from four at ±37, §1 "much more dense"), so the
-// old half-width of 48 left only ~5m margin around the new outer row's own
-// footprint. 50 keeps the same ~7m margin the ±37 row had against the old
-// 48 half-width.
+// Extend the grass past the outer Lakeside housing rows.
 const GRASS_SIZE: [number, number] = [100, 94]
 const GRASS_CENTER: [number, number] = [0, 49]
 
-// PRD v4 polish round 5 §4 — the same "some ground has no proper surface"
-// problem, downtown side: Foundry's filler buildings sat directly on the
-// base cream ground plane (PALETTE.ground) with no paved surface of their
-// own, the same gap the grass patch fixes for the suburb. One rectangle
-// covering the full downtown footprint (foundry-blocks.ts now reaches
-// z=±47, §3) reads as a continuous paved city block — real downtowns are
-// pavement between buildings, not bare ground — and shares PALETTE.pavement
-// with the sidewalks/plaza it sits flush next to, rather than introducing a
-// third ground tone.
-//
-// PRD v7.0 §2 — z-extent pulled back in from 112 to 96: at its old size
-// this rectangle's z-range ([-56,56]) reached past the wedge exclusion
-// zone's z=50 cap into the suburb's own west-row houses (x=-16..-37 all
-// fall inside this rectangle's x-range too), which resume past z=50 — and
-// since this pavement plane sits at a higher Y than the grass patch, it was
-// winning there, showing gray pavement under suburb houses instead of
-// green (the actual "suburb ground still gray" bug, confirmed by computing
-// both rectangles' overlap directly rather than re-guessing at the grass
-// patch's own bounds again). 96 keeps a comfortable ~2m margin over
-// Foundry's real ±47 filler reach without reaching into the suburb's z>50
-// tail. Yard.tsx's per-house lawn planes (rendered above both this and the
-// grass patch) are the actual belt-and-suspenders fix for every remaining
-// house — this rectangle just stops actively fighting them.
+// Cover both sides of the Foundry without paving the western Lakeside housing beyond the river.
 const DOWNTOWN_GROUND_SIZE: [number, number] = [86, 96]
 const DOWNTOWN_GROUND_CENTER: [number, number] = [-48, 0]
-// PRD v5.0 §4.6 — this patch's bounds spatially overlap GRASS_SIZE's (both
-// districts' filler can reach the same near-junction quadrant, §4.6's wedge
-// note) — at the *same* height (both were -0.03) that's real z-fighting,
-// not a rendering artifact, confirmed by computing both rectangles'
-// actual overlap. A fractionally higher pavement height resolves it
-// deterministically instead of leaving it to GPU rounding.
+// Separate the pavement and grass heights where their footprints overlap to avoid z-fighting.
 const DOWNTOWN_GROUND_Y = -0.028
 
 interface Peak {
@@ -130,15 +68,7 @@ function ringOfPeaks(count: number, baseRadius: number, radiusJitter: number, he
   return arr
 }
 
-/** PRD v4 §4.4/§7.4/§12 — a real range: distant peaks + closer foothills,
- * varied cone side-count and jittered spacing (seeded, so still
- * reproducible) instead of one ring of identical 4-sided pyramids evenly
- * spaced — and properly instanced despite the varied side-count, by
- * bucketing peaks into SIDE_BUCKETS groups and giving each bucket its own
- * canonical-size geometry (one drei <Instances> draw call per bucket, four
- * total, regardless of how many dozen peaks exist) — the same reasoning
- * Forest.tsx already applies to trees, extended to handle a per-instance
- * geometry variation (side count) that a single shared geometry can't. */
+/** Instance the peaks by side count so individual placement and scale stay varied. */
 function Mountains() {
   const allPeaks = useMemo(() => {
     const rand = mulberry32(20260921)

@@ -5,35 +5,11 @@ import { PALETTE } from '../../config'
 import { SUBURB_HOUSES } from '../../content/suburb-houses'
 import { ATTRACTIONS } from '../../content/attractions'
 
-// PRD v7.0 — a real front yard per suburb house: a lawn patch plus a
-// low picket fence on three sides (the two flanks and the street-facing
-// edge, with a gate gap in the middle of the street edge; the house's own
-// wall closes off the fourth side, so no panel is needed there). This is
-// the actual fix for "suburb ground still gray, not green" — round 5's
-// coarse GRASS_SIZE rectangle covers the suburb's footprint in theory, but
-// Ground.tsx's separate DOWNTOWN_GROUND pavement rectangle (sized for
-// Foundry's own filler) reaches far enough east that it overlaps the
-// suburb's west-row houses for their outer stretch (z > ~50) at a higher Y
-// than the grass, so pavement wins there instead of moss (see Ground.tsx's
-// own DOWNTOWN_GROUND_SIZE comment for the exact overlap math). Rather than
-// keep tuning two coarse rectangles against each other, every house gets
-// its own lawn plane rendered *above* both coarse rectangles — it can't
-// lose to an unrelated district's pavement regardless of where either
-// district's footprint grows next.
+// Give each house a lawn above the shared ground so its yard stays green where ground patches overlap.
 const YARD_DEPTH = 5 // meters, from the house out toward the street
 const YARD_WIDTH = 6 // meters, along the street
 const LAWN_Y = 0.006 // between sidewalks() (0.005) and Driveways() (0.008) — a yard's lawn crosses neither, it sits between the house and the driveway strip, but still needs a height distinct from both since its bounds are close to each
-// PRD v7.0 round 5 — was '/assets/models/fence-low.glb', found broken during
-// self-review: screenshotting the actual in-game fences showed panels
-// floating above the ground at odd tilted angles, not sitting flat. Isolated
-// fence-low.glb alone in a debug page (identity rotation, flat grid, no game
-// code involved) and confirmed it directly — the mesh itself is modeled as a
-// leaning/knocked-over fence variant (the "low" refers to a fallen-down
-// state, not a short-but-upright fence), not a placement bug in this file.
-// fence.glb (internal mesh name "fence-1x2") is a normal flat straight panel
-// with integrated end/center posts, confirmed via the same isolated-render
-// technique — a top-down orthographic shot showed a clean straight run along
-// its local X axis, sitting flat on the ground plane.
+// Use fence segments aligned along local X so sections can rotate around the yard corners.
 const FENCE_MODEL = '/assets/models/fence.glb'
 const FENCE_SCALE = 1.4
 const FENCE_PANEL_LENGTH = 0.876 * FENCE_SCALE // native bbox x-extent (the panel's long axis), measured directly from the glb

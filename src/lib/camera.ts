@@ -23,39 +23,7 @@ const _tiltTarget = new THREE.Vector3()
 const _lookTarget = new THREE.Vector3()
 const _desiredQuat = new THREE.Quaternion()
 
-// PRD v7.0 round 2 — the parked camera's horizontal standoff from every
-// attraction is fixed (curbFor() just finds the nearest point on the road,
-// independent of the building's own height — §7.2's "park at the curb"
-// model has no notion of backing further away for a taller building). That
-// ~9m standoff is roughly right for house/storefront-scale buildings
-// (2-4m), but Robotics Workshop (11m) and DECA Business Center (13.4m —
-// both real kitbashed towers, not a data-entry mistake) are tall enough
-// that 9m away puts the camera close enough that most of the frame is
-// flat, undifferentiated wall regardless of look angle — confirmed by
-// screenshotting both and finding neither building's silhouette actually
-// fits in frame, unlike every other attraction (next-tallest is 3.9m,
-// which frames cleanly at the same 9m standoff).
-//
-// Fixed with `standoffBoost`: backs the parked camera position further
-// from the building — along the existing curb point's own direction from
-// the building, so it stays a plausible "parked a bit further down/across
-// the street" position, not an arbitrary floating camera — enough to
-// actually fit a tall building's silhouette in frame. Left at 0 for every
-// attraction under the threshold, so the 10 normally-scaled attractions
-// are byte-for-byte unaffected. Blended in via the same `arrivalBlend`
-// driveFrame() already uses for the tilt, so there's no position pop on
-// arrival — it eases in exactly like the existing tilt does.
-//
-// A first attempt also capped the *height* fed into `tiltTargetFor` below
-// (reasoning: a shorter look-target height means a less extreme upward
-// tilt angle) — reverted after screenshotting it: capping the tilt height
-// while ALSO backing the camera up made the look target aim proportionally
-// too low for the now-further-back camera, clipping the hotspot title
-// marker (Hotspot.tsx renders it at `attraction.height + 1.5`, uncapped)
-// off the top of the frame instead of fixing the crop. The real building
-// height, uncapped, is the correct tilt target regardless of standoff
-// distance — it's the same target a shorter building already used
-// correctly; only the distance needed adjusting, not the angle.
+// Move the parked camera farther from tall buildings so their facades fit vertically.
 const STANDOFF_HEIGHT_THRESHOLD = 4
 const STANDOFF_PER_METER = 0.4
 const MAX_STANDOFF_BOOST = 3.5
@@ -88,15 +56,7 @@ function applyLookAt(camera: THREE.PerspectiveCamera, target: THREE.Vector3, del
   camera.quaternion.slerp(_desiredQuat, damping)
 }
 
-/** PRD v4 §7.1/§7.3 — driven along the ONE shared TOUR_CURVE now, not a
- * fresh per-trip curve — `curveU` is this frame's global position on that
- * curve, `direction` is which way `curveU` is currently moving (+1/-1,
- * needed for the look-ahead point now that "ahead" isn't always "toward
- * increasing u" — Prev moves curveU *down*), and `localProgress` is 0..1
- * within just this specific trip (for the arrival-tilt blend below — a
- * global curveU would almost never approach 1, since TOUR_CURVE spans the
- * whole city, not one trip). Position/look-ahead/rotation-damping mechanics
- * are otherwise unchanged from v3. */
+/** Follow the shared curve in either direction and blend toward the destination as the car arrives. */
 export function driveFrame(
   camera: THREE.PerspectiveCamera,
   tripCurve: TripCurve,
@@ -121,12 +81,7 @@ export function driveFrame(
   applyLookAt(camera, _lookTarget, delta)
 }
 
-/** PRD v4 §7.5 — explore-yourself scrub: position + look-ahead + damped
- * rotation, same as driveFrame, but never blends toward an arrival tilt —
- * there's no single destination while gliding freely, and tilting up at
- * every stop passed mid-scrub would be chaotic. Only used while a scrub key
- * is actively held or decelerating; releasing hands off to a normal
- * driveFrame()-driven "settle" trip (CameraRig). */
+/** Look along the road during scrubbing until the camera has a destination to frame. */
 export function scrubFrame(camera: THREE.PerspectiveCamera, tripCurve: TripCurve, curveU: number, direction: 1 | -1, delta: number) {
   const p = tripCurve.getPointAt(curveU)
   camera.position.set(p.x, p.y + CAR_EYE_HEIGHT, p.z)

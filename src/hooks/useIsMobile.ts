@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 
-/** PRD §11 — the `< 768px` breakpoint used throughout for mobile behavior
- * (shadow resolution, dpr cap, full-screen InfoPanel). */
+/** Use a narrower render quality budget on small screens. */
 export default function useIsMobile() {
   const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth < 768)
 

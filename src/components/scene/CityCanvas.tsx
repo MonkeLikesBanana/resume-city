@@ -33,9 +33,7 @@ export default function CityCanvas({ children, onReady }: CityCanvasProps) {
       shadows={shadowsEnabled ? 'percentage' : false}
       dpr={dpr}
       camera={{
-        // Placeholder pose only — CameraRig snaps this to the Plaza curb on
-        // mount (PRD v3 §7.4), before the visitor ever sees a frame render
-        // from here.
+        // CameraRig supplies the parked pose for the active stop.
         position: [0, CAR_EYE_HEIGHT, 20],
         fov: DEFAULT_FOV,
         near: 0.3,

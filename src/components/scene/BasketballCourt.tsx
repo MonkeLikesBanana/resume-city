@@ -1,10 +1,4 @@
-/** PRD v3 §4.4/§9 — no Kenney pack on disk has a basketball hoop or court
- * (verified against the full inventory this PRD was written against), so
- * this is built directly from primitive geometry — the same "just build the
- * simple shape" technique already used for the Mountains backdrop in
- * Ground.tsx, not a shortcut. Court proportions are a modest half-scale
- * (16m x 9m) rather than full FIBA size, matching the low-poly, compact
- * scale of the rest of the city. */
+/** Build the court from primitives so its scale and markings match the neighborhood. */
 const CENTER: [number, number] = [-32, 65]
 const [cx, cz] = CENTER
 const LENGTH = 16

@@ -1,71 +1,49 @@
-import ArrowIcon from './ArrowIcon'
-import { useNavigate } from 'react-router-dom'
 import useCityStore from '../../store/useCityStore'
 import { TOUR_ORDER } from '../../content/tour'
-import { ACCENT_FILL } from '../../config'
+import ArrowIcon from './ArrowIcon'
+import Button from './Button'
+import DownloadResumeButton from './DownloadResumeButton'
 
-/** PRD v4 §3/§7.3/§9 — replaces TourControls.tsx. Always rendered (no
- * tourMode toggle — there's no longer a separate "tour mode" to opt into,
- * §6), Prev/Next only (autoplay/Play-Pause/Exit are retired along with
- * tourMode). Disables — doesn't wrap — at the first/last stop: a real
- * guided tour doesn't loop from the end back to the start mid-drive.
- *
- * PRD v7.0 round 4 — hidden below `sm` entirely. On mobile, InfoPanel
- * becomes a full-width `inset-x-0 bottom-0` sheet (its own mobile layout),
- * and this bar's `fixed bottom-4 left-1/2` position sits inside that
- * sheet's footprint at the same z-index — confirmed by screenshotting a
- * mobile viewport with a panel open: the Prev/Next pill rendered on top
- * of, clipping, the panel's own text. InfoPanel gets its own inline
- * Prev/Next row for `sm:hidden` instead (same TOUR_ORDER logic, just laid
- * out as part of the panel's content so it can never overlap the panel it
- * lives inside). Desktop's floating pill is unaffected — InfoPanel is a
- * compact right-side card there, nowhere near this bar's position.
- *
- * PRD v7.0 round 6 — the "Next →" button was hardcoded to
- * `--color-foundry` (teal) regardless of the active attraction's own
- * accentColor, the one piece of chrome on screen that DIDN'T switch to
- * orange on a Lakeside stop while the breadcrumb, InfoPanel's border, and
- * the hotspot pill all correctly did — confirmed by screenshotting a
- * Lakeside stop and comparing. Now reads `TOUR_ORDER[index].accentColor`
- * the same way InfoPanel already does for its own (already-correct)
- * mobile Next button. */
-export default function TourBar() {
-  const activeAttractionId = useCityStore((s) => s.activeAttractionId)
-  const navigate = useNavigate()
+interface TourBarProps {
+  mobile?: boolean
+}
 
-  const index = TOUR_ORDER.findIndex((a) => a.id === activeAttractionId)
-  if (index === -1) return null // transient: mid-scrub (activeAttractionId is null), nothing to show
-  const accentColor = TOUR_ORDER[index].accentColor
+export default function TourBar({ mobile = false }: TourBarProps) {
+  const activeId = useCityStore((s) => s.activeAttractionId)
+  const index = TOUR_ORDER.findIndex((stop) => stop.id === activeId)
+  if (index < 0) return null
 
-  const goTo = (i: number) => {
-    const stop = TOUR_ORDER[i]
-    navigate(`/${stop.district}/${stop.id}`)
-  }
+  const previous = TOUR_ORDER[index - 1]
+  const next = TOUR_ORDER[index + 1]
+  const classes = mobile
+    ? 'mt-2 flex flex-wrap items-center gap-1.5 sm:hidden'
+    : 'pointer-events-auto fixed bottom-4 left-1/2 z-20 hidden -translate-x-1/2 items-center gap-2 whitespace-nowrap rounded-2xl bg-[var(--color-ground)] p-2 shadow-lg sm:flex'
 
   return (
-    <div className="pointer-events-auto fixed bottom-4 left-1/2 z-20 hidden -translate-x-1/2 items-center gap-2 rounded-full bg-[var(--color-ink)] px-3 py-2 text-sm text-[var(--color-ground)] shadow-xl sm:flex">
-      <button
-        type="button"
-        onClick={() => goTo(index - 1)}
-        disabled={index === 0}
-        aria-label="Previous stop"
-        className="rounded-full px-2 py-1 hover:bg-white/10 disabled:pointer-events-none disabled:opacity-30 cursor-pointer"
-      >
-        <ArrowIcon direction="left" /> Prev
-      </button>
-      <span className="px-1 text-xs text-[var(--color-ground)]/70 tabular-nums">
+    <nav aria-label="Tour navigation" className={classes}>
+      {previous ? (
+        <Button as="link" to={index === 1 ? '/' : `/${previous.district}/${previous.id}`} aria-label="Previous stop">
+          <ArrowIcon direction="left" /> Prev
+        </Button>
+      ) : (
+        <Button disabled aria-label="Previous stop"><ArrowIcon direction="left" /> Prev</Button>
+      )}
+      <span className="text-xs text-[var(--color-ink)]/75 tabular-nums">
         {index + 1} / {TOUR_ORDER.length}
       </span>
-      <button
-        type="button"
-        onClick={() => goTo(index + 1)}
-        disabled={index === TOUR_ORDER.length - 1}
-        aria-label="Next stop"
-        className="rounded-full px-3 py-1 font-medium text-[var(--color-ink)] hover:opacity-90 disabled:pointer-events-none disabled:opacity-30 cursor-pointer"
-        style={{ background: ACCENT_FILL[accentColor] }}
-      >
-        Next <ArrowIcon direction="right" />
-      </button>
-    </div>
+      {next ? (
+        <>
+          <Button as="link" to={`/${next.district}/${next.id}`} variant="primary" aria-label="Next stop">
+            Next <ArrowIcon direction="right" />
+          </Button>
+          {mobile && <DownloadResumeButton className="ml-auto" />}
+        </>
+      ) : (
+        <>
+          <Button as="link" to="/" variant="primary">Back to overview</Button>
+          <DownloadResumeButton label="Download résumé" />
+        </>
+      )}
+    </nav>
   )
 }

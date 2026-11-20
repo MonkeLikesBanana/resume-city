@@ -2,18 +2,11 @@ import { CONTACT, PROFILE_NAME, PROFILE_ROLE } from './profile'
 import type { Attraction } from '../types/attraction'
 import { nearestPositionOnArm } from '../lib/roadGraph'
 
-// PRD v2 §5/§8 — Content Map. Single source of truth: every hotspot, panel,
-// breadcrumb entry, route, and accessible-nav entry is derived from this
-// array. Positions follow the downtown Main Street layout in
-// src/content/road.ts — buildings sit off the road centerline (±9 in Z); the
-// road itself runs along Z=0, so each building's curb point (nearest point on
-// the road) is simply its own X coordinate at Z=0. `height` (meters,
-// post-scale) drives the arrival tilt (PRD v2 §7.3) — no more per-building
-// camera overrides.
+// The scene, tour, routes, and text résumé share these entries.
 
 export const ATTRACTIONS: Attraction[] = [
   // ---------------------------------------------------------------------
-  // Welcome Plaza — the city's entrance, at the road's center (§4.3)
+  // Welcome Plaza
   // ---------------------------------------------------------------------
   {
     id: 'welcome-plaza',
@@ -22,12 +15,9 @@ export const ATTRACTIONS: Attraction[] = [
     placeName: 'Welcome Plaza',
     subtitle: PROFILE_ROLE,
     position: [-6, 0, 4], // near the junction/gate corner — the tilt aims here
-    // MUST be explicit: the Plaza's parked position is the far end of its own
-    // short spur arm (PRD v3 §7.1), not "nearest point on my own arm to my
-    // position" (which would incorrectly resolve to near the junction itself,
-    // not out at the open-square vantage point).
+    // Park at the end of the Plaza spur to keep both districts in view.
     curb: { arm: 'plaza', t: 1 },
-    height: 6.5, // the welcome arch (PRD v2 §4.3): 2 columns + beam + cap
+    height: 6.5, // The camera frames the welcome arch.
     description:
       'I am pursuing the IB Diploma at Interlake High School and have a 4.0 GPA. As vice president of Saints Robotics I help lead a team of 80+ members with a $40,000 annual budget, and I co-founded NEEMO to develop RFID tracking for robotics workshops.',
     facts: ['Bellevue, Washington'],
@@ -37,8 +27,7 @@ export const ATTRACTIONS: Attraction[] = [
   },
 
   // ---------------------------------------------------------------------
-  // The Foundry District — downtown, career (§5.1) — Main Street runs west
-  // from the Plaza; buildings alternate sides
+  // Foundry buildings alternate sides of Main Street.
   // ---------------------------------------------------------------------
   {
     id: 'robotics-workshop',
@@ -48,15 +37,11 @@ export const ATTRACTIONS: Attraction[] = [
     subtitle: '',
     position: [-16, 0, -9],
     scale: 2.1,
-    rotationY: 0,
+    rotationY: Math.PI * (155 / 180),
     model: '/assets/models/robotics-workshop.glb',
     height: 11,
-    // Explicit override: this kitbash's merged geometry isn't centered on its
-    // placement origin — its front wall sits at z≈-4.8, much closer to the
-    // road than the -9 position suggests, so the automatic nearest-point curb
-    // parked the camera almost flush against it. Parking 5m further down the
-    // road gives an angled 3/4 view instead of a flat wall filling the frame.
-    curb: nearestPositionOnArm('foundry', [-21, 0, 0]),
+    // Angle the garage toward Main Street and park west of the lot to see its doorway and side windows.
+    curb: nearestPositionOnArm('foundry', [-25.5, 0, 0]),
     timeline: [
       {
         role: 'Vice President',
@@ -163,12 +148,7 @@ export const ATTRACTIONS: Attraction[] = [
     accentColor: 'foundry',
   },
 
-  // ---------------------------------------------------------------------
-  // Lakeside — personal (§5.2) — a residential street running south from
-  // the Plaza, perpendicular to Main Street (PRD v3 §4.4/§7.1). Houses
-  // alternate sides of the street (±9 in X); EAST/WEST rotate each house to
-  // face the street it fronts, same convention as the Foundry filler rows.
-  // ---------------------------------------------------------------------
+  // Lakeside houses face the street from alternating sides.
   {
     id: 'cafe',
     district: 'lakeside',

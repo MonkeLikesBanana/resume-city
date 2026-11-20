@@ -39,13 +39,7 @@ function isTypingTarget(el: EventTarget | null): boolean {
   return tag === 'INPUT' || tag === 'TEXTAREA' || Boolean((el as HTMLElement)?.isContentEditable)
 }
 
-/** PRD v4 §7.3/§9 — the only component that writes to the camera directly.
- * Tracks one continuous `currentU` along the single shared TOUR_CURVE
- * (src/lib/tourCurve.ts) instead of building a fresh per-trip curve —
- * Next/Prev/direct-jump navigation animates currentU toward a target
- * stop's known TOUR_STOP_U using a real velocity profile (§7.2); holding an
- * arrow key (§7.5) moves currentU continuously instead, taking priority
- * over any in-flight discrete drive. */
+/** Track progress on one tour curve so key-driven scrubbing can take over a drive without jumping. */
 export default function CameraRig() {
   const { camera } = useThree()
   const navigate = useNavigate()
@@ -62,7 +56,7 @@ export default function CameraRig() {
   const scrubSpeedRef = useRef(0)
   const wasScrubbingRef = useRef(false)
 
-  // Explore-yourself: hold → / ← to scrub continuously along TOUR_CURVE (§7.5).
+  // Hold either arrow key to scrub along the tour curve.
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
       if (e.metaKey || e.ctrlKey || e.altKey || isTypingTarget(e.target)) return

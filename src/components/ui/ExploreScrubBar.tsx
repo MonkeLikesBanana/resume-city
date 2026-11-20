@@ -1,3 +1,4 @@
+import Button from './Button'
 import { useCallback, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import useCityStore from '../../store/useCityStore'
@@ -5,26 +6,7 @@ import { TOUR_ORDER } from '../../content/tour'
 import { TOUR_STOP_U, nearestTourIndex } from '../../lib/tourCurve'
 import { scrubState } from '../../lib/scrubState'
 
-/** PRD v6.0 §3 — the explore-yourself scrub (§7.5, holding ←/→) had no
- * visual feedback at all: no sense of where you are along the tour, no way
- * to jump straight to a stop without first driving/scrubbing there. This
- * bar fills both gaps at once, but only while actually scrubbing —
- * TourBar.tsx already covers the parked state (and explicitly renders
- * nothing during a scrub, §9's "transient" comment there), so the two are
- * mutually exclusive by construction, never fighting for the same slot.
- *
- * The thumb position updates via a plain requestAnimationFrame loop
- * reading scrubState.currentU, not React state — that value changes every
- * R3F frame, and useFrame isn't available outside the Canvas, but the
- * underlying "don't push a 60fps value through re-renders" reasoning is
- * the same as dayNightState/windowGlow's registries. Dragging the track
- * writes scrubState.requestedU, which CameraRig picks up and drives the
- * camera to every frame (same visual treatment as holding an arrow key);
- * releasing settles onto the nearest stop by calling navigate() directly,
- * reusing the exact same drive machinery Prev/Next/AccessibleNav already
- * trigger. Clicking a stop's own tick mark does that navigate() straight
- * away, skipping the drag entirely — the "click an attraction to jump to
- * its panel" half of the ask. */
+/** Show the scrubber while the camera is between stops, when the stop navigation is hidden. */
 export default function ExploreScrubBar() {
   const activeAttractionId = useCityStore((s) => s.activeAttractionId)
   const navigate = useNavigate()
@@ -79,14 +61,14 @@ export default function ExploreScrubBar() {
         className="relative h-1.5 cursor-pointer touch-none rounded-full bg-white/20"
       >
         {TOUR_ORDER.map((stop, i) => (
-          <button
+          <Button
             key={stop.id}
             type="button"
             onPointerDown={(e) => e.stopPropagation()}
             onClick={() => navigate(`/${stop.district}/${stop.id}`)}
             aria-label={`Jump to ${stop.name}`}
             title={stop.name}
-            className="absolute top-1/2 h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 cursor-pointer rounded-full border-2 border-[var(--color-ink)] bg-white/60 hover:bg-white"
+            className="absolute top-1/2 size-3.5 -translate-x-1/2 -translate-y-1/2 !p-0 focus-visible:outline-white"
             style={{ left: `${TOUR_STOP_U[i] * 100}%` }}
           />
         ))}

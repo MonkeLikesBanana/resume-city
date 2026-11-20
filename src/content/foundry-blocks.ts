@@ -1,12 +1,7 @@
 import type { FillerBuilding } from '../types/attraction'
 import { generateBlock, clearsWedge } from '../lib/blocks'
 
-// PRD v3 §4.1/§8/§16b — downtown density scale-up: ~60 filler buildings
-// across three depth rows on each side of Main Street (the six real
-// attractions keep the ±9 row to themselves). Reuses the full ~35-variant
-// Commercial-pack pool now on disk, biasing low-detail variants toward the
-// back row (less visual detail needed further from the street, and it helps
-// the draw-call budget even with instancing, §12).
+// Use simpler building models in the back rows, where facade detail is less visible.
 const FRONT_MODELS = [
   '/assets/models/filler/building-a.glb', '/assets/models/filler/building-b.glb',
   '/assets/models/filler/building-c.glb', '/assets/models/filler/building-d.glb',
@@ -39,17 +34,7 @@ const BACK_MODELS = [
 // origin geometrically, even though they're on perpendicular roads).
 const ALONG: [number, number] = [-16, -84]
 
-// PRD v4 polish round 5 §3 — two more depth rows beyond the original back
-// row (±31), pushing downtown's footprint from a half-depth of ~31 to ~47
-// so the built-up area reaches much closer to the mountains rather than
-// leaving a wide band of bare/forested ground between downtown and the
-// range. Same generator, same per-row density (lotSpacing/jitter) as the
-// existing rows — this is "the same city, further out," not a denser one.
-// Forest.tsx's regions were pushed outward to match (see its own comment).
-// PRD v5.0 §4.6 — every row filtered through clearsWedge(): the +Z (north)
-// side of these rows can otherwise land in the same map quadrant
-// suburb-houses.ts's -X (west) rows independently claim near the junction
-// — see blocks.ts's WEDGE_EXCLUSION_ZONE comment for the full picture.
+// Filter the rows near the junction to leave room between the districts.
 export const FOUNDRY_BLOCKS: FillerBuilding[] = [
   ...generateBlock({ along: ALONG, streetAxis: 'x', rowOffsets: [16, -16], lotSpacing: 8, models: FRONT_MODELS, seed: 20260906 }),
   ...generateBlock({ along: ALONG, streetAxis: 'x', rowOffsets: [23, -23], lotSpacing: 9, models: TOWER_MODELS, seed: 20260907 }),

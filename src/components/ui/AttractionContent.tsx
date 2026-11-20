@@ -1,10 +1,6 @@
 import { ACCENT_FILL, ACCENT_TEXT } from '../../config'
 import type { Attraction } from '../../types/attraction'
 
-// PRD §5.1 — "Skills are not their own building — they render as a
-// persistent tag strip pinned to the bottom of every Foundry District panel."
-const FOUNDRY_SKILLS = ['Electronics', 'CAD / Onshape', '3D Printing / Additive Mfg.']
-
 export default function AttractionContent({ attraction }: { attraction: Attraction }) {
   return (
     <>
@@ -29,10 +25,10 @@ export default function AttractionContent({ attraction }: { attraction: Attracti
       {(attraction.facts || attraction.links) && (
         <ul className="mt-4 space-y-1.5 text-sm text-[var(--color-ink)]/90">
           {attraction.facts?.map((fact) => (
-            <li key={fact} className="flex gap-2">
-              <span aria-hidden="true" style={{ color: ACCENT_TEXT[attraction.accentColor] }}>
-                ·
-              </span>
+            <li key={fact} className={attraction.district === 'plaza' ? undefined : 'flex gap-2'}>
+              {attraction.district !== 'plaza' && (
+                <span aria-hidden="true" style={{ color: ACCENT_TEXT[attraction.accentColor] }}>·</span>
+              )}
               {fact}
             </li>
           ))}
@@ -54,22 +50,6 @@ export default function AttractionContent({ attraction }: { attraction: Attracti
         </div>
       )}
 
-      {attraction.district === 'foundry' && (
-        <div className="mt-5 border-t border-[var(--color-ink)]/10 pt-3">
-          <p className="text-[11px] font-medium tracking-wide text-[var(--color-ink)]/70 uppercase">Skills</p>
-          <div className="mt-1.5 flex flex-wrap gap-1.5">
-            {FOUNDRY_SKILLS.map((skill) => (
-              <span
-                key={skill}
-                className="rounded-full px-2.5 py-1 text-xs font-medium text-[var(--color-ink)]"
-                style={{ background: ACCENT_FILL.foundry }}
-              >
-                {skill}
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
     </>
   )
 }
