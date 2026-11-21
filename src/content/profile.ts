@@ -9,7 +9,7 @@ const CLASS_LABEL = CLASS_YEAR ? ` · Class of ${CLASS_YEAR}` : ''
 export const PROFILE_ROLE = `Saints Robotics Vice President · NEEMO Co-Founder · IB Diploma Candidate${CLASS_LABEL}`
 
 export const PROFILE_SUMMARY =
-  'Aarav is pursuing the IB Diploma at Interlake High School with a 4.0 GPA. He helps lead an 80+ member robotics team and co-founded NEEMO to develop RFID tracking for parts in robotics workshops.'
+  'I’m pursuing the IB Diploma at Interlake High School and have a 4.0 GPA. I help lead an 80+ member robotics team and co-founded NEEMO to develop RFID tracking for parts in robotics workshops.'
 
 export const PROFILE_LOCATION = 'Bellevue, Washington'
 export const SITE_URL_LABEL = 'resume-city.vercel.app'

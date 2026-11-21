@@ -118,18 +118,6 @@
 
 .life-scene > div { opacity: .76; }
 
-.life-scene-caption {
-  position: absolute;
-  right: .8rem;
-  bottom: .6rem;
-  padding: .15rem .5rem;
-  font-size: .72rem;
-  font-weight: 600;
-  letter-spacing: .02em;
-  background: var(--paper);
-  color: var(--muted);
-}
-
 .life-intro {
   padding-block: clamp(2.75rem, 7vw, 7rem) clamp(2.6rem, 6vw, 5.25rem);
   border-bottom: 2px solid var(--accent);
@@ -233,7 +221,6 @@
     border-bottom: 0;
     border-left: 1px solid var(--rule);
   }
-  .life-scene-caption { right: 1.2rem; bottom: 1.2rem; }
 }
 
 @media print {

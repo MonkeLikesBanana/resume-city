@@ -3,7 +3,6 @@ import { useLocation, useParams } from 'react-router-dom'
 import { CONTACT, INTERESTS, PROFILE_LOCATION, PROFILE_NAME, PROFILE_ROLE, PROFILE_SKILLS, PROFILE_SUMMARY, SITE_URL_LABEL } from '../../content/profile'
 import { RESUME_ENTRIES, type ResumeEntry, type ResumeEntryId } from '../../content/resume'
 import { TOUR_CHAPTERS } from '../../content/tour'
-import { getAttraction } from '../../content/attractions'
 import { HOME_ATTRACTION_ID } from '../../config'
 import { isWebGL2Supported } from '../../lib/webgl'
 import AccessibleNav from '../ui/AccessibleNav'
@@ -119,7 +118,6 @@ export default function LifeTour() {
                 <CityExperience activeStop={stop} onFailure={hideCity} />
               </Suspense>
             </CanvasErrorBoundary>
-            <p className="life-scene-caption">{getAttraction(stop)?.placeName}</p>
           </aside>
         )}
         <main id="tour-story" tabIndex={-1}>

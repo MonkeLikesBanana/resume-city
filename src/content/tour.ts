@@ -3,28 +3,32 @@ export const TOUR_CHAPTERS = [
     id: 'education',
     cityStop: 'academic-hall',
     label: 'Education',
-    title: 'At Interlake High School',
-    introduction: 'Aarav is an IB Diploma candidate at Interlake High School. His higher-level courses pair physics and mathematics with business management.',
+    title: 'What I study',
+    // TODO(story): Add one verified assignment or class concept that Aarav can connect to a project.
+    introduction: 'My higher-level IB courses span physics, mathematics, and business management. Outside class, I work on robot electrical systems and help develop a product for robotics workshops.',
   },
   {
     id: 'building',
     cityStop: 'robotics-workshop',
-    label: 'Building',
+    label: 'Build',
     title: 'Building and repairing robots',
-    introduction: 'On the Saints Robotics FIRST Robotics Competition team, Aarav worked on the electrical systems that control the robot and helps keep it running between matches. At school, Makers Club is another setting for design and fabrication.',
+    // TODO(story): Add one verified robot repair or fabrication problem and what Aarav did to solve it.
+    introduction: 'On the Saints Robotics FIRST Robotics Competition team, I’ve wired the robot’s control systems and repaired mechanical and electrical failures between matches. I also co-founded Makers Club at school for projects in 3D design and printing.',
   },
   {
     id: 'community',
     cityStop: 'robotics-workshop',
-    label: 'Community',
+    label: 'Teams',
     title: 'Leading and teaching',
-    introduction: 'Aarav’s work with robotics teams spans two kinds of responsibility. He helps run Saints Robotics as vice president and has taught younger students on two FIRST LEGO League teams.',
+    // TODO(story): Add one confirmed example of teaching a skill or coordinating the team.
+    introduction: 'I trained members of Saints Robotics and taught engineering fundamentals to younger students on two FIRST LEGO League teams. As vice president of Saints Robotics, I now help coordinate work across the mechanical, programming, and outreach subteams.',
   },
   {
     id: 'current-work',
     cityStop: 'neemo-hq',
     label: 'Current',
     title: 'Developing products and competing in business',
-    introduction: 'NEEMO applies radio-frequency identification (RFID) to tracking parts in robotics workshops. Aarav leads its technical product development and also competes in entrepreneurship events through DECA.',
+    // TODO(story): Add one verified NEEMO prototype decision or a specific DECA event experience.
+    introduction: 'I co-founded NEEMO to build a way to track parts in robotics workshops using long-range radio-frequency identification (RFID), and I lead the technical development. I also compete in entrepreneurship events through DECA.',
   },
 ] as const
