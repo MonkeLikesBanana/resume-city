@@ -11,17 +11,8 @@ export interface ModelPose {
   target: Vector3
 }
 
-export function composition(width: number, height: number, panelHeight?: number) {
-  if (width >= 900) {
-    const panelWidth = width >= 1200 ? 380 : 330
-    // Keep the building centered within the left 60%, clear of the résumé.
-    const span = Math.min(width * .6, width - panelWidth - 28)
-    return { width, height, span, clearHeight: height - 110, offsetX: (width - span) / 2, offsetY: 0 }
-  }
-
-  const bottom = panelHeight ?? height * .49
-  const top = 62
-  return { width, height, span: width, clearHeight: height - top - bottom, offsetX: 0, offsetY: (bottom - top) / 2 }
+export function composition(width: number, height: number) {
+  return { width, height }
 }
 
 export function stopPose(stop: Attraction, frame: ReturnType<typeof composition>): ModelPose {
@@ -34,8 +25,8 @@ export function stopPose(stop: Attraction, frame: ReturnType<typeof composition>
   const right = new Vector3(direction.z, 0, -direction.x).normalize()
   const up = new Vector3().crossVectors(direction, right)
   const halfHeight = Math.tan(MODEL_FOV * Math.PI / 360) * .72 / frame.height
-  const halfVertical = halfHeight * Math.max(30, frame.clearHeight)
-  const halfHorizontal = halfHeight * frame.span
+  const halfVertical = halfHeight * frame.height
+  const halfHorizontal = halfHeight * frame.width
   let distance = 0
 
   for (const x of [bounds.min.x, bounds.max.x]) {
@@ -49,7 +40,7 @@ export function stopPose(stop: Attraction, frame: ReturnType<typeof composition>
     }
   }
 
-  const position = target.clone().addScaledVector(direction, distance * (overview ? 1.35 : 1.15))
+  const position = target.clone().addScaledVector(direction, distance * (overview ? 1.55 : 1.28))
   return { position, target }
 }
 

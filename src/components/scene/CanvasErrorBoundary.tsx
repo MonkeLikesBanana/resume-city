@@ -1,15 +1,15 @@
 import { Component, type ReactNode } from 'react'
-import NoWebGLFallback from '../ui/NoWebGLFallback'
 
 interface Props {
   children: ReactNode
+  onFailure: () => void
 }
 
 interface State {
   hasError: boolean
 }
 
-/** Replace the full experience on a rendering failure so its controls do not cover the text résumé. */
+/** The story remains readable if the decorative scene fails. */
 export default class CanvasErrorBoundary extends Component<Props, State> {
   state: State = { hasError: false }
 
@@ -19,10 +19,11 @@ export default class CanvasErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: unknown) {
     console.error('Vasnova City: the 3D scene failed to render.', error)
+    this.props.onFailure()
   }
 
   render() {
-    if (this.state.hasError) return <NoWebGLFallback />
+    if (this.state.hasError) return null
     return this.props.children
   }
 }

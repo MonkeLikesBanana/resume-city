@@ -2,15 +2,15 @@
 
 > Saints Robotics Vice President · NEEMO Co-Founder · IB Diploma Candidate
 
-Aarav Vaswani’s [online résumé](https://resume-city.vercel.app) includes an optional [interactive 3D city](https://resume-city.vercel.app/city).
+[Aarav Vaswani’s guided tour](https://resume-city.vercel.app) covers education, building and repairing robots, leading and teaching, and current work. The city model follows the story as it is read.
 
 [Download the résumé PDF](https://resume-city.vercel.app/resume-aarav-vaswani.pdf)
 
-## Welcome Plaza
+## Introduction
 
-- [Welcome Plaza](https://resume-city.vercel.app/plaza/welcome-plaza): Aarav Vaswani — summary, location, and contact info.
+- [Introduction](https://resume-city.vercel.app/plaza/welcome-plaza): Aarav Vaswani — summary, location, and contact info.
 
-## The Foundry District — school, technical, and business activities
+## Education, building, community, and current work
 
 - [Saints Robotics (FRC)](https://resume-city.vercel.app/foundry/robotics-workshop): Saints Robotics — FRC Team. Vice President; Competition Technician; former Electrical Control Systems Officer.
 - [NEEMO](https://resume-city.vercel.app/foundry/neemo-hq): Co-Founder of a business focused on long-range RFID tracking of parts within robotics workshops.

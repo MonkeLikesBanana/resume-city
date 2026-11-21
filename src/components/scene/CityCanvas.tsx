@@ -1,7 +1,8 @@
-import { useEffect, useState, type ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { PerformanceMonitor } from '@react-three/drei'
 import { NeutralToneMapping, Object3D } from 'three'
+import type { ResumeEntryId } from '../../content/resume'
 import useIsMobile from '../../hooks/useIsMobile'
 import CameraRig from './CameraRig'
 import HideCanvasFromAT from './HideCanvasFromAT'
@@ -10,13 +11,12 @@ import { MODEL_PALETTE } from './massing'
 import { MODEL_FOV } from './modelCamera'
 
 interface CityCanvasProps {
-  initialStopId: string
-  panelHeight?: number
+  activeStop: ResumeEntryId
   children: ReactNode
-  onReady: (ready: boolean) => void
+  onFailure: () => void
 }
 
-export default function CityCanvas({ children, initialStopId, panelHeight, onReady }: CityCanvasProps) {
+export default function CityCanvas({ children, activeStop, onFailure }: CityCanvasProps) {
   const isMobile = useIsMobile()
   const [reducedDensity, setReducedDensity] = useState(false)
   const maxDpr = reducedDensity ? 1 : isMobile ? 1.25 : 1.5
@@ -26,11 +26,6 @@ export default function CityCanvas({ children, initialStopId, panelHeight, onRea
     target.position.set(-25, 0, -1)
     return target
   })
-
-  useEffect(() => {
-    onReady(true)
-    return () => onReady(false)
-  }, [onReady])
 
   return (
     <Canvas
@@ -64,8 +59,8 @@ export default function CityCanvas({ children, initialStopId, panelHeight, onRea
       />
 
       <HideCanvasFromAT />
-      <WebGLContextLossWatcher />
-      <CameraRig initialStopId={initialStopId} panelHeight={panelHeight} />
+      <WebGLContextLossWatcher onFailure={onFailure} />
+      <CameraRig activeStop={activeStop} />
       {children}
     </Canvas>
   )

@@ -1,6 +1,6 @@
 # Vasnova City
 
-Aarav Vaswani’s one-page résumé covers experience, education, and skills. The optional 3D portfolio presents seven stops in a procedural architectural model. A complete text version and a downloadable PDF are available.
+Aarav Vaswani’s scroll-driven guided tour covers education, robotics, teamwork, and current projects. The architectural city model follows the story when WebGL is available. The HTML story and résumé PDF are always available.
 
 [Visit the résumé](https://resume-city.vercel.app)
 
@@ -19,6 +19,6 @@ To regenerate the 1200 × 630 link-preview card on macOS, run `python3 scripts/r
 
 ## 3D portfolio
 
-The city uses procedural massing, instanced block and tree geometry, and a static shadow map. It loads only when visitors open the 3D portfolio or follow a city deep link.
+The city uses procedural massing, instanced block and tree geometry, and a static shadow map. The decorative city loads separately from the story. Existing city URLs lead to the same document.
 
 Legacy GLB assets are Kenney Creative Commons CC0 packs retained for the earlier city. [Kenney asset licensing](https://kenney.nl/support)

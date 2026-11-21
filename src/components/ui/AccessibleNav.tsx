@@ -1,30 +1,17 @@
-import { Link } from 'react-router-dom'
-import { TOUR_ORDER } from '../../content/tour'
-import Button from './Button'
-import Chevron from './Chevron'
+import { TOUR_CHAPTERS } from '../../content/tour'
+import { HOME_ATTRACTION_ID } from '../../config'
 
-export default function AccessibleNav() {
+export default function AccessibleNav({ current }: { current: string }) {
   return (
-    <details
-      className="city-all-stops group pointer-events-auto z-[25] text-sm"
-      onClick={(event) => {
-        if ((event.target as Element).closest('a')) event.currentTarget.open = false
-      }}
-    >
-      <Button as="summary" className="ml-auto !flex w-28 list-none select-none [&::-webkit-details-marker]:hidden">
-        All stops <Chevron className="group-open:rotate-180" />
-      </Button>
-      <nav aria-label="All stops" className="mt-2 max-h-[70vh] w-64 max-w-full overflow-y-auto rounded-xl bg-ground p-3 shadow-xl">
-        <ul>
-          {TOUR_ORDER.map((stop) => (
-            <li key={stop.id}>
-              <Link to={stop.district === 'plaza' ? '/city' : `/${stop.district}/${stop.id}`} className="block rounded-lg px-2 py-1.5 hover:bg-ink/5">
-                {stop.district === 'plaza' ? 'Overview' : stop.name}
-              </Link>
-            </li>
-          ))}
-        </ul>
+    <header className="life-navigation">
+      <a className="life-skip" href="#tour-story">Skip to story</a>
+      <nav aria-label="Chapters">
+        <a href={`#${HOME_ATTRACTION_ID}`} aria-current={current === HOME_ATTRACTION_ID ? 'location' : undefined}>Intro</a>
+        {TOUR_CHAPTERS.map(chapter => (
+          <a key={chapter.id} href={`#${chapter.id}`} aria-current={current === chapter.id ? 'location' : undefined}>{chapter.label}</a>
+        ))}
       </nav>
-    </details>
+      <a className="life-pdf" href="/resume-aarav-vaswani.pdf" download>Résumé PDF</a>
+    </header>
   )
 }

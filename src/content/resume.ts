@@ -3,9 +3,7 @@ import type { Attraction } from '../types/attraction'
 
 export type ResumeEntry = Pick<Attraction, 'name' | 'subtitle' | 'description' | 'facts' | 'links' | 'tags' | 'timeline'>
 
-// Every entry lists its roles in `timeline` so the résumé renders one consistent role row
-// (title + dates) per role. Current roles use present tense; finished roles use past tense.
-// `subtitle` stays as the short header line in the 3D city panels.
+// Role timelines supply the work and dates shown in the guided story.
 export const RESUME_ENTRIES = {
   'welcome-plaza': {
     name: PROFILE_NAME,
@@ -112,6 +110,3 @@ export const RESUME_ENTRIES = {
 } satisfies Record<string, ResumeEntry>
 
 export type ResumeEntryId = keyof typeof RESUME_ENTRIES
-
-export const EXPERIENCE_IDS = ['robotics-workshop', 'neemo-hq', 'makers-club', 'deca-center', 'fll-center'] as const satisfies readonly ResumeEntryId[]
-export const EDUCATION_ID = 'academic-hall' satisfies ResumeEntryId

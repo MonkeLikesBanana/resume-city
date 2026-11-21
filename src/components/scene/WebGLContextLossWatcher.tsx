@@ -1,13 +1,11 @@
 import { useEffect } from 'react'
 import { useThree } from '@react-three/fiber'
 import { DirectionalLight } from 'three'
-import useCityStore from '../../store/useCityStore'
 
 const RESTORE_TIMEOUT_MS = 5_000
 
-export default function WebGLContextLossWatcher() {
+export default function WebGLContextLossWatcher({ onFailure }: { onFailure: () => void }) {
   const { gl, scene, invalidate } = useThree()
-  const setWebglSupported = useCityStore((s) => s.setWebglSupported)
 
   useEffect(() => {
     const canvas = gl.domElement
@@ -23,7 +21,7 @@ export default function WebGLContextLossWatcher() {
     const onLost = (event: Event) => {
       event.preventDefault()
       window.clearTimeout(timeout)
-      timeout = window.setTimeout(() => setWebglSupported(false), RESTORE_TIMEOUT_MS)
+      timeout = window.setTimeout(onFailure, RESTORE_TIMEOUT_MS)
     }
 
     canvas.addEventListener('webglcontextlost', onLost)
@@ -33,7 +31,7 @@ export default function WebGLContextLossWatcher() {
       canvas.removeEventListener('webglcontextlost', onLost)
       canvas.removeEventListener('webglcontextrestored', onRestored)
     }
-  }, [gl, invalidate, scene, setWebglSupported])
+  }, [gl, invalidate, onFailure, scene])
 
   return null
 }

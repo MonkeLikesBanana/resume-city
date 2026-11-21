@@ -5,7 +5,6 @@ import {
 } from 'three'
 import { ATTRACTIONS } from '../../content/attractions'
 import type { ResumeEntryId } from '../../content/resume'
-import useCityStore from '../../store/useCityStore'
 import { FACADES, GROUND, INFILL, INFILL_GEOMETRIES, MODEL_PALETTE, PARCELS, SIGNATURES, WATER } from './massing'
 
 function matte(color: string) {
@@ -59,8 +58,7 @@ function RepeatedMasses({ geometry, material, items }: {
   return <instancedMesh ref={ref} args={[geometry, material, items.length]} castShadow receiveShadow />
 }
 
-export default function City() {
-  const active = useCityStore(state => state.activeAttractionId)
+export default function City({ activeStop }: { activeStop: ResumeEntryId }) {
 
   return (
     <group dispose={null}>
@@ -72,7 +70,7 @@ export default function City() {
       ))}
       {ATTRACTIONS.map(stop => {
         const id = stop.id as ResumeEntryId
-        const material = stop.id === active ? selected : building
+        const material = stop.id === activeStop ? selected : building
         return (
           <group key={id} position={[stop.position[0], .035, stop.position[2]]}>
             <mesh geometry={SIGNATURES[id]} material={material} castShadow receiveShadow />
