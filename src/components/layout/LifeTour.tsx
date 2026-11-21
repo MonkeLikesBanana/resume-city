@@ -1,4 +1,4 @@
-import { lazy, Suspense, useCallback, useEffect, useState, type ReactNode } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react'
 import { useLocation, useParams } from 'react-router-dom'
 import { CONTACT, INTERESTS, PROFILE_LOCATION, PROFILE_NAME, PROFILE_ROLE, PROFILE_SKILLS, PROFILE_SUMMARY, SITE_URL_LABEL } from '../../content/profile'
 import { RESUME_ENTRIES, type ResumeEntry, type ResumeEntryId } from '../../content/resume'
@@ -9,7 +9,6 @@ import AccessibleNav from '../ui/AccessibleNav'
 import CanvasErrorBoundary from '../scene/CanvasErrorBoundary'
 import '../../styles/life-tour.css'
 
-const CityExperience = lazy(() => import('./CityExperience'))
 const legacyAnchors = new Map([['outside-work', 'interests'], ['experience', 'building']])
 
 function Chapter({ index, children }: { index: number; children: ReactNode }) {
@@ -64,6 +63,20 @@ function useReadingPosition() {
         if (marker.getBoundingClientRect().top > readingLine) break
         current = marker
       }
+      const focused = document.activeElement
+      const { scrollHeight, clientHeight, scrollTop } = document.documentElement
+      const atEnd = scrollTop > 0 && scrollHeight - clientHeight - scrollTop < 2
+      if (atEnd) {
+        // The final entry can exhaust the scroll range before it reaches the reading line.
+        current = markers[markers.length - 1]
+      }
+      if (focused instanceof HTMLElement && markers.includes(focused)) {
+        const top = focused.getBoundingClientRect().top
+        const inset = parseFloat(getComputedStyle(focused).scrollMarginTop)
+        if (Math.abs(top - inset) < 2 || (atEnd && top >= inset && top < clientHeight)) {
+          current = focused
+        }
+      }
       if (!current) return
       const chapter = current.closest<HTMLElement>('[data-chapter]')?.dataset.chapter ?? HOME_ATTRACTION_ID
       const stop = current.dataset.cityStop as ResumeEntryId
@@ -75,12 +88,14 @@ function useReadingPosition() {
     schedule()
     window.addEventListener('scroll', schedule, { passive: true })
     window.addEventListener('resize', schedule)
+    document.addEventListener('focusin', schedule)
     const story = document.getElementById('tour-story')
     const observer = new ResizeObserver(schedule)
     if (story) observer.observe(story)
     return () => {
       window.removeEventListener('scroll', schedule)
       window.removeEventListener('resize', schedule)
+      document.removeEventListener('focusin', schedule)
       observer.disconnect()
       window.cancelAnimationFrame(frame)
     }
@@ -92,12 +107,62 @@ function useReadingPosition() {
 export default function LifeTour() {
   const { hash } = useLocation()
   const { id } = useParams()
-  const [showCity, setShowCity] = useState(isWebGL2Supported)
+  const [CityExperience, setCityExperience] = useState<typeof import('./CityExperience').default>()
   const { stop, chapter } = useReadingPosition()
-  const hideCity = useCallback(() => setShowCity(false), [])
+  const anchoredSection = useRef<HTMLElement | null>(null)
+  const rememberAnchor = useCallback(() => {
+    const section = document.activeElement
+    if (!(section instanceof HTMLElement) || !section.matches('#tour-story, #tour-story [tabindex="-1"]')) return
+    const inset = parseFloat(getComputedStyle(section).scrollMarginTop)
+    if (Math.abs(section.getBoundingClientRect().top - inset) < 2) anchoredSection.current = section
+  }, [])
+  const hideCity = useCallback(() => {
+    rememberAnchor()
+    setCityExperience(undefined)
+  }, [rememberAnchor])
 
   useEffect(() => {
-    document.title = `${PROFILE_NAME} — Guided Tour`
+    let cancelled = false
+    let secondFrame = 0
+    let cancelIdle = () => {}
+    const loadCity = async () => {
+      if (!isWebGL2Supported()) return
+      try {
+        const { default: Scene } = await import('./CityExperience')
+        if (!cancelled) {
+          rememberAnchor()
+          setCityExperience(() => Scene)
+        }
+      } catch {
+        // The story is already mounted and remains available if the chunk fails.
+      }
+    }
+    const firstFrame = requestAnimationFrame(() => {
+      secondFrame = requestAnimationFrame(() => {
+        if (typeof window.requestIdleCallback === 'function') {
+          const idle = window.requestIdleCallback(() => { void loadCity() }, { timeout: 1500 })
+          cancelIdle = () => window.cancelIdleCallback(idle)
+        } else {
+          const timer = window.setTimeout(() => { void loadCity() }, 0)
+          cancelIdle = () => window.clearTimeout(timer)
+        }
+      })
+    })
+    return () => {
+      cancelled = true
+      cancelAnimationFrame(firstFrame)
+      cancelAnimationFrame(secondFrame)
+      cancelIdle()
+    }
+  }, [rememberAnchor])
+
+  useLayoutEffect(() => {
+    const section = anchoredSection.current
+    anchoredSection.current = null
+    if (section && section === document.activeElement) section.scrollIntoView()
+  }, [CityExperience])
+
+  useEffect(() => {
     const anchor = hash.slice(1) || id
     const target = anchor && (legacyAnchors.get(anchor) ?? anchor)
     const section = target && document.getElementById(target)
@@ -108,15 +173,13 @@ export default function LifeTour() {
   }, [hash, id])
 
   return (
-    <div className="life-tour" data-city={showCity || undefined}>
+    <div className="life-tour" data-city={CityExperience ? true : undefined}>
       <AccessibleNav current={chapter} />
       <div className="life-layout">
-        {showCity && (
+        {CityExperience && (
           <aside className="life-scene" aria-hidden="true">
             <CanvasErrorBoundary onFailure={hideCity}>
-              <Suspense fallback={null}>
-                <CityExperience activeStop={stop} onFailure={hideCity} />
-              </Suspense>
+              <CityExperience activeStop={stop} onFailure={hideCity} />
             </CanvasErrorBoundary>
           </aside>
         )}

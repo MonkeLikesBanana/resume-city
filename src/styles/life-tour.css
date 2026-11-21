@@ -101,7 +101,8 @@
   padding-inline: clamp(1.25rem, 5vw, 4.5rem);
 }
 
-.life-layout :is(main, header, section, article, h2)[id] {
+.life-layout :is(main, header, section, article, h2)[id],
+.life-layout a {
   scroll-margin-top: var(--reading-inset);
 }
 
